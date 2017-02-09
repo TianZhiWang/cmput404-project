@@ -1,0 +1,41 @@
+{
+  "name": "404Project",
+  "version": "0.0.1",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./node_modules/webpack-dev-server/bin/webpack-dev-server.js",
+    "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
+    "test:watch": "npm run test -- --watch",
+    "build": "webpack --progress --colors"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
+    "css-loader": "^0.26.1",
+    "react-addons-test-utils": "^15.4.1",
+    "webpack": "^1.12.9",
+    "webpack-dev-server": "^1.14.0"
+  },
+  "dependencies": {
+    "babel-preset-stage-0": "^6.16.0",
+    "decorative-react": "^0.1.3",
+    "font-awesome": "^4.7.0",
+    "markdown": "^0.5.0",
+    "react": "^15.4.1",
+    "react-dom": "^15.1.3",
+    "react-fontawesome": "^1.5.0",
+    "react-markdown-editor": "^0.4.0",
+    "react-modal": "^1.6.5",
+    "react-redux": "^4.0.0",
+    "react-router": "^2.8.1",
+    "redux": "^3.0.4",
+    "redux-logger": "^2.7.4",
+    "redux-promise-middleware": "^4.2.0",
+    "redux-thunk": "^2.1.0"
+  }
+}
