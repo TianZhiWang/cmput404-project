@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/TianZhiWang/cmput404-project.svg?branch=master)](https://travis-ci.org/TianZhiWang/cmput404-project)  
+
 # Installation
 npm install  
 npm start  
