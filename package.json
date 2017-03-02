@@ -5,6 +5,7 @@
   "scripts": {
     "start": "webpack-dev-server --progress --colors",
     "test": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
+    "test:nyan": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test --reporter nyan",
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors"
   },
