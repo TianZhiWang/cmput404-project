@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Panel, Button, FormControl} from 'react-bootstrap';
+import CommentList from './CommentList';
 
 class Post extends Component {
   constructor(props) {
@@ -35,7 +36,7 @@ class Post extends Component {
                 {this.props.postText}
             </div>
             <div className='post-footer'>
-                {/* Add comment list here */}
+                <CommentList comments={this.props.comments}/>
                 <FormControl
                   type="text"
                   value={this.state.commentText}
@@ -54,9 +55,10 @@ class Post extends Component {
 }
 
 Post.propTypes = {
+  comments: PropTypes.array,   
   id: PropTypes.number.isRequired,
   postText: PropTypes.string.isRequired,
-  username: PropTypes.string.isRequired
+  username: PropTypes.string.isRequired,
 };
 
 export default Post;
