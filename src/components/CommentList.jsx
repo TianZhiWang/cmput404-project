@@ -5,7 +5,7 @@ class CommentList extends Component {
   render() {
 
     return (
-      <div>
+      <div className='comment-list'>
         {this.props.comments.map(comment => <Comment {...comment} />)}
       </div>
     );
@@ -13,7 +13,7 @@ class CommentList extends Component {
 }
 
 CommentList.propTypes = {
-  comments: PropTypes.array.isRequired,
+  comments: PropTypes.array.isRequired
 };
 
 export default CommentList;
