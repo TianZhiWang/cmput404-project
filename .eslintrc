@@ -21,7 +21,7 @@
         ],
         "semi": [
             "error",
-            "never"
+            "always"
         ],
         "no-unused-vars": "off",
         "no-console": "off",

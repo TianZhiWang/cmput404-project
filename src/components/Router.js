@@ -1,7 +1,7 @@
-import React, { Component } from 'react'
-import { Router, Route, Link, IndexRoute, hashHistory, browserHistory } from 'react-router'
+import React, { Component } from 'react';
+import { Router, Route, Link, IndexRoute, hashHistory, browserHistory } from 'react-router';
 
-import App from "./App.js"
+import App from "./App.js";
 
 class ReactRouter extends Component {
   render() {
@@ -14,11 +14,11 @@ class ReactRouter extends Component {
 				<Route path='*'
           component={NotFound} />
 			</Router>
-    )
+    );
   }
 }
 
 // Hard coded pages (TEMP!)
-const NotFound = () => <h1>404.. This page is not found!</h1>
+const NotFound = () => <h1>404.. This page is not found!</h1>;
 
-export default ReactRouter
+export default ReactRouter;
