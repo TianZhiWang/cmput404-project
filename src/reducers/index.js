@@ -1,7 +1,7 @@
-import { combineReducers } from 'redux'
+import { combineReducers } from 'redux';
 
-import testReducers from "./testReducers.js"
+import testReducers from "./testReducers.js";
 
 export default combineReducers({
   testReducers
-})
+});
