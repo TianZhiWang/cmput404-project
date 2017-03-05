@@ -1,17 +1,16 @@
 import React, { Component } from 'react';
-import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon} from 'react-bootstrap';
+import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
 
 class CreatePost extends Component {
   constructor(props) {
     super(props);
     this.state = {
       text: '',
-      isPlainText: true
+      textFormat: 'plaintext'
     };
 
     this.handleTextChange = this.handleTextChange.bind(this);
-    this.handlePlainTextSelected = this.handlePlainTextSelected.bind(this);
-    this.handleMarkdownSelected = this.handleMarkdownSelected.bind(this);
+    this.handleTextFormatChange = this.handleTextFormatChange.bind(this);
     this.handlePost = this.handlePost.bind(this);
   }
 
@@ -25,15 +24,9 @@ class CreatePost extends Component {
     // handle image upload
   }
 
-  handlePlainTextSelected() {
+  handleTextFormatChange(event) {
     this.setState({
-      isPlainText: true
-    });
-  }
-
-  handleMarkdownSelected() {
-    this.setState({
-      isPlainText: false
+      textFormat: event.target.value
     });
   }
 
@@ -56,14 +49,20 @@ class CreatePost extends Component {
             <Glyphicon glyph='picture'/>
           </Button>
           <ButtonGroup>
-            <Button
-              onClick={this.handlePlainTextSelected}>
+            <Radio
+              checked={this.state.textFormat === 'plaintext'}
+              inline={true}
+              onChange={this.handleTextFormatChange}
+              value='plaintext'>
               Plain Text
-            </Button>
-            <Button
-              onClick={this.handleMarkdownSelected}>
+            </Radio>
+            <Radio
+              checked={this.state.textFormat === 'markdown'}
+              inline={true}
+              onChange={this.handleTextFormatChange}
+              value='markdown'>
               Markdown
-            </Button>
+            </Radio>
           </ButtonGroup>
           <Button
             onClick={this.handlePost}>
