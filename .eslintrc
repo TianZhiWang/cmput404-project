@@ -14,6 +14,7 @@
     "plugins": [
         "react"
     ],
+    "extends": "eslint:recommended",
     "rules": {
         "indent": [
             "error",
@@ -24,7 +25,10 @@
             "always"
         ],
         "no-unused-vars": "off",
-        "no-console": "off",
+        "no-var": "error",
+        "no-console": "warn",
+        "prefer-const": "error",
+        "prefer-template": "warn",
         "space-before-function-paren": "off",
         "class-methods-use-this": "off",
         "react/jsx-uses-react": "error",
@@ -43,7 +47,6 @@
         "react/prefer-stateless-function": "warn",
         "react/react-in-jsx-scope": "error",
         "react/require-render-return": "error",
-        "react/sort-prop-types": "warn",
-
+        "react/sort-prop-types": "warn"
     }
 }
