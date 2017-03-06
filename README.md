@@ -14,6 +14,7 @@ How to [write a good commit message](https://chris.beams.io/posts/git-commit/).
 
 # Sources
 reactjs: https://facebook.github.io/react/  
+redux: http://redux.js.org/  
 react-redux: https://github.com/reactjs/react-redux  
 react-router: https://github.com/ReactTraining/react-router,https://css-tricks.com/learning-react-router/  
 font-awesome: http://fontawesome.io/  
