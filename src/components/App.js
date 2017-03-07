@@ -6,6 +6,8 @@ import PostList from './PostList';
 import Sidebar from './Sidebar';
 import '../../style/style.scss';
 import * as actions from '../actions';
+import schema from '../schema';
+import {denormalize} from 'normalizr';
 
 class App extends Component {
   render() {
@@ -37,24 +39,25 @@ App.propTypes = {
   addPost: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired
 };
+
 // TODO: Temporary, get this from somewhere else
 const user = {
-  id: 83757,
+  id: 96853,
   name: 'Batman'
 };
 // TODO: Move this into seperate file as container
 export default connect(
   function(stateProps, ownProps) {
     return {
-      posts: stateProps.posts
+      posts: denormalize(Object.keys(stateProps.posts), schema, stateProps)
     };
   }, function(dispatch, ownProps) {
   return {
     addComment: function(text, postId) {
-      dispatch(actions.addComment(text, postId, user));
+      dispatch(actions.addComment(text, postId, user.id));
     },
     addPost: function(text, textFormat) {
-      dispatch(actions.addPost(text, textFormat, user));
-    },
+      dispatch(actions.addPost(text, textFormat, user.id));
+    }
   };
 })(App);

@@ -27,6 +27,7 @@
         "no-unused-vars": "off",
         "no-var": "error",
         "no-console": "warn",
+        "no-case-declarations": "off",
         "prefer-const": "error",
         "prefer-template": "warn",
         "space-before-function-paren": "off",
