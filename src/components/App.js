@@ -1,16 +1,14 @@
-import React, { Component } from 'react';
+import React, {Component, PropTypes} from 'react';
+import {connect} from 'react-redux';
 import {Grid, Row, Col} from 'react-bootstrap';
 import CreatePost from './CreatePost';
 import PostList from './PostList';
 import Sidebar from './Sidebar';
 import '../../style/style.scss';
+import * as actions from '../actions';
 
 class App extends Component {
   render() {
-    const postListData = [
-      {id:20525, username: 'Too Yung', privacy: 1, date: '56-10-2020', textContent: 'Age is just a number', hasPic: false, picURL: "", comments: [{key:"ASdfasdf",author:"Kyle",text:"I Have anger issues"},{key:"asssssdf",author:"Xin",text:"I Too Have anger issues"}]},
-      {id:10241, username: 'Bob Bobby', privacy: 2, date: '01-01-1990', textContent: 'Jail is just a room', hasPic: true, picURL: "https://i.imgflip.com/1ks3kw.jpg", comments: [{key:"ASdfasdf",author:"Kyle",text:"I Have anger issues"},{key:"asssssdf",author:"Xin",text:"I Too Have anger issues"}]}
-    ];
     return (
       <div className='coolbears-app'>
         <Grid>
@@ -21,7 +19,8 @@ class App extends Component {
             <Col md={9}>
               <CreatePost/>
               <PostList
-                posts={postListData}
+                posts={this.props.posts}
+                addComment={this.props.addComment}
               />
             </Col>
           </Row>
@@ -31,4 +30,26 @@ class App extends Component {
   }
 }
 
-export default App;
+App.propTypes = {
+  addComment: PropTypes.func.isRequired,
+  posts: PropTypes.array.isRequired
+};
+
+// TODO: Move this into seperate file as container
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      posts: stateProps.posts
+    };
+  }, function(dispatch, ownProps) {
+  return {
+    addComment: function(text, postId) {
+      // TODO: Temporary, get this from somewhere else
+      const user = {
+        id: 83757,
+        name: 'Batman'
+      };
+      dispatch(actions.addComment(text, postId, user));
+    }
+  };
+})(App);
