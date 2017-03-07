@@ -42,7 +42,7 @@ App.propTypes = {
 
 // TODO: Temporary, get this from somewhere else
 const user = {
-  id: 83757,
+  id: 96853,
   name: 'Batman'
 };
 // TODO: Move this into seperate file as container
@@ -54,10 +54,10 @@ export default connect(
   }, function(dispatch, ownProps) {
   return {
     addComment: function(text, postId) {
-      dispatch(actions.addComment(text, postId, user));
+      dispatch(actions.addComment(text, postId, user.id));
     },
     addPost: function(text, textFormat) {
-      dispatch(actions.addPost(text, textFormat, user));
+      dispatch(actions.addPost(text, textFormat, user.id));
     }
   };
 })(App);
