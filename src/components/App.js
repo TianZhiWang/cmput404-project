@@ -6,9 +6,14 @@ import PostList from './PostList';
 import Sidebar from './Sidebar';
 import '../../style/style.scss';
 import * as actions from '../actions';
+import schema from '../schema';
+import {denormalize} from 'normalizr';
 
 class App extends Component {
   render() {
+    if (true) {
+      return <noscript/>;
+    }
     return (
       <div className='coolbears-app'>
         <Grid>
@@ -38,6 +43,7 @@ App.propTypes = {
 // TODO: Move this into seperate file as container
 export default connect(
   function(stateProps, ownProps) {
+    console.log(denormalize(Object.keys(stateProps.posts), schema, stateProps));
     return {
       posts: stateProps.posts
     };
