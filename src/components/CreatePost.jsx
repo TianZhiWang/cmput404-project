@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component, PropTypes} from 'react';
 import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
 
 class CreatePost extends Component {
@@ -31,8 +31,12 @@ class CreatePost extends Component {
   }
 
   handlePost() {
-    // Call callback for handle post in the props
-    // this.props.postStatus(this.state.text, this.state.isPlainText)
+    if (this.state.text) {
+      this.props.addPost(this.state.text, this.state.textFormat);
+      this.setState({
+        text: ''
+      });
+    }
   }
 
   render() {
@@ -73,5 +77,9 @@ class CreatePost extends Component {
     );
   }
 }
+
+CreatePost.propTypes = {
+  addPost: PropTypes.func.isRequired
+};
 
 export default CreatePost;

@@ -1,67 +1,73 @@
-import {combineReducers} from 'redux';
+import { combineReducers } from 'redux';
 import * as types from '../types';
+import schema from '../schema';
+import {normalize} from 'normalizr';
 
-// Schema based on normalizr https://github.com/paularmstrong/normalizr (MIT)
-const normalizedState = {
-  posts: {
-    20525: {
-      id: 20525,
-      author: 43231,
-      text: 'I can see clearly now',
-      comments: [1232, 7653]
+// Schema based on normalizr https://github.com/paularmstrong/normalizr/blob/master/docs/quickstart.md (MIT)
+const mockposts = [
+  {
+    id: '20525',
+    author: {
+      id: '43231',
+      name: 'Ken Adams'
     },
-    10241: {
-      id: 10241,
-      author: 96853,
-      text: 'UofA is better than UofC',
-      comments: []
-    }
+    text: 'I can see clearly now',
+    comments: [
+      {
+        id: '1232',
+        author: {
+          id: '96853',
+          name: 'James Bond'
+        },
+        text: 'You wot?'
+      }, {
+        id: '7653',
+        author: {
+          id: '73841',
+          name: 'Moriarty'
+        },
+        text: 'yeah wot'
+      }
+    ]
   },
-  comments: {
-    1232: {
-      id: 1232,
-      author: 96853,
-      text: 'You wot?'
+  {
+    id: '10241',
+    author: {
+      id: '96853',
+      name: 'James Bond'
     },
-    7653: {
-      id: 7653,
-      author: 73841,
-      text: 'yeah wot'
-    }
-  },
-  users: {
-    43231: {
-      id: 43231,
-      name: 'Batman'
-    },
-    96853: {
-      id: 96853,
-      name: 'Sherlock'
-    },
-    73841: {
-      id: 73841,
-      name: 'Moritarty'
-    }
+    text: 'UofA is better than UofC',
+    comments: []
   }
-};
+];
 
-function posts(state=normalizedState.posts, action) {
+const mockState = normalize(mockposts, schema).entities;
+
+function posts(state=mockState.posts, action) {
   switch (action.type) {
   case types.ADD_COMMENT:
     const post = state[action.postId];
     return {
-      ...post,
-      comments: [
-        ...post.comments,
-        action.comment.id
-      ]
+      ...state,
+      [action.postId]: {
+        ...post,
+        comments: [
+          ...post.comments,
+          action.comment.id
+        ]
+      }
+    };
+  case types.ADD_POST:
+    return {
+      [action.post.id]: action.post,
+      ...state
     };
   default:
     return state;
   }
 }
 
-function comments(state=normalizedState.comments, action) {
+function comments(state=mockState.comments, action) {
   switch (action.type) {
   case types.ADD_COMMENT:
     return {
@@ -73,7 +79,7 @@ function comments(state=normalizedState.comments, action) {
   }
 }
 
-function users(state=normalizedState.users, action) {
+function users(state=mockState.users, action) {
   switch (action.type) {
   default:
     return state;

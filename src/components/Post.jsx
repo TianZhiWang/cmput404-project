@@ -15,10 +15,12 @@ class Post extends Component {
   }
 
   handleAddComment() {
-    this.props.addComment(this.state.newCommentText, this.props.id);
-    this.setState({
-      newCommentText: ''
-    });
+    if (this.state.newCommentText) {
+      this.props.addComment(this.state.newCommentText, this.props.id);
+      this.setState({
+        newCommentText: ''
+      });
+    }
   }
 
   handleChangeComment(event) {
@@ -60,7 +62,7 @@ Post.propTypes = {
   addComment: PropTypes.func.isRequired,
   author: PropTypes.object.isRequired,
   comments: PropTypes.array,   
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   text: PropTypes.string.isRequired
 };
 

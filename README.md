@@ -20,6 +20,8 @@ react-router: https://github.com/ReactTraining/react-router,https://css-tricks.c
 font-awesome: http://fontawesome.io/  
 es6: http://es6-features.org/  
 npm version: '3.10.8'  
+  
+Reducer update item in an array: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html#updating-an-item-in-an-array  
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).
