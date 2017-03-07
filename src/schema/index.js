@@ -1,5 +1,6 @@
 import {schema} from 'normalizr';
 
+// https://github.com/paularmstrong/normalizr/blob/master/docs/quickstart.md Paula Armstrong (MIT)
 const user = new schema.Entity('users');
 const comment = new schema.Entity('comments', {author: user
  });
