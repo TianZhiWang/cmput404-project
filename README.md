@@ -31,7 +31,7 @@ First source your virtual envronment!
 ```
 # Deploying to Heroku
 ```
-> git push heroku
+> git push heroku master
 ```
 
 # Commiting
