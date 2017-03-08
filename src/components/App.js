@@ -21,6 +21,7 @@ class App extends Component {
             <Col md={9}>
               <CreatePost
                 addPost={this.props.addPost}
+                users={this.props.users}
               />
               <PostList
                 posts={this.props.posts}
@@ -37,7 +38,8 @@ class App extends Component {
 App.propTypes = {
   addComment: PropTypes.func.isRequired,
   addPost: PropTypes.func.isRequired,
-  posts: PropTypes.array.isRequired
+  posts: PropTypes.array.isRequired,
+  users: PropTypes.array.isRequired
 };
 
 // TODO: Temporary, get this from somewhere else
@@ -49,7 +51,8 @@ const user = {
 export default connect(
   function(stateProps, ownProps) {
     return {
-      posts: denormalize(Object.keys(stateProps.posts), schema, stateProps)
+      posts: denormalize(Object.keys(stateProps.posts), schema, stateProps),
+      users: Object.values(stateProps.users)
     };
   }, function(dispatch, ownProps) {
   return {

@@ -1,5 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
+import {PERMISSIONS} from '../constants';
 import Select from 'react-select';
 import 'react-select/dist/react-select.css';
 
@@ -7,6 +8,7 @@ class CreatePost extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      permission: PERMISSIONS.FRIENDS.value,
       text: '',
       textFormat: 'plaintext'
     };
@@ -14,6 +16,7 @@ class CreatePost extends Component {
     this.handleTextChange = this.handleTextChange.bind(this);
     this.handleTextFormatChange = this.handleTextFormatChange.bind(this);
     this.handlePost = this.handlePost.bind(this);
+    this.handlePermissionChange = this.handlePermissionChange.bind(this);
   }
 
   handleTextChange(event) {
@@ -41,7 +44,37 @@ class CreatePost extends Component {
     }
   }
 
+  handlePermissionChange(event) {
+    this.setState({
+      permission: event.value,
+      user_with_permission: event.user
+    });
+  }
+
   render() {
+    const staticOptions = [
+      {
+        value: PERMISSIONS.FRIENDS.value,
+        label: PERMISSIONS.FRIENDS.label
+      }, {
+        value: PERMISSIONS.PUBLIC.value,
+        label: PERMISSIONS.PUBLIC.label,
+      }, {
+        value: PERMISSIONS.FRIENDS_OF_FRIENDS.value,
+        label: PERMISSIONS.FRIENDS_OF_FRIENDS.label
+      }, {
+        value: PERMISSIONS.SELF.value,
+        label: PERMISSIONS.SELF.label
+      }
+    ];
+    const options = [
+      ...staticOptions,
+      ...this.props.users.map(user => ({
+        label: user.name,
+        value: PERMISSIONS.USER.value,
+        user: user.id
+      }))
+    ];
     return (
       <div className='create-post'>
         <FormControl
@@ -72,19 +105,9 @@ class CreatePost extends Component {
           </ButtonGroup>
           <Select
             name='permissions'
-            onChange={(e) => {console.log(e)}}
-            options={[
-              {
-                label: 'Friends',
-                value: 1,
-                isOption: true
-              },
-              {
-                label: 'Public',
-                value: 4
-              }
-            ]}
-            value={1}
+            onChange={this.handlePermissionChange}
+            options={options}
+            value={this.state.permission}
           />
           <Button
             className='post-status'
@@ -98,7 +121,8 @@ class CreatePost extends Component {
 }
 
 CreatePost.propTypes = {
-  addPost: PropTypes.func.isRequired
+  addPost: PropTypes.func.isRequired,
+  users: PropTypes.array.isRequired
 };
 
 export default CreatePost;
