@@ -32,6 +32,7 @@ First source your virtual envronment!
 # Deploying to Heroku
 ```
 > git push heroku master
+heroku config:set DISABLE_COLLECTSTATIC=1
 ```
 
 # Commiting
