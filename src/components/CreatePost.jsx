@@ -1,5 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
+import Select from 'react-select';
+import 'react-select/dist/react-select.css';
 
 class CreatePost extends Component {
   constructor(props) {
@@ -47,7 +49,7 @@ class CreatePost extends Component {
           value={this.state.text}
           placeholder='Whats on your mind?'
           onChange={this.handleTextChange}/>
-        <ButtonToolbar>
+        <div className='create-post-footer'>
           <Button
             onClick={this.handleImageUpload}>
             <Glyphicon glyph='picture'/>
@@ -68,11 +70,28 @@ class CreatePost extends Component {
               Markdown
             </Radio>
           </ButtonGroup>
+          <Select
+            name='permissions'
+            onChange={(e) => {console.log(e)}}
+            options={[
+              {
+                label: 'Friends',
+                value: 1,
+                isOption: true
+              },
+              {
+                label: 'Public',
+                value: 4
+              }
+            ]}
+            value={1}
+          />
           <Button
+            className='post-status'
             onClick={this.handlePost}>
             Post
           </Button>
-        </ButtonToolbar>
+        </div>
       </div>
     );
   }

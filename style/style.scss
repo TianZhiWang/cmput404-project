@@ -1,1 +1,20 @@
 /* Add styles here */
+.create-post {
+    .create-post-footer {
+        display: flex;
+        align-items: center;
+
+        .Select {
+            min-width: 100px;
+            width: 12em;
+        }
+
+        .post-status {
+            margin-left: auto;
+        }
+
+        & > *:not(:last-child) {
+            margin-right: 1em;
+        };
+    }
+}
