@@ -7,16 +7,20 @@ import 'react-select/dist/react-select.css';
 class CreatePost extends Component {
   constructor(props) {
     super(props);
-    this.state = {
-      permission: PERMISSIONS.FRIENDS.value,
-      text: '',
-      textFormat: 'plaintext'
-    };
+    this.state = this.getInitialState();
 
     this.handleTextChange = this.handleTextChange.bind(this);
     this.handleTextFormatChange = this.handleTextFormatChange.bind(this);
     this.handlePost = this.handlePost.bind(this);
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
+  }
+
+  getInitialState() {
+    return {
+      permission: PERMISSIONS.FRIENDS.value,
+      text: '',
+      textFormat: 'plaintext'
+    };
   }
 
   handleTextChange(event) {
@@ -37,10 +41,14 @@ class CreatePost extends Component {
 
   handlePost() {
     if (this.state.text) {
-      this.props.addPost(this.state.text, this.state.textFormat);
-      this.setState({
-        text: ''
+      this.props.addPost({
+        text: this.state.text,
+        format: this.state.textFormat,
+        permission: this.state.permission,
+        user_with_permission: this.state.user_with_permission
       });
+
+      this.setState(this.getInitialState());
     }
   }
 

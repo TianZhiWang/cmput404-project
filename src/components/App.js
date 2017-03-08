@@ -59,8 +59,8 @@ export default connect(
     addComment: function(text, postId) {
       dispatch(actions.addComment(text, postId, user.id));
     },
-    addPost: function(text, textFormat) {
-      dispatch(actions.addPost(text, textFormat, user.id));
+    addPost: function(post) {
+      dispatch(actions.addPost(post, user.id));
     }
   };
 })(App);

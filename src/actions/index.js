@@ -13,13 +13,14 @@ export function addComment(text, postId, user) {
   };
 }
 
-export function addPost(text, textFormat, user) {
+export function addPost(post, user) {
   return {
     type: types.ADD_POST,
     post: {
       id: uuid(),
-      format: textFormat,
-      text,
+      format: post.format,
+      text: post.text,
+      user_with_permission: post.user_with_permission,
       author: user,
       comments: []
     }
