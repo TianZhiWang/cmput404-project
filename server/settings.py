@@ -25,7 +25,7 @@ SECRET_KEY = 'mzp9!%qw!n0nf+*3=n0t+$w-1wse@_cq6te-6fz(o44myoot&o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [coolbears.herokuapp.com]
 
 
 # Application definition
