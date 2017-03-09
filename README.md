@@ -30,15 +30,22 @@ First source your virtual envronment!
 > python manage.py runserver
 ```
 # Deploying to Heroku
-Deploy master
+Deploy master  
 ```
+> heroku login
 > git push heroku master
 ```
-Deploy non-master
+Deploy non-master  
 ```
+> heroku login
 > git push heroku branch-name-here:master
 ```
 ## Heroku Tips
+Redeploy  
+```
+git commit --allow-empty -m "Deploying api"
+git push heroku master
+```
 Logs  
 ```
 > heroku logs -t --app coolbears 
