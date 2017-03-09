@@ -30,8 +30,21 @@ First source your virtual envronment!
 > python manage.py runserver
 ```
 # Deploying to Heroku
+Deploy master
 ```
 > git push heroku master
+```
+Deploy non-master
+```
+> git push heroku branch-name-here:master
+```
+## Heroku Tips
+Logs  
+```
+> heroku logs -t --app coolbears 
+```
+Settings  
+```
 heroku config:set DISABLE_COLLECTSTATIC=1
 ```
 
