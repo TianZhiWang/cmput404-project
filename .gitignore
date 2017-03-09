@@ -20,5 +20,6 @@ npm-debug.log
 
 # python virtual environments
 venv
+
 # our persistance
 db.sqlite3
