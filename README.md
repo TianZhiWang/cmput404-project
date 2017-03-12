@@ -50,6 +50,10 @@ Logs
 ```
 > heroku logs -t --app coolbears 
 ```
+Bash 
+```
+> heroku run bash
+```
 Settings  
 ```
 heroku config:set DISABLE_COLLECTSTATIC=1
