@@ -20,10 +20,10 @@ class Post(models.Model):
     contentType = models.CharField(max_length=32)
     author = models.ForeignKey(User)
     visibility = models.CharField(max_length=20, default="PUBLIC", choices=privacyChoices)
+    visibleTo = models.ManyToManyField(User, related_name="visibleTo")
 
     def __unicode__(self):
         return self.title
-
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments')

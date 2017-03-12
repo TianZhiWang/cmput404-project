@@ -82,9 +82,14 @@ Reducer update item in an array: http://redux.js.org/docs/recipes/reducers/Immut
 - [Django Serialization](https://docs.djangoproject.com/en/1.10/topics/serialization/), accessed on March 9, 2017
 - [Django Model field reference](https://docs.djangoproject.com/en/1.10/ref/models/fields/), accessed on March 9, 2017
 - [Django Nested Relations] (http://www.django-rest-framework.org/api-guide/relations/), accessed on March 9, 2017
+- [Django ManyToManyField](https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ManyToManyField), accessed March 12, 2017
+AllPostsAvailableToCurrentUser adheres to visibleTo field
 - Some code in server/quickstart/serializers.py was written by http://stackoverflow.com/a/33048798 joslarson (http://stackoverflow.com/users/3097518/joslarson) on StackOverflow, modified by Kyle Carlstrom (CC-BY-SA 3.0)
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.on_delete (accessed on March 9, 2017)
 - Some code in server/quickstart/models.py is based on code written by http://stackoverflow.com/a/13496120 user1839132 (http://stackoverflow.com/users/1839132/user1839132) and modified by Kyle Carlstrom (CC-BY-SA 3.0)
+
+- Used DRF Docs for documentaions on the Django Rest Framework.  http://drfdocs.com/
+
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).

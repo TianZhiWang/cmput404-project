@@ -10,7 +10,7 @@
 
 from models import Comment, Post, FollowingRelationship
 from django.contrib.auth.models import User
-from serializers import CommentSerializer, PostSerializer, AuthorSerializer, FollowingRelationshipSerializer
+from serializers import CommentSerializer, PostSerializer, AuthorSerializer, FollowingRelationshipSerializer, UserSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -33,12 +33,15 @@ class PostList(generics.ListCreateAPIView):
         }
 
 class PostDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Used for read-write-delete for a single post instance.
+    """
     queryset = Post.objects.all()
     serializer_class = PostSerializer
 
 class CommentList(generics.ListCreateAPIView):
     """
-    List all comments, or create a new comment.
+    List all comments of a post, or create a new comment.
     """
     serializer_class = CommentSerializer
 
@@ -57,6 +60,9 @@ class CommentList(generics.ListCreateAPIView):
             }
 
 class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Used for read-write-delete for a single comment instance.
+    """
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
 
@@ -68,10 +74,16 @@ class AuthorList(generics.ListCreateAPIView):
     serializer_class = AuthorSerializer
 
 class AuthorDetail(generics.RetrieveUpdateDestroyAPIView):
+    """
+    Used for read-write-delete for a single Author instance.
+    """
     queryset = User.objects.all()
     serializer_class = AuthorSerializer
 
 class CurrentFriendsList(generics.ListCreateAPIView):
+    """
+    List all friends of current author
+    """
     serializer_class = AuthorSerializer
 
     def get_queryset(self):
@@ -88,6 +100,9 @@ class CurrentFriendsList(generics.ListCreateAPIView):
         return authors
 
 class FriendsList(generics.ListCreateAPIView):
+    """
+    list all following relationships, or create one
+    """
     queryset = FollowingRelationship.objects.all()
     serializer_class = FollowingRelationshipSerializer
 
@@ -97,13 +112,16 @@ class AllPostsAvailableToCurrentUser(generics.ListAPIView):
 
     def get_queryset(self):
         currentUser = self.request.user
-        print(currentUser.pk)
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
         currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
         friendOfAFriendPosts = self.get_queryset_friends_of_a_friend(currentUser)
         friendPosts = self.get_queryset_friends(currentUser)
         serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY") # TODO: check that user is on our server
-        return publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | friendOfAFriendPosts
+        visibleToPosts = self.get_queryset_visible_to(currentUser)
+        return publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | friendOfAFriendPosts | visibleToPosts
+
+    def get_queryset_visible_to(self, currentUser):
+        return Post.objects.all().filter(visibility="PRIVATE", visibleTo=currentUser)
 
     def get_queryset_friends_of_a_friend(self, currentUser):
         currentUserFriends = self.get_friends_of_authorPK(currentUser.pk)
@@ -129,8 +147,9 @@ class AllPostsAvailableToCurrentUser(generics.ListAPIView):
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
+    "Login and get a response"
     def post(self, request):
-        author = AuthorSerializer(request.user)
+        author = UserSerializer(request.user)
         return Response(data=author.data, status=200)
 
 """
@@ -138,7 +157,7 @@ Will return a 400 if the author exists and 201 created otherwise
 """
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = AuthorSerializer
+    serializer_class = UserSerializer
     permission_classes = (AllowAny,)
     # http://stackoverflow.com/questions/27085219/how-can-i-disable-authentication-in-django-rest-framework#comment63774493_27086121
     authentication_classes = []

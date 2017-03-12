@@ -17,7 +17,7 @@ class FollowingRelationshipSerializer(serializers.ModelSerializer):
         model = FollowingRelationship
         fields = ('user', 'follows')
 
-class AuthorSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     # http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
     def create(self, validated_data):
         user = User.objects.create(**validated_data)
@@ -29,6 +29,11 @@ class AuthorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name')
+
+class AuthorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'username', 'email', 'first_name', 'last_name')
 
 # When we read we get the nested data, but we only have to passed the author_id when we write
 class CommentSerializer(serializers.ModelSerializer):
@@ -53,8 +58,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility')
-    
+        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo')
+
     # TODO: Add proper validation in to_internal_value
     # http://www.django-rest-framework.org/api-guide/serializers/#overriding-serialization-and-deserialization-behavior
     def to_internal_value(self, data):
@@ -64,5 +69,6 @@ class PostSerializer(serializers.ModelSerializer):
             'description': data['description'],
             'contentType': data['contentType'],
             'author': User.objects.get(pk=self.context['author'].id),
-            'visibility': data['visibility']
+            'visibility': data['visibility'],
+            'visibleTo': data['visibleTo']
         }
