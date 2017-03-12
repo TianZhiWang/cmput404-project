@@ -41,6 +41,10 @@ Deploy non-master
 > git push heroku branch-name-here:master
 ```
 ## Heroku Tips
+Migrate
+```
+> heroku run python manage.py migrate
+```
 Redeploy  
 ```
 git commit --allow-empty -m "Deploying api"
