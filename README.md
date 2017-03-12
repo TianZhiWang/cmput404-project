@@ -61,11 +61,15 @@ How to [write a good commit message](https://chris.beams.io/posts/git-commit/).
 
 # Sources
 reactjs: https://facebook.github.io/react/  
+redux: http://redux.js.org/  
 react-redux: https://github.com/reactjs/react-redux  
 react-router: https://github.com/ReactTraining/react-router,https://css-tricks.com/learning-react-router/  
 font-awesome: http://fontawesome.io/  
 es6: http://es6-features.org/  
 npm version: '3.10.8'  
+react-markdown : http://rexxars.github.io/react-markdown/
+  
+Reducer update item in an array: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html#updating-an-item-in-an-array  
 
 - [Django Serialization](https://docs.djangoproject.com/en/1.10/topics/serialization/), accessed on March 9, 2017
 - [Django Model field reference](https://docs.djangoproject.com/en/1.10/ref/models/fields/), accessed on March 9, 2017

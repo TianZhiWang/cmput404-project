@@ -1,0 +1,25 @@
+.create-post {
+    background-color: white;
+    border: $border;
+    padding: 1em 1em 1em 1em;
+    margin-top: 1em;
+
+    .post-options {
+        .post-formats {
+            margin-top: 1em;
+        }
+
+        .buttons {
+            display: flex;
+            margin-top: 0.5em;
+            float: right;
+            * {
+                margin-right: 0.5em;
+            }
+        }
+    }
+    .Select {
+        min-width: 100px;
+        width: 12em;
+    }
+}

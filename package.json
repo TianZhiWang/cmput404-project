@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --progress --colors",
-    "test": "eslint src/ test/ && mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
+    "test": "eslint --ext .jsx --ext .js src/ test/ && mocha --compilers js:babel-core/register --require ignore-styles --recursive ./test",
     "test:nyan": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test --reporter nyan",
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors"
@@ -20,9 +20,12 @@
     "css-loader": "^0.26.2",
     "eslint": "^3.15.0",
     "eslint-plugin-react": "^6.9.0",
+    "ignore-styles": "^5.0.1",
+    "jsdom": "^9.11.0",
     "mocha": "^3.2.0",
     "node-sass": "^4.5.0",
-    "react-addons-test-utils": "^15.4.1",
+    "react-addons-test-utils": "^15.4.2",
+    "redux-mock-store": "^1.2.2",
     "sass-loader": "^6.0.2",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"
@@ -30,18 +33,18 @@
   "dependencies": {
     "babel-preset-stage-0": "^6.16.0",
     "decorative-react": "^0.1.3",
-    "font-awesome": "^4.7.0",
-    "markdown": "^0.5.0",
+    "json-loader": "^0.5.4",
+    "normalizr": "^3.2.2",
     "react": "^15.4.1",
+    "react-bootstrap": "^0.30.7",
     "react-dom": "^15.1.3",
-    "react-fontawesome": "^1.5.0",
-    "react-markdown-editor": "^0.4.0",
-    "react-redux": "^4.0.0",
-    "react-router": "^2.8.1",
-    "redux": "^3.0.4",
-    "redux-logger": "^2.7.4",
-    "redux-promise-middleware": "^4.2.0",
-    "redux-thunk": "^2.1.0",
-    "style-loader": "^0.13.2"
+    "react-markdown": "^2.4.5",
+    "react-redux": "^5.0.3",
+    "react-select": "^1.0.0-rc.3",
+    "redux": "^3.6.0",
+    "redux-logger": "^2.8.2",
+    "redux-thunk": "^2.2.0",
+    "style-loader": "^0.13.2",
+    "uuid": "^3.0.1"
   }
 }

@@ -1,0 +1,21 @@
+.post {
+    margin-top: 1em;
+    border: $border;
+    background-color: white;
+
+    .post-header {
+        padding: 1em 1em 1em 1em;
+    }
+
+    .post-footer {
+        padding: 1em 1em 1em 1em;
+        border-top: $border;
+    }
+
+    .add-comment {
+        display: flex;
+        input {
+            margin-right: 1em;
+        }
+    }
+}

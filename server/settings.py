@@ -25,11 +25,12 @@ SECRET_KEY = 'mzp9!%qw!n0nf+*3=n0t+$w-1wse@_cq6te-6fz(o44myoot&o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['coolbears.herokuapp.com', '127.0.0.1']
-
+ALLOWED_HOSTS = ['coolbears.herokuapp.com', '127.0.0.1', 'localhost']
+# http://stackoverflow.com/a/22360893 stormlifter (http://stackoverflow.com/users/344156/stormlifter)
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Application definition
-
+# https://github.com/ottoyiu/django-cors-headers
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -38,10 +39,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'server.quickstart'
+    'server.quickstart',
+    'corsheaders'
 ]
 
+# https://github.com/ottoyiu/django-cors-headers
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,10 +77,15 @@ WSGI_APPLICATION = 'server.wsgi.application'
 
 # REST Framework
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ],
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 100,
+     # http://www.django-rest-framework.org/api-guide/permissions/#setting-the-permission-policy
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    # http://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+    )
 }
 
 

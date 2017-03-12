@@ -1,0 +1,7 @@
+//Variables
+$primary-color: #6B6C72;
+$primary-color-light: lighten($primary-color, 15%);
+$primary-color-very-light: lighten($primary-color, 50%);
+
+$border-color: rgb(221,221,221);
+$border: 1px solid $border-color;

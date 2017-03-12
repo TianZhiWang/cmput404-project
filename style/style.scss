@@ -1,1 +1,15 @@
 /* Add styles here */
+
+@import 'variables.scss';
+
+//components
+@import 'components/Post.scss';
+@import 'components/Comment.scss';
+@import 'components/CreatePost.scss';
+@import 'components/FriendList.scss';
+@import 'components/UserAccout.scss';
+
+
+body {
+    background-color: $primary-color-very-light;
+}
