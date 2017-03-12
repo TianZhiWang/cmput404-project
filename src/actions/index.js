@@ -1,6 +1,14 @@
 import * as types from '../types';
 import uuid from 'uuid/v1';
 
+
+let baseUrl = 'http://localhost:8000';
+/*eslint-disable */
+if (process.env.NODE_ENV==='production') {
+  baseUrl = 'https://coolbears.herokuapp.com/';
+}
+/*eslint-enable */
+
 export function addComment(comment, postId, user) {
  //call api
  
@@ -16,7 +24,7 @@ export function addComment(comment, postId, user) {
   // };
   return function(dispatch) {
    
-    fetch(`http://localhost:8000/posts/${String(postId)}/comments/`, {
+    fetch(`${baseUrl}/posts/${String(postId)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -46,7 +54,7 @@ export function addPost(post, user) {
   return function(dispatch) {
 
    
-    fetch('http://localhost:8000/posts/', {
+    fetch('${baseUrl}/posts/', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -86,7 +94,7 @@ function finishLoadingPosts(result) {
 export function loadPosts(user) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch("http://localhost:8000/authors/posts/",{
+    return fetch("${baseUrl}/authors/posts/",{
       method: 'GET',
       headers: {
         // http://stackoverflow.com/questions/30203044/using-an-authorization-header-with-fetch-in-react-native
@@ -112,7 +120,7 @@ function logIn(user) {
 export function attempLogin(username, password) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch('http://localhost:8000/login/', {
+    return fetch('${baseUrl}/login/', {
       method: 'POST',
       headers: {
         'Authorization': 'Basic '+btoa(username + ":" + password)
@@ -139,7 +147,7 @@ export function attempLogin(username, password) {
 export function attemptRegister(username, password) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch('http://localhost:8000/register/', {
+    return fetch('${baseUrl}/register/', {
       method: 'POST',
       headers: {
         'Authorization': 'Basic '+btoa(username + ":" + password),
