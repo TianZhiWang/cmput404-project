@@ -9,7 +9,9 @@ class CreatePost extends Component {
     super(props);
     this.state = this.getInitialState();
 
-    this.handleTextChange = this.handleTextChange.bind(this);
+    this.handleTitleChange = this.handleTitleChange.bind(this);
+    this.handleContentChange = this.handleContentChange.bind(this);
+    this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleContentTypeChange = this.handleContentTypeChange.bind(this);
     this.handlePost = this.handlePost.bind(this);
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
@@ -19,13 +21,27 @@ class CreatePost extends Component {
     return {
       permission: PERMISSIONS.FRIENDS.value,
       title: '',
+      description: '',
+      content: '',
       contentType: 'plaintext'
     };
   }
 
-  handleTextChange(event) {
+  handleTitleChange(event) {
     this.setState({
       title: event.target.value
+    });
+  }
+
+  handleContentChange(event) {
+    this.setState({
+      content: event.target.value
+    });
+  }
+
+  handleDescriptionChange(event) {
+    this.setState({
+      description: event.target.value
     });
   }
 
@@ -40,12 +56,15 @@ class CreatePost extends Component {
   }
 
   handlePost() {
-    if (this.state.title) {
+    if (this.state.content) {
       this.props.addPost({
+        content: this.state.content,
         title: this.state.title,
-        format: this.state.contentType,
+        description: this.state.description,
+        contentType: this.state.contentType,
         permission: this.state.permission,
-        user_with_permission: this.state.user_with_permission
+        // user_with_permission: this.state.user_with_permission
+        "comments": []
       });
 
       this.setState(this.getInitialState());
@@ -88,8 +107,19 @@ class CreatePost extends Component {
         <FormControl
           type='text'
           value={this.state.title}
+          placeholder='title'
+          onChange={this.handleTitleChange}/>
+        <FormControl
+          type='text'
+          value={this.state.content}
           placeholder='Whats on your mind?'
-          onChange={this.handleTextChange}/>
+          onChange={this.handleContentChange}/>
+        <FormControl
+          type='text'
+          value={this.state.description}
+          placeholder='description?'
+          onChange={this.handleDescriptionChange}/>
+
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio

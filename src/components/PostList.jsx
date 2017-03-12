@@ -8,6 +8,8 @@ class PostList extends Component {
         {this.props.posts.map(post => (
           <Post key={post.id}
             addComment={this.props.addComment}
+            author={post.author}
+
             {...post}
           />
         ))}

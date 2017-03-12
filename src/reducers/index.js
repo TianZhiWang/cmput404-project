@@ -3,6 +3,7 @@ import * as types from '../types';
 import schema from '../schema';
 import {normalize} from 'normalizr';
 
+
 function posts(state=[], action) {
   switch (action.type) {
   case types.ADD_COMMENT:
