@@ -5,7 +5,7 @@ import CreatePost from './CreatePost';
 import FriendList from './FriendList';
 import PostList from './PostList';
 import Sidebar from './Sidebar';
-import UserAccount from './UserAccount'
+import UserAccount from './UserAccount';
 import '../../style/style.scss';
 import * as actions from '../actions';
 import schema from '../schema';
@@ -37,7 +37,7 @@ class App extends Component {
 
   render() {
     // TODO: hardcoded login status
-    let isLoggedIn = true;
+    const isLoggedIn = true;
 
     const contentPosts = () => (
         <Col md={9}>
@@ -82,12 +82,12 @@ class App extends Component {
           </Grid>
         </div>
       );
-   }else{
+    }else{
 
-    return(
+      return(
       <UserAccount/>
-    );
-   }
+      );
+    }
   }
 }
 

@@ -37,7 +37,7 @@ function finishLoadingPosts(result) {
 export function loadPosts() {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch("http://" + window.location.hostname + ":8000/posts/")
+    return fetch(`http://${  window.location.hostname  }:8000/posts/`)
       .then(res => res.json())
       .then(res => {
         dispatch(finishLoadingPosts(res.results));

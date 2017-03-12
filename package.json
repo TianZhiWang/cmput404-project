@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "webpack-dev-server --progress --colors",
-    "test": "eslint src/ test/ && mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test",
+    "test": "eslint src/ test/ && mocha --compilers js:babel-core/register --require ignore-styles --recursive ./test",
     "test:nyan": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test --reporter nyan",
     "test:watch": "npm run test -- --watch",
     "build": "webpack --progress --colors"
@@ -20,9 +20,12 @@
     "css-loader": "^0.26.2",
     "eslint": "^3.15.0",
     "eslint-plugin-react": "^6.9.0",
+    "ignore-styles": "^5.0.1",
+    "jsdom": "^9.11.0",
     "mocha": "^3.2.0",
     "node-sass": "^4.5.0",
-    "react-addons-test-utils": "^15.4.1",
+    "react-addons-test-utils": "^15.4.2",
+    "redux-mock-store": "^1.2.2",
     "sass-loader": "^6.0.2",
     "webpack": "^1.12.9",
     "webpack-dev-server": "^1.14.0"
