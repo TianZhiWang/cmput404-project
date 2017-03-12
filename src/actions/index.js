@@ -34,7 +34,7 @@ export function addPost(post, user) {
     fetch('http://localhost:8000/posts/', {
       method: 'POST',
       headers: {
-        'Authorization': 'Basic '+btoa(user.username+":"+user.password), 
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
         'Content-Type': 'application/x-www-form-urlencoded',
         'Accept': 'application/json'
       },
@@ -73,7 +73,7 @@ export function loadPosts(user) {
       method: 'GET',
       headers: {
         // http://stackoverflow.com/questions/30203044/using-an-authorization-header-with-fetch-in-react-native
-        'Authorization': 'Basic '+btoa(user.username+":"+user.password), 
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
         'Content-Type': 'application/x-www-form-urlencoded'
       }
 

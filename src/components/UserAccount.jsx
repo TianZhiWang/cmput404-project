@@ -12,35 +12,54 @@ class UserAccount extends Component {
     this.switchSignUp = this.switchSignUp.bind(this);
   }
   switchLogIn() {
-    this.setState({type:"login"})
+    this.setState({type:"login"});
   }
 
   switchSignUp(){
-    this.setState({type:"signup"})
+    this.setState({type:"signup"});
   }
 
   render() {
-    let logInContent = ()=>(
+    const logInContent = ()=>(
       <Panel className="wrapper">
         <form >       
           <h2>Please login</h2>
-          <FormControl type="text" name="username" placeholder="Email Address" required autoFocus />
-          <FormControl type="password" name="password" placeholder="Password" required />      
+          <FormControl type="text" 
+          name="username" 
+          placeholder="Email Address" 
+          required 
+          autoFocus />
+          <FormControl type="password" 
+          name="password" 
+          placeholder="Password" 
+          required />      
           <a onClick = {this.switchSignUp} >need an account?</a>
-          <Button className="btn btn-lg btn-primary btn-block user-button-login" type="submit">Login</Button>   
+          <Button className="btn btn-lg btn-primary btn-block user-button-login" 
+          type="submit">Login</Button>   
         </form>
       </Panel>
     );
 
-    let signUpContent = () => (
+    const signUpContent = () => (
       <Panel className="wrapper">
         <form >       
           <h2>Sign Up</h2>
-          <FormControl type="text" name="username" placeholder="Email Address" required autoFocus />
-          <FormControl type="password" name="password" placeholder="Password" required />     
-          <FormControl type="password" name="password" placeholder="Re-Enter PW" required />  
+          <FormControl type="text" 
+          name="username" 
+          placeholder="Email Address" 
+          required 
+          autoFocus />
+          <FormControl type="password" 
+          name="password" 
+          placeholder="Password" 
+          required />     
+          <FormControl type="password" 
+          name="password" 
+          placeholder="Re-Enter PW" 
+          required />  
           <a onClick = {this.switchLogIn} >have an account already?</a>
-          <Button className="btn btn-lg btn-primary btn-block user-button-login" type="submit">Register</Button>   
+          <Button className="btn btn-lg btn-primary btn-block user-button-login" 
+          type="submit">Register</Button>   
         </form>
       </Panel>
     );

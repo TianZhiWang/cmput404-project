@@ -71,8 +71,10 @@ Post.propTypes = {
   addComment: PropTypes.func.isRequired,
   author: PropTypes.object.isRequired,
   comments: PropTypes.array,   
+  content: PropTypes.string.isRequired,
+  description: PropTypes,
   id: PropTypes.number.isRequired,
-  content: PropTypes.string.isRequired
+  title: PropTypes.string.isRequired
 };
 
 export default Post;

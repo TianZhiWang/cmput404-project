@@ -11,16 +11,14 @@ describe('<Post>', function () {
     author: {
       displayname: "Aaa"
     },
-    id: "11",
+    id: 1,
     title: "Aaa",
     comments: [],
-    addComment: function () {return 1;}
+    addComment: function () {},
+    content: ""
   };
   it('Should render', () => {
     const wrapper = shallow(<Post {...props}/>);
-
-    assert.equal(wrapper.find('CommentList').length, 1);
-    assert.equal(wrapper.find('Button').length, 1);
-    assert.equal(wrapper.find('FormControl').length, 1);
+    assert.equal(wrapper.find('.post').length, 1);
   });
 });
