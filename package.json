@@ -7,7 +7,8 @@
     "test": "eslint --ext .jsx --ext .js src/ test/ && mocha --compilers js:babel-core/register --require ignore-styles --recursive ./test",
     "test:nyan": "mocha --compilers js:babel-core/register --require ./test/test_helper.js --recursive ./test --reporter nyan",
     "test:watch": "npm run test -- --watch",
-    "build": "webpack --progress --colors"
+    "build": "webpack --progress --colors",
+    "postinstall": "node_modules/webpack/bin/webpack.js"
   },
   "author": "",
   "license": "ISC",
@@ -31,9 +32,16 @@
     "webpack-dev-server": "^1.14.0"
   },
   "dependencies": {
+    "babel-core": "^6.22.1",
+    "babel-loader": "^6.2.10",
+    "babel-plugin-transform-decorators-legacy": "^1.3.4",
+    "babel-preset-es2015": "^6.16.0",
+    "babel-preset-react": "^6.16.0",
     "babel-preset-stage-0": "^6.16.0",
+    "css-loader": "^0.26.2",
     "decorative-react": "^0.1.3",
     "json-loader": "^0.5.4",
+    "node-sass": "^4.5.0",    
     "normalizr": "^3.2.2",
     "react": "^15.4.1",
     "react-bootstrap": "^0.30.7",
@@ -44,7 +52,9 @@
     "redux": "^3.6.0",
     "redux-logger": "^2.8.2",
     "redux-thunk": "^2.2.0",
+    "sass-loader": "^6.0.2",
     "style-loader": "^0.13.2",
-    "uuid": "^3.0.1"
+    "uuid": "^3.0.1",
+    "webpack": "^1.12.9"
   }
 }
