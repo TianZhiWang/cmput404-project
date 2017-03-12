@@ -26,3 +26,4 @@ venv
 db.sqlite3
 
 migrations
+server/quickstart/migrations
