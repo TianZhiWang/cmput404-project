@@ -24,7 +24,7 @@ export function addComment(comment, postId, user) {
   // };
   return function(dispatch) {
    
-    fetch(`${baseUrl}/posts/${String(postId)}/comments/`, {
+    fetch(`/posts/${String(postId)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -54,7 +54,7 @@ export function addPost(post, user) {
   return function(dispatch) {
 
    
-    fetch('${baseUrl}/posts/', {
+    fetch('/posts/', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -94,7 +94,7 @@ function finishLoadingPosts(result) {
 export function loadPosts(user) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch("${baseUrl}/authors/posts/",{
+    return fetch("/authors/posts/",{
       method: 'GET',
       headers: {
         // http://stackoverflow.com/questions/30203044/using-an-authorization-header-with-fetch-in-react-native
@@ -120,7 +120,7 @@ function logIn(user) {
 export function attempLogin(username, password) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch('${baseUrl}/login/', {
+    return fetch('/login/', {
       method: 'POST',
       headers: {
         'Authorization': 'Basic '+btoa(username + ":" + password)
@@ -147,7 +147,7 @@ export function attempLogin(username, password) {
 export function attemptRegister(username, password) {
   return function(dispatch) {
     // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    return fetch('${baseUrl}/register/', {
+    return fetch('/register/', {
       method: 'POST',
       headers: {
         'Authorization': 'Basic '+btoa(username + ":" + password),
