@@ -46,6 +46,13 @@ function app(state={loggedIn: false, activeTab: 'stream'}, action) {
       loggedIn: true,
       user: action.user
     };
+  case types.LOGGED_IN_FAILED:
+    return {
+      ...state,
+      loggedIn: false,
+      loggedInFail: true,
+      user: action.user
+    };
   case types.SWITCH_TABS:
     return {
       ...state,

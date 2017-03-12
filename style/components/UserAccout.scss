@@ -15,4 +15,13 @@ body {
 	margin-top:1em;
 }
 
+.login-status {
+    text-align: center;
+    color: $error-color;
+}
 
+.admin-login {
+    position: fixed;
+    bottom: 1em;
+    right: 1em;
+}

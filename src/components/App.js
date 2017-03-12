@@ -58,6 +58,7 @@ class App extends Component {
         <UserAccount
           attemptLogin={this.props.attempLogin}
           attemptRegister={this.props.attemptRegister}
+          loggedInFail={this.props.loggedInFail}
         />
       );
     }
@@ -73,6 +74,7 @@ App.propTypes = {
   friends: PropTypes.object.isRequired,
   loadPosts: PropTypes.func.isRequired,
   loggedIn: PropTypes.bool.isRequired,
+  loggedInFail: PropTypes.bool,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired
 };
@@ -84,6 +86,7 @@ export default connect(
       posts: stateProps.posts,
       friends: stateProps.friends,
       loggedIn: stateProps.app.loggedIn,
+      loggedInFail: stateProps.app.loggedInFail,
       user: stateProps.app.user,
       activeTab: stateProps.app.activeTab
     };
