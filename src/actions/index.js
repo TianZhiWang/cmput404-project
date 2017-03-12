@@ -1,14 +1,6 @@
 import * as types from '../types';
 import uuid from 'uuid/v1';
 
-
-let baseUrl = 'http://localhost:8000';
-/*eslint-disable */
-if (process.env.NODE_ENV==='production') {
-  baseUrl = 'https://coolbears.herokuapp.com/';
-}
-/*eslint-enable */
-
 export function addComment(comment, postId, user) {
  //call api
  
