@@ -8,8 +8,6 @@ import Sidebar from './Sidebar';
 import UserAccount from './UserAccount';
 import '../../style/style.scss';
 import * as actions from '../actions';
-import schema from '../schema';
-import {denormalize} from 'normalizr';
 
 
 class App extends Component {
@@ -19,10 +17,6 @@ class App extends Component {
       content : "posts-list"
     };
     this.updateContent=this.updateContent.bind(this);
-  }
-
-  componentDidMount() {
-    this.props.loadPosts();
   }
 
   updateContent(key){
@@ -36,6 +30,7 @@ class App extends Component {
 
 
   render() {
+    console.log(user)
     // TODO: hardcoded login status
     const isLoggedIn = true;
 
@@ -43,11 +38,12 @@ class App extends Component {
         <Col md={9}>
           <CreatePost
             addPost={this.props.addPost}
-            users={this.props.users}
+            users={[]}
           />
           <PostList
             posts={this.props.posts}
             addComment={this.props.addComment}
+            loadPosts={this.props.loadPosts}
           />
         </Col>
       );
@@ -96,8 +92,7 @@ App.propTypes = {
   addPost: PropTypes.func.isRequired,
   friends: PropTypes.object.isRequired,
   loadPosts: PropTypes.func.isRequired,
-  posts: PropTypes.array.isRequired,
-  users: PropTypes.array.isRequired
+  posts: PropTypes.array.isRequired
   
 };
 
@@ -111,14 +106,13 @@ const user = {
 export default connect(
   function(stateProps, ownProps) {
     return {
-      posts: denormalize(Object.keys(stateProps.posts), schema, stateProps),
-      users: Object.values(stateProps.users),
+      posts: stateProps.posts,
       friends: stateProps.friends
     };
   }, function(dispatch, ownProps) {
   return {
     addComment: function(text, postId) {
-      dispatch(actions.addComment(text, postId, user.id));
+      dispatch(actions.addComment(text, postId, user));
     },
     addPost: function(post) {
       dispatch(actions.addPost(post, user));

@@ -2,6 +2,9 @@ import React, {Component, PropTypes} from 'react';
 import Post from './Post';
 
 class PostList extends Component {
+  componentDidMount() {
+    this.props.loadPosts();
+  }
   render() {
     return (
       <div className='post-list'>
@@ -20,6 +23,7 @@ class PostList extends Component {
 
 PostList.propTypes = {
   addComment: PropTypes.func.isRequired,
+  loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired
 };
 
