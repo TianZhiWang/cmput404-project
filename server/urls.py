@@ -23,12 +23,9 @@ from django.views.generic import TemplateView
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     url(r'^posts/(?P<post>[0-9]+)/comments/$', views.CommentList.as_view()),
-    url(r'^posts/(?P<post>[0-9]+)/comments/(?P<pk>[0-9]+)/$', views.CommentDetail.as_view()),
     url(r'^posts/$', views.PostList.as_view()),
-    url(r'^posts/(?P<pk>[0-9]+)/$', views.PostDetail.as_view()),
     url(r'^authors/$', views.AuthorList.as_view()),
     url(r'^authors/posts/$', views.AllPostsAvailableToCurrentUser.as_view()),
-    url(r'^authors/(?P<pk>[0-9]+)/$', views.AuthorDetail.as_view()),
     url(r'^authors/(?P<pk>[0-9]+)/friends/$', views.CurrentFriendsList.as_view()),
     url(r'^authors/(?P<pk>[0-9]+)/following/$', views.CurrentFollowingList.as_view()),
     url(r'^friendrequest/$', views.FriendsList.as_view()),

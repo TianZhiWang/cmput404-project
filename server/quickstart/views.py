@@ -22,7 +22,7 @@
 # SOFTWARE.
 from models import Comment, Post, FollowingRelationship
 from django.contrib.auth.models import User
-from serializers import CommentSerializer, PostSerializer, AuthorSerializer, FollowingRelationshipSerializer, UserSerializer
+from serializers import CommentSerializer, PostSerializer, UserSerializer, FollowingRelationshipSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -51,19 +51,6 @@ class PostList(generics.ListCreateAPIView):
             'author': self.request.user
         }
 
-class PostDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Used for read-write-delete for a single post instance.
-
-    get: 
-    returns a single instance of post
-
-    delete: 
-    delete a single instance of post
-    """
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-
 class CommentList(generics.ListCreateAPIView):
     """
     List all comments of a post, or create a new comment.
@@ -89,20 +76,7 @@ class CommentList(generics.ListCreateAPIView):
             'author': self.request.user
             }
 
-class CommentDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Used for read-write-delete for a single comment instance.
-
-    get:
-    Returns a single instance of a comment
-
-    delete:
-    removes a single instance of a comment
-    """
-    queryset = Comment.objects.all()
-    serializer_class = CommentSerializer
-
-class AuthorList(generics.ListCreateAPIView):
+class AuthorList(APIView):
     """
     List all authors, or create a new author.
 
@@ -113,20 +87,21 @@ class AuthorList(generics.ListCreateAPIView):
     Create a new instance of an Author
     """
     queryset = User.objects.all()
-    serializer_class = AuthorSerializer
 
-class AuthorDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Used for read-write-delete for a single Author instance.
+    def get(self, request, format=None):
+        currentUser = request.user.id
+        users = User.objects.all()
+        followed = FollowingRelationship.objects.filter(user=currentUser).values('follows')
+        followedUsers = User.objects.filter(id__in=followed)
+        following = FollowingRelationship.objects.filter(follows=currentUser).values('user')
+        followingUsers = User.objects.filter(id__in=following)
 
-    get: 
-    Return the details of a single instance of author
-
-    delete:
-    Removes a single instance of Author
-    """
-    queryset = User.objects.all()
-    serializer_class = AuthorSerializer
+        formattedUsers = []
+        for user in users:
+            author = {'username': user.username, 'id': user.id, 'isFollowing': (user in followingUsers), 'isFollowed': (user in followedUsers)}
+            formattedUsers.append(author)
+        
+        return Response(formattedUsers)
 
 class CurrentFriendsList(generics.ListCreateAPIView):
     """
@@ -135,7 +110,7 @@ class CurrentFriendsList(generics.ListCreateAPIView):
     get: 
     Return a list of all the posts the current instance of author is friends with
     """
-    serializer_class = AuthorSerializer
+    serializer_class = UserSerializer
 
     def get_queryset(self):
         following_pks = []
@@ -170,7 +145,7 @@ class CurrentFollowingList(generics.ListCreateAPIView):
     get:
     Returns a list of all authors the current author is following but not firends with
     """
-    serializer_class = AuthorSerializer
+    serializer_class = UserSerializer
     def get_queryset(self):
         following_pks = []
         authorPK = self.kwargs['pk']

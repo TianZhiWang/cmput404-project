@@ -1,7 +1,7 @@
 # MIT License
 
 # Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup),
-# and darkterror (http://stackoverflow.com/users/3464760/darkterror)
+# and darkterror (http://stackoverflow.com/users/3464760/darkterror), Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan)
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -31,7 +31,6 @@ class FollowingRelationshipSerializer(serializers.ModelSerializer):
         model = FollowingRelationship
         fields = ('user', 'follows')
 
-# TODO: Refactor to use only one of UserSerializer or AuthorSerializer
 # Serializes the User Model
 class UserSerializer(serializers.ModelSerializer):
     # http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
@@ -45,51 +44,49 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name')
-
-# TODO: Refactor to use only one of UserSerializer or AuthorSerializer
-# Serializes the User Model
-class AuthorSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+        # http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
+        extra_kwargs = {
+            'password': {
+                'write_only': True
+            }
+        }
 
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
 class CommentSerializer(serializers.ModelSerializer):
-    author = AuthorSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
     class Meta:
         model = Comment
         fields=('id', 'comment', 'author')
 
-    # TODO: Add proper validation in to_internal_value
-    # http://stackoverflow.com/a/38606711 darkterror (http://stackoverflow.com/users/3464760/darkterror) (MIT)
-    def to_internal_value(self, data):
-        return {
-            'comment': data['comment'],
-            'author': User.objects.get(pk=self.context['author'].id),
-            'post': Post.objects.get(pk=self.context['post']),
-        }
+    # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
+    def create(self, validated_data):
+        comment = validated_data['comment']
+        author = User.objects.get(pk=self.context['author'].id)
+        post = Post.objects.get(pk=self.context['post'])
+        return Comment.objects.create(comment=comment, author=author, post=post)
 
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
 # http://www.django-rest-framework.org/api-guide/relations/#api-reference
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
-    author = AuthorSerializer(read_only=True)
+    author = UserSerializer(read_only=True)
 
     class Meta:
         model = Post
         fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo')
 
-    # TODO: Add proper validation in to_internal_value
-    # http://stackoverflow.com/a/38606711 darkterror (http://stackoverflow.com/users/3464760/darkterror) (MIT)
-    def to_internal_value(self, data):
-        return {
-            'title': data['title'],
-            'content': data['content'],
-            'description': data['description'],
-            'contentType': data['contentType'],
-            'author': User.objects.get(pk=self.context['author'].id),
-            'visibility': data['visibility'],
-            'visibleTo': data['visibleTo']
-        }
+    # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
+    # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
+    # http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0),
+    # modified by Kyle Carlstrom
+    def create(self, validated_data):
+        author = User.objects.get(pk=self.context['author'].id)
+        visibleTo = validated_data['visibleTo']
+        del validated_data['visibleTo']
+        post = Post.objects.create(author=author, **validated_data)
+        post.save()
+        for user in visibleTo:
+            post.visibleTo.add(user)
+        return post

@@ -100,6 +100,8 @@ Libraries are listed in package.json and requirements.txt
 - src/actions/index.js https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 - Used DRF Docs for documentaions on the Django Rest Framework.  http://drfdocs.com/
 - https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+- server/quickstart/serializers.py http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
+- Serializing many to many field http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0)
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).
