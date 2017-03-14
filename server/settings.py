@@ -26,7 +26,7 @@ SECRET_KEY = 'mzp9!%qw!n0nf+*3=n0t+$w-1wse@_cq6te-6fz(o44myoot&o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['coolbears.herokuapp.com', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['coolbears.herokuapp.com', '127.0.0.1', 'localhost', 'coolbear.herokuapp.com']
 # http://stackoverflow.com/a/22360893 stormlifter (http://stackoverflow.com/users/344156/stormlifter)
 CORS_ORIGIN_ALLOW_ALL = True
 
