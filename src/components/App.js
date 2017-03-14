@@ -56,7 +56,7 @@ App.propTypes = {
   loggedInFail: PropTypes.bool,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
+  user: PropTypes.object,
   users: PropTypes.array.isRequired
 };
 
@@ -109,7 +109,6 @@ export default connect(
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
-
       }
     };
   })(App);

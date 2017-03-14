@@ -68,8 +68,8 @@ class CreatePost extends Component {
         description: this.state.description,
         contentType: this.state.contentType,
         permission: this.state.permission,
-        // user_with_permission: this.state.user_with_permission
-        "comments": []
+        user_with_permission: this.state.user_with_permission,
+        comments: []
       });
 
       this.setState(this.getInitialState());
@@ -115,15 +115,15 @@ class CreatePost extends Component {
         value: PERMISSIONS.FRIENDS_OF_FRIENDS.value,
         label: PERMISSIONS.FRIENDS_OF_FRIENDS.label
       }, {
-        value: PERMISSIONS.SELF.value,
-        label: PERMISSIONS.SELF.label
+        value: PERMISSIONS.PRIVATE.value,
+        label: PERMISSIONS.PRIVATE.label
       }
     ];
     const options = [
       ...staticOptions,
       ...this.props.users.map(user => ({
         label: user.username,
-        value: PERMISSIONS.USER.value,
+        value: PERMISSIONS.PRIVATE.value,
         user: user.id
       }))
     ];
@@ -160,10 +160,11 @@ class CreatePost extends Component {
           </ButtonGroup>
           <div className='buttons'>
             <Select
-            name='permissions'
-            onChange={this.handlePermissionChange}
-            options={options}
-            value={this.state.permission}
+              clearable={false}
+              name='permissions'
+              onChange={this.handlePermissionChange}
+              options={options}
+              value={this.state.permission}
             />
             <Button
               onClick={this.handleImageUpload}>

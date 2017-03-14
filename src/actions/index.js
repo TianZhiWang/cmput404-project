@@ -57,7 +57,7 @@ export function addPost(post, user) {
         author: user.id,
         comments: post.comments,
         visibility:post.permission,
-        visibleTo: []
+        visibleTo: post.user_with_permission ? [post.user_with_permission] : []
       }),
     })
     .then(res => res.json())

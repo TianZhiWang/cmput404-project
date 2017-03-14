@@ -52,6 +52,7 @@ class Post extends Component {
       );
     }
   }
+
   handleDeletePost(){
     const post = {
       id : this.props.id,
@@ -61,9 +62,13 @@ class Post extends Component {
   }
 
   deleteButtonHandler(){
-    if (this.props.user.username == this. props.author.username){
-      return <Button bsStyle="danger" 
-      onClick = {this.handleDeletePost} >delete </Button>;
+    if (this.props.user.username == this.props.author.username){
+      return (
+        <Button bsStyle="danger" 
+          onClick={this.handleDeletePost}>
+          Delete Post
+        </Button>
+      );
     }
   }
 

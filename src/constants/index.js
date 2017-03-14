@@ -14,13 +14,9 @@ export const PERMISSIONS = Object.freeze({
     value: 'FOAF',
     label: 'Friends of Friends'
   }),
-  SELF: Object.freeze({
+  PRIVATE: Object.freeze({
     value: 'PRIVATE',
-    label: 'Self'
-  }),
-  USER: Object.freeze({
-    value: 'PRIVATE',
-    label: 'User'
+    label: 'Private'
   }),
   SERVERONLY: Object.freeze({
     value: 'SERVERONLY',
