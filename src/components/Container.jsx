@@ -36,7 +36,7 @@ class Container extends Component {
     const contentFriends = () => (
         <Col md={9}>
           <FriendList
-            changeFollowStatus={this.props.changeFollowStatus}
+            toggleFollowStatus={this.props.toggleFollowStatus}
             users={this.props.users}
           />
         </Col>
@@ -62,12 +62,12 @@ Container.propTypes = {
   activeTab: PropTypes.string.isRequired,
   addComment: PropTypes.func.isRequired,
   addPost: PropTypes.func.isRequired,
-  changeFollowStatus: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,
   getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,
+  toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
   users: PropTypes.array.isRequired
 };

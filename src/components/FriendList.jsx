@@ -12,8 +12,8 @@ class FriendList extends Component {
         {people.map(friend => (
           <FriendListItem
             key={friend.id}
-            changeFollowStatus={this.props.changeFollowStatus}
-            {...friend}
+            toggleFollowStatus={this.props.toggleFollowStatus}
+            user={friend}
           />
         ))}
       </ListGroup>
@@ -23,18 +23,18 @@ class FriendList extends Component {
     return (
       <div className='friend-page'>
         <h2>Friends</h2>
-        {this.createUserList(this.props.users.filter(user => user.isFriend))}
+        {this.createUserList(this.props.users.filter(user => (user.isFollowed && user.isFollowing)))}
         <h2>Following</h2>
-        {this.createUserList(this.props.users.filter(user => user.isFollowing))}
+        {this.createUserList(this.props.users.filter(user => (user.isFollowing & !user.isFollowed)))}
         <h2>Everyone Else</h2>
-        {this.createUserList(this.props.users.filter(user => !(user.isFriend || user.isFollowing)))}
+        {this.createUserList(this.props.users.filter(user => !user.isFollowing))}
       </div>
     );
   }
 }
 
 FriendList.propTypes = {
-  changeFollowStatus: PropTypes.func.isRequired,
+  toggleFollowStatus: PropTypes.func.isRequired,
   users: PropTypes.array.isRequired
 };
 

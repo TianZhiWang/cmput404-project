@@ -29,6 +29,7 @@ from rest_framework.response import Response
 from rest_framework import status, generics
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
+from django.shortcuts import get_object_or_404
 
 
 class PostList(generics.ListCreateAPIView):
@@ -86,15 +87,13 @@ class AuthorList(APIView):
     post:
     Create a new instance of an Author
     """
-    queryset = User.objects.all()
-
     def get(self, request, format=None):
         currentUser = request.user.id
         users = User.objects.all()
-        followed = FollowingRelationship.objects.filter(user=currentUser).values('follows')
-        followedUsers = User.objects.filter(id__in=followed)
-        following = FollowingRelationship.objects.filter(follows=currentUser).values('user')
+        following = FollowingRelationship.objects.filter(user=currentUser).values('follows')
         followingUsers = User.objects.filter(id__in=following)
+        followed = FollowingRelationship.objects.filter(follows=currentUser).values('user')
+        followedUsers = User.objects.filter(id__in=followed)
 
         formattedUsers = []
         for user in users:
@@ -125,18 +124,21 @@ class CurrentFriendsList(generics.ListCreateAPIView):
         authors = User.objects.filter(pk__in=friends)
         return authors
 
-class FriendsList(generics.ListCreateAPIView):
-    """
-    list all following relationships, or create one
+class FollowingRelationshipList(APIView):
+    def post(self, request, format=None):
+        user = get_object_or_404(User, pk=request.data['user'])
+        follows = get_object_or_404(User, pk=request.data['follows'])
 
-    get:
-    Return a list of all the following relationships
+        FollowingRelationship.objects.create(user=user, follows=follows)
+        return Response(status=201)
 
-    post:
-    Create a single instance of following realationship
-    """
-    queryset = FollowingRelationship.objects.all()
-    serializer_class = FollowingRelationshipSerializer
+class FollowingRelationshipDetail(APIView):
+    def delete(self, request, pk, format=None):
+        user = request.user
+        follows = get_object_or_404(User, pk=pk)
+        relationship = get_object_or_404(FollowingRelationship, user=user, follows=follows)
+        relationship.delete()
+        return Response(status=204)
 
 class CurrentFollowingList(generics.ListCreateAPIView):
     """

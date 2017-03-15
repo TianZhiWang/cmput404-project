@@ -76,6 +76,16 @@ export function users(state=[], action){
     return [
       ...action.users
     ];
+  case types.TOGGLE_FOLLOWER:
+    return state.map(user => {
+      if (user.id === action.otherUser.id) {
+        return {
+          ...user,
+          isFollowing: !user.isFollowing
+        };
+      }
+      return user;
+    });
   default:
     return state;
   }

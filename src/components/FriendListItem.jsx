@@ -9,21 +9,16 @@ class FriendListItem extends Component {
   constructor(props) {
     super(props);
 
-    this.follow = this.follow.bind(this);
-    this.unfollow = this.unfollow.bind(this);
+    this.handleFollowStatusChange = this.handleFollowStatusChange.bind(this);
   }
 
-  follow() {
-    this.props.changeFollowStatus(true, this.props.id);
+  handleFollowStatusChange() {
+    this.props.toggleFollowStatus(this.props.user);
   }
 
-  unfollow() {
-    this.props.changeFollowStatus(false, this.props.id);
-  }
-
-  createGlyphiconButton(glyph, follow) {
+  createGlyphiconButton(glyph) {
     return (
-      <Button onClick={follow ? this.follow : this.unfollow}>
+      <Button onClick={this.handleFollowStatusChange}>
         <Glyphicon glyph={glyph}/>
       </Button>
     );
@@ -31,10 +26,10 @@ class FriendListItem extends Component {
   render() {
     return (
       <ListGroupItem className='friend-list-item'>
-          <span >{this.props.username}</span>
+          <span>{this.props.user.username}</span>
           <span className="friend-list-button-group">
-            {(!this.props.isFollowing && !this.props.isFriend) && this.createGlyphiconButton('ok', true)}
-            {this.props.isFollowing && this.createGlyphiconButton('remove', false)}
+            {(!this.props.user.isFollowing) && this.createGlyphiconButton('ok')}
+            {this.props.user.isFollowing && this.createGlyphiconButton('remove')}
           </span>
       </ListGroupItem>
     );
@@ -42,11 +37,8 @@ class FriendListItem extends Component {
 }
 
 FriendListItem.propTypes = {
-  changeFollowStatus: PropTypes.func.isRequired,
-  id: PropTypes.number.isRequired,
-  isFollowing: PropTypes.bool.isRequired,
-  isFriend: PropTypes.bool.isRequired,
-  username: PropTypes.string.isRequired
+  toggleFollowStatus: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
 };
 
 export default FriendListItem;

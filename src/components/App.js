@@ -20,7 +20,7 @@ class App extends Component {
           activeTab={this.props.activeTab}
           addComment={this.props.addComment}
           addPost={this.props.addPost}
-          changeFollowStatus={this.props.changeFollowStatus}
+          toggleFollowStatus={this.props.toggleFollowStatus}
           getUsers={this.props.getUsers}
           loadPosts={this.props.loadPosts}
           posts={this.props.posts}
@@ -48,7 +48,6 @@ App.propTypes = {
   addPost: PropTypes.func.isRequired,
   attempLogin: PropTypes.func.isRequired,
   attemptRegister: PropTypes.func.isRequired,
-  changeFollowStatus: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,  
   getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
@@ -56,7 +55,8 @@ App.propTypes = {
   loggedInFail: PropTypes.bool,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
+  toggleFollowStatus: PropTypes.func.isRequired,
+  user: PropTypes.object,
   users: PropTypes.array.isRequired
 };
 
@@ -104,8 +104,8 @@ export default connect(
       getUsers: function() {
         dispatch(actions.getUsers(user));
       },
-      changeFollowStatus: function(follow, userToFollow) {
-        dispatch(actions.changeFollowStatus(follow, user, userToFollow));
+      toggleFollowStatus: function(otherUser) {
+        dispatch(actions.toggleFollowStatus(user, otherUser));
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));

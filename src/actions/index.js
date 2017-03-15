@@ -211,49 +211,22 @@ export function finishedGettingUsers(users) {
 */
 export function getUsers(user) {
   return function(dispatch) {
-    return Promise.all([
-      fetch(`${URL_PREFIX  }/authors/${  user.id  }/friends/`, {
-        method: 'GET',
-        headers: {
-          // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-          'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
-        }
-      }),
-      fetch(`${URL_PREFIX  }/authors/`, {
-        method: 'GET',
-        headers: {
-          // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-          'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
-        }
-      }),
-      fetch(`${URL_PREFIX  }/authors/${  user.id  }/following/`, {
-        method: 'GET',
-        headers: {
-          // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-          'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
-        }
-      })
-    ])
-    .then(responses => {
-      for (let i = 0; i < responses.length; i++) {
-        if (!responses[i].ok) {
-          return Promise.reject();
-        }
-        return responses;
+    fetch(`${URL_PREFIX}/authors/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
       }
     })
-    .then(responses => Promise.all(responses.map(res => res.json())))
-    .then(responses => {
-      const users = responses[1].results;
-      const friends = responses[0].results;
-      const following = responses[2].results;
-
-      const usersWithFriendStatus = users.map(user => ({
-        ...user,
-        isFriend: friends.filter(friend => user.id === friend.id).length !== 0,
-        isFollowing: following.filter(follow => user.id === follow.id).length !== 0
-      }));
-      return dispatch(finishedGettingUsers(usersWithFriendStatus));
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      return dispatch(finishedGettingUsers(res));
     })
     .catch(err => {
       console.log(err, 'Could not get friends');
@@ -264,45 +237,54 @@ export function getUsers(user) {
 /*
 * Specifies the current user is following 'user to follow'
 */
-function addFollower(currentUser, userToFollow) {
+function toggleFollower(otherUser) {
   return {
-    type: types.FOLLOW_USER,
-    currentUser,
-    userToFollow
+    type: types.TOGGLE_FOLLOWER,
+    otherUser
   };
 }
 
-/*
-* Makes a request to follow the user specified by userToFollow
-*/
-export function changeFollowStatus(follow, currentUser, userToFollow) {
-  return function(dispatch) {
-    if (!follow) {
-      return; // Uncomment when delete works
+function followUser(currentUser, otherUser) {
+  return fetch(`${URL_PREFIX}/friendrequest/`, {
+    method: 'POST',
+    headers: {
+      // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      user: currentUser.id,
+      follows: otherUser.id
+    }),
+  });
+}
+
+function unfollowUser(currentUser, otherUser) {
+  return fetch(`${URL_PREFIX}/friends/${otherUser.id}/`, {
+    method: 'DELETE',
+    headers: {
+      // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`
     }
-    return fetch(`${URL_PREFIX  }/friendrequest/`, {
-      method: follow ? 'POST' : 'DELETE',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        user: currentUser.id,
-        follows: userToFollow
-      }),
-    }).then(res => {
+  });
+}
+
+export function toggleFollowStatus(currentUser, otherUser) {
+  return function(dispatch) {
+    const toggleFollow = otherUser.isFollowing ? unfollowUser : followUser;
+
+    return toggleFollow(currentUser, otherUser)
+    .then(res => {
       if (!res.ok) {
         return Promise.reject();
       }
       return res;
     })
-    .then(res => res.json())
     .then(res => {
-      dispatch(getUsers(currentUser)); // Ideally we ould be smarter about this
+      dispatch(toggleFollower(otherUser));
     })
     .catch(err => {
-      console.log('Could not register user');
+      console.log('Could not toggle follow status');
     });
   };
 }
