@@ -22,7 +22,7 @@ from django.views.generic import TemplateView
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
-    url(r'^posts/(?P<post>[0-9]+)/comments/$', views.CommentList.as_view()),
+    url(r'^posts/(?P<post_id>[0-9]+)/comments/$', views.CommentList.as_view()),
     url(r'^posts/$', views.PostList.as_view()),
     url(r'^authors/$', views.AuthorList.as_view()),
     url(r'^authors/posts/$', views.AllPostsAvailableToCurrentUser.as_view()),

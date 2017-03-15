@@ -52,7 +52,7 @@ class PostList(generics.ListCreateAPIView):
             'author': self.request.user
         }
 
-class CommentList(generics.ListCreateAPIView):
+class CommentList(APIView):
     """
     List all comments of a post, or create a new comment.
 
@@ -62,20 +62,17 @@ class CommentList(generics.ListCreateAPIView):
     post: 
     create a new instance of comment
     """
-    serializer_class = CommentSerializer
-
-    # http://www.django-rest-framework.org/api-guide/filtering/#filtering-against-the-current-user
-    def get_queryset(self):
-        post = self.kwargs['post']
-        return Comment.objects.filter(post=post)
-
-    # http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
-    # Written by andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom
-    def get_serializer_context(self):
-        return {
-            'post': self.kwargs['post'],
-            'author': self.request.user
-            }
+    def get(self, request, post_id, format=None):
+        comments = CommentSerializer(Comment.objects.filter(post=post_id), many=True)
+        return Response(comments.data, status=200)
+    
+    # TODO: Move validation, check if local or remote author
+    # Can't user serializer as username isn't unique when it looks at user model
+    def post(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        author = get_object_or_404(User, pk=request.data['author']['id'])
+        comment = Comment.objects.create(comment=request.data['comment'], post=post, author=author)
+        return Response(status=200)
 
 class AuthorList(APIView):
     """
@@ -200,11 +197,8 @@ class AllPostsAvailableToCurrentUser(generics.ListAPIView):
         return Post.objects.all().filter(author__in=temp).filter(visibility="FOAF")
 
     def get_friends_of_authorPK(self, authorPK):
-        following_pks = []
         following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
-        for authorFromFollowing in following:
-            following_pks.append(authorFromFollowing['follows'])
-
+        following_pks = [author['follows'] for author in following]
         followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')  # everyone that follows currentUser
 
         return followed.filter(user__in=following_pks)

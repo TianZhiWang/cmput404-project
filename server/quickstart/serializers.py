@@ -59,13 +59,6 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields=('id', 'comment', 'author')
 
-    # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
-    def create(self, validated_data):
-        comment = validated_data['comment']
-        author = User.objects.get(pk=self.context['author'].id)
-        post = Post.objects.get(pk=self.context['post'])
-        return Comment.objects.create(comment=comment, author=author, post=post)
-
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
 # http://www.django-rest-framework.org/api-guide/relations/#api-reference
