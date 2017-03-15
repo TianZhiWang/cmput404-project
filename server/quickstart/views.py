@@ -62,6 +62,8 @@ class CommentList(APIView):
     post: 
     create a new instance of comment
     """
+
+    # TODO: Wrap in pagination class
     def get(self, request, post_id, format=None):
         comments = CommentSerializer(Comment.objects.filter(post=post_id), many=True)
         return Response(comments.data, status=200)
@@ -72,7 +74,14 @@ class CommentList(APIView):
         post = get_object_or_404(Post, pk=post_id)
         author = get_object_or_404(User, pk=request.data['author']['id'])
         comment = Comment.objects.create(comment=request.data['comment'], post=post, author=author)
-        return Response(status=200)
+
+        #TODO: Check if they have permission to add comment (i.e. they can see the post)
+        return Response({
+            "query": "addComment",
+            "success": True,
+            "message":"Comment Added"
+            },
+        status=200)
 
 class AuthorList(APIView):
     """
@@ -136,32 +145,6 @@ class FollowingRelationshipDetail(APIView):
         relationship = get_object_or_404(FollowingRelationship, user=user, follows=follows)
         relationship.delete()
         return Response(status=204)
-
-class CurrentFollowingList(generics.ListCreateAPIView):
-    """
-    list all people the current user follows
-
-    get:
-    Returns a list of all authors the current author is following but not firends with
-    """
-    serializer_class = UserSerializer
-    def get_queryset(self):
-        following_pks = []
-        authorPK = self.kwargs['pk']
-        following = FollowingRelationship.objects.filter(user=authorPK).values('follows')
-        for author in following:
-            following_pks.append(author['follows'])
-
-        followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')
-        friends = followed.filter(user__in=following_pks)
-        friends_pks = []
-        for author in friends:
-            friends_pks.append(author['user'])
-
-        followingButNotFriend = following.exclude(follows__in=friends_pks)
-        print(followingButNotFriend)
-        authors = User.objects.filter(pk__in=followingButNotFriend)
-        return authors
 
 class AllPostsAvailableToCurrentUser(generics.ListAPIView):
     """

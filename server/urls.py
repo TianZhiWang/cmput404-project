@@ -27,7 +27,6 @@ urlpatterns = [
     url(r'^authors/$', views.AuthorList.as_view()),
     url(r'^authors/posts/$', views.AllPostsAvailableToCurrentUser.as_view()),
     url(r'^authors/(?P<pk>[0-9]+)/friends/$', views.CurrentFriendsList.as_view()),
-    url(r'^authors/(?P<pk>[0-9]+)/following/$', views.CurrentFollowingList.as_view()),
     url(r'^friendrequest/$', views.FollowingRelationshipList.as_view()),
     url(r'^friends/(?P<pk>[0-9]+)/$', views.FollowingRelationshipDetail.as_view()),
     url(r'^login/$', views.LoginView.as_view()),
