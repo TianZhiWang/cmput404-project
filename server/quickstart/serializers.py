@@ -21,40 +21,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 from rest_framework import serializers
-from models import Post, Comment, FollowingRelationship
+from models import Post, Comment, FollowingRelationship, Author
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
-# Serializes the FollowingRelationship Model
-class FollowingRelationshipSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FollowingRelationship
-        fields = ('user', 'follows')
-
-# Serializes the User Model
-class UserSerializer(serializers.ModelSerializer):
-    # http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
-    def create(self, validated_data):
-        user = User.objects.create(**validated_data)
-        user.set_password(validated_data['password'])
-        user.is_active = False
-        user.save()
-        return user
-
-    class Meta:
-        model = User
-        fields = ('id', 'username', 'password', 'email', 'first_name', 'last_name')
-        # http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
-        extra_kwargs = {
-            'password': {
-                'write_only': True
-            }
-        }
-
+class AuthorSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    displayName = serializers.CharField(max_length=150)
+    
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
 class CommentSerializer(serializers.ModelSerializer):
-    author = UserSerializer(read_only=True)
+    author = AuthorSerializer(read_only=True)
     class Meta:
         model = Comment
         fields=('id', 'comment', 'author')
@@ -64,7 +42,7 @@ class CommentSerializer(serializers.ModelSerializer):
 # http://www.django-rest-framework.org/api-guide/relations/#api-reference
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
-    author = UserSerializer(read_only=True)
+    author = AuthorSerializer(read_only=True)
 
     class Meta:
         model = Post
@@ -75,9 +53,8 @@ class PostSerializer(serializers.ModelSerializer):
     # http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0),
     # modified by Kyle Carlstrom
     def create(self, validated_data):
-        author = User.objects.get(pk=self.context['author'].id)
-        visibleTo = validated_data['visibleTo']
-        del validated_data['visibleTo']
+        author = self.context['author']
+        visibleTo = validated_data.pop('visibleTo')
         post = Post.objects.create(author=author, **validated_data)
         post.save()
         for user in visibleTo:

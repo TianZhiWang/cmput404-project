@@ -12,7 +12,7 @@ if(process.env.NODE_ENV === 'production') {
 */
 export function addComment(comment, postId, user) {
   return function(dispatch) {
-    fetch(`${URL_PREFIX  }/posts/${String(postId)}/comments/`, {
+    fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -20,14 +20,19 @@ export function addComment(comment, postId, user) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        comment:comment
+        comment: comment,
+        author: {
+          id: user.id,
+          displayName: user.displayName
+        }
       }),
     })
     .then(res => res.json())
     .then((res) => {
       dispatch({type:types.ADD_COMMENT,
-        postId: postId,
-        comment: res
+        postId,
+        comment,
+        user
       });
      // location.reload();
     })
@@ -41,7 +46,7 @@ export function addComment(comment, postId, user) {
 */
 export function addPost(post, user) {
   return function(dispatch) {
-    fetch(`${URL_PREFIX  }/posts/`, {
+    fetch(`${URL_PREFIX}/posts/`, {
       method: 'POST',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
@@ -86,18 +91,17 @@ function finishLoadingPosts(result) {
 */
 export function loadPosts(user) {
   return function(dispatch) {
-    return fetch(`${URL_PREFIX}/authors/posts/`,{
+    return fetch(`${URL_PREFIX}/author/posts/`,{
       method: 'GET',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': 'application/x-www-form-urlencoded'
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`,
+        'Accept': 'application/json'
       }
-
     })
       .then(res => res.json())
       .then(res => {
-        dispatch(finishLoadingPosts(res.results));
+        dispatch(finishLoadingPosts(res));
       });
   };
 }
@@ -127,7 +131,7 @@ function logInFail(user) {
 */
 export function attempLogin(username, password) {
   return function(dispatch) {
-    return fetch(`${URL_PREFIX  }/login/`, {
+    return fetch(`${URL_PREFIX}/login/`, {
       method: 'POST',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
@@ -143,6 +147,7 @@ export function attempLogin(username, password) {
     .then(res => {
       dispatch(logIn({
         ...res,
+        username,
         password
       }));
     })
@@ -162,7 +167,7 @@ export function attempLogin(username, password) {
 */
 export function attemptRegister(username, password) {
   return function(dispatch) {
-    return fetch(`${URL_PREFIX  }/register/`, {
+    return fetch(`${URL_PREFIX}/register/`, {
       method: 'POST',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
@@ -298,9 +303,7 @@ export function deletePost(post,user){
       method: 'DELETE',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
       },
     })
     // .then(res => res.json())

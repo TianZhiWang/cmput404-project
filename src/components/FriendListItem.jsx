@@ -26,7 +26,7 @@ class FriendListItem extends Component {
   render() {
     return (
       <ListGroupItem className='friend-list-item'>
-          <span>{this.props.user.username}</span>
+          <span>{this.props.user.displayName}</span>
           <span className="friend-list-button-group">
             {(!this.props.user.isFollowing) && this.createGlyphiconButton('ok')}
             {this.props.user.isFollowing && this.createGlyphiconButton('remove')}

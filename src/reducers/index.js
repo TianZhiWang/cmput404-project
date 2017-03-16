@@ -20,7 +20,10 @@ export function posts(state=[], action) {
           ...post,
           comments: [
             ...post.comments,
-            action.comment
+            {
+              comment: action.comment,
+              author: action.user
+            }
           ]
         };
       }

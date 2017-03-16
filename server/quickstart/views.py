@@ -20,9 +20,9 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from models import Comment, Post, FollowingRelationship
+from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor
 from django.contrib.auth.models import User
-from serializers import CommentSerializer, PostSerializer, UserSerializer, FollowingRelationshipSerializer
+from serializers import CommentSerializer, PostSerializer, AuthorSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -30,6 +30,7 @@ from rest_framework import status, generics
 from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class PostList(generics.ListCreateAPIView):
@@ -48,8 +49,10 @@ class PostList(generics.ListCreateAPIView):
     # http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
     # Written by andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom
     def get_serializer_context(self):
+        user = get_object_or_404(User, pk=self.request.user.id)
+        author = get_object_or_404(Author, user=user)
         return {
-            'author': self.request.user
+            'author': author
         }
 
 class CommentList(APIView):
@@ -70,9 +73,10 @@ class CommentList(APIView):
     
     # TODO: Move validation, check if local or remote author
     # Can't user serializer as username isn't unique when it looks at user model
+    # Decide if local or foreign from url of author
     def post(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        author = get_object_or_404(User, pk=request.data['author']['id'])
+        author = get_object_or_404(Author, pk=request.data['author']['id'])
         comment = Comment.objects.create(comment=request.data['comment'], post=post, author=author)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
@@ -89,71 +93,50 @@ class AuthorList(APIView):
 
     get:
     Returns a list of all authors
-
-    post:
-    Create a new instance of an Author
     """
     def get(self, request, format=None):
         currentUser = request.user.id
-        users = User.objects.all()
+        users = Author.objects.all()
         following = FollowingRelationship.objects.filter(user=currentUser).values('follows')
-        followingUsers = User.objects.filter(id__in=following)
+        followingUsers = Author.objects.filter(id__in=following)
         followed = FollowingRelationship.objects.filter(follows=currentUser).values('user')
-        followedUsers = User.objects.filter(id__in=followed)
+        followedUsers = Author.objects.filter(id__in=followed)
 
         formattedUsers = []
         for user in users:
-            author = {'username': user.username, 'id': user.id, 'isFollowing': (user in followingUsers), 'isFollowed': (user in followedUsers)}
+            author = {'displayName': user.displayName, 'id': user.id, 'isFollowing': (user in followingUsers), 'isFollowed': (user in followedUsers)}
             formattedUsers.append(author)
         
         return Response(formattedUsers)
 
-class CurrentFriendsList(generics.ListCreateAPIView):
-    """
-    List all friends of current author
-
-    get: 
-    Return a list of all the posts the current instance of author is friends with
-    """
-    serializer_class = UserSerializer
-
-    def get_queryset(self):
-        following_pks = []
-        authorPK = self.kwargs['pk']
-        following = FollowingRelationship.objects.filter(user=authorPK).values('follows')
-        for author in following:
-            following_pks.append(author['follows'])
-
-        followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')
-
-        friends = followed.filter(user__in=following_pks)
-        authors = User.objects.filter(pk__in=friends)
-        return authors
-
+# TODO: How to add remote authors? Also how to link them?
 class FollowingRelationshipList(APIView):
     def post(self, request, format=None):
-        user = get_object_or_404(User, pk=request.data['user'])
-        follows = get_object_or_404(User, pk=request.data['follows'])
+        author_data = request.data['author']
+        friend_data = request.data['friend']
 
-        FollowingRelationship.objects.create(user=user, follows=follows)
+        # Makes more sense to maybe check for foreign or remote before getting
+        try:
+            author = Author.objects.get(pk=author_data['id'])
+        except ObjectDoesNotExist:
+            print('Foreign author')
+            author = RemoteAuthor.objects.get_or_create(**author_data)
+
+        friend = get_object_or_404(Author, pk=friend_data['id'])
+
+        FollowingRelationship.objects.create(user=author, follows=friend)
         return Response(status=201)
 
-class FollowingRelationshipDetail(APIView):
-    def delete(self, request, pk, format=None):
-        user = request.user
-        follows = get_object_or_404(User, pk=pk)
-        relationship = get_object_or_404(FollowingRelationship, user=user, follows=follows)
-        relationship.delete()
-        return Response(status=204)
-
-class AllPostsAvailableToCurrentUser(generics.ListAPIView):
+class AllPostsAvailableToCurrentUser(APIView):
     """
     Returns a list of all posts that is visiable to current author
     """
-    serializer_class = PostSerializer
-
-    def get_queryset(self):
-        currentUser = self.request.user
+    def get(self, request, format=None):
+        posts = self.get_all_posts(request.user)
+        serializedPosts = PostSerializer(posts, many=True)
+        return Response(serializedPosts.data)
+    
+    def get_all_posts(self, currentUser):
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
         currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
         friendOfAFriendPosts = self.get_queryset_friends_of_a_friend(currentUser)
@@ -166,7 +149,7 @@ class AllPostsAvailableToCurrentUser(generics.ListAPIView):
         # stackoverflow (http://stackoverflow.com/questions/20135343/django-unique-filtering)
         # from user Peter DeGlopper (http://stackoverflow.com/users/2337736/peter-deglopper)
         # accessed on Mar 12, 2017
-        return intersection.distinct()  # I don't want to return more than on of the same post
+        return intersection.distinct()  # I don't want to return more than one of the same post
         # end of code from Peter DeGlopper
 
     def get_queryset_visible_to(self, currentUser):
@@ -194,16 +177,30 @@ class AllPostsAvailableToCurrentUser(generics.ListAPIView):
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
     "Login and get a response"
-    def post(self, request):
-        author = UserSerializer(request.user)
-        return Response(data=author.data, status=200)
+    def post(self, request, format=None):
+        user = get_object_or_404(User, pk=request.user.id)
+        author = get_object_or_404(Author, user=user)
+        serialized_data = AuthorSerializer(author).data
+        return Response(data=serialized_data, status=200)
 
 """
 Will return a 400 if the author exists and 201 created otherwise
 """
-class RegisterView(generics.CreateAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+class RegisterView(APIView):
     permission_classes = (AllowAny,)
     # http://stackoverflow.com/questions/27085219/how-can-i-disable-authentication-in-django-rest-framework#comment63774493_27086121 Oliver Ford (http://stackoverflow.com/users/1446048/oliver-ford) (MIT)
     authentication_classes = []
+
+    def post(self, request, format=None):
+        validated_data = request.data
+
+        # http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
+        displayName = validated_data.pop('displayName')
+        user = User.objects.create(**validated_data)
+        user.set_password(validated_data['password'])
+        user.is_active = False
+        user.save()
+        author = Author.objects.create(displayName=displayName, user=user)
+        author.save()
+        return Response(status=200)
+        
