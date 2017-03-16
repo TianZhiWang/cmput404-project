@@ -306,22 +306,26 @@ export function toggleFollowStatus(currentUser, otherUser) {
 /*
 * Deletes a post specified by post
 */
-export function deletePost(post,user){
+export function deletePost(post, user){
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/posts/${String(post.id)}/`, {
+    fetch(`${URL_PREFIX}/author/${user.id}/posts/${post.id}/`, {
       method: 'DELETE',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
       },
     })
-    // .then(res => res.json())
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
     .then((res) => {
       dispatch({type:types.DELETE_POST,post:post});
-     // location.reload();
     })
     .catch((err) => {
-
+      console.log('Could not delete post', err);
     });
   };
 }

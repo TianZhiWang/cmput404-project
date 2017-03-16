@@ -55,6 +55,12 @@ class PostList(generics.ListCreateAPIView):
             'author': author
         }
 
+class PostDetail(APIView):
+    def delete(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        post.delete()
+        return Response(status=200)
+
 class CommentList(APIView):
     """
     List all comments of a post, or create a new comment.
