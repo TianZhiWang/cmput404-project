@@ -75,9 +75,10 @@ class CommentList(APIView):
     # Can't user serializer as username isn't unique when it looks at user model
     # Decide if local or foreign from url of author
     def post(self, request, post_id, format=None):
+        data = request.data['comment']
         post = get_object_or_404(Post, pk=post_id)
-        author = get_object_or_404(Author, pk=request.data['author']['id'])
-        comment = Comment.objects.create(comment=request.data['comment'], post=post, author=author)
+        author = get_object_or_404(Author, pk=data['author']['id'])
+        comment = Comment.objects.create(comment=data['comment'], post=post, author=author)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({

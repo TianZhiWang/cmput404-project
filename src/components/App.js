@@ -95,8 +95,8 @@ export default connect(
       attempLogin: function(username, password) {
         dispatch(actions.attempLogin(username, password));
       },
-      attemptRegister: function(username, password) {
-        dispatch(actions.attemptRegister(username, password));
+      attemptRegister: function(username, password, displayName) {
+        dispatch(actions.attemptRegister(username, password, displayName));
       },
       switchTabs: function(tab) {
         dispatch(actions.switchTabs(tab));

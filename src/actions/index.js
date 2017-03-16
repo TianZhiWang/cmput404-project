@@ -20,10 +20,13 @@ export function addComment(comment, postId, user) {
         'Accept': 'application/json'
       },
       body: JSON.stringify({
-        comment: comment,
-        author: {
-          id: user.id,
-          displayName: user.displayName
+        query: 'addComment',
+        comment: {
+          comment,
+          author: {
+            id: user.id,
+            displayName: user.displayName
+          }
         }
       }),
     })
@@ -165,7 +168,7 @@ export function attempLogin(username, password) {
 * Attempts to register the user to the service using the username and password
 * can fail if the username is not unique
 */
-export function attemptRegister(username, password) {
+export function attemptRegister(username, password, displayName) {
   return function(dispatch) {
     return fetch(`${URL_PREFIX}/register/`, {
       method: 'POST',
@@ -176,7 +179,8 @@ export function attemptRegister(username, password) {
       },
       body: JSON.stringify({
         username,
-        password
+        password,
+        displayName
       }),
     }).then(res => {
       if (!res.ok) {
@@ -258,8 +262,13 @@ function followUser(currentUser, otherUser) {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      user: currentUser.id,
-      follows: otherUser.id
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+      },
+      friend: {
+        id: otherUser.id
+      }
     }),
   });
 }

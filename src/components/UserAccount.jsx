@@ -7,6 +7,7 @@ class UserAccount extends Component {
     super(props);
 
     this.state = {
+      displayName: '',
       username: '',
       password: '',
       isLoginPage: true,
@@ -15,6 +16,7 @@ class UserAccount extends Component {
 
     this.handleUsernameChange = this.handleUsernameChange.bind(this);
     this.handlePasswordChange = this.handlePasswordChange.bind(this);
+    this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
     this.handleLogin = this.handleLogin.bind(this);
     this.handleRegister = this.handleRegister.bind(this);
     this.toggleLoginOrRegister = this.toggleLoginOrRegister.bind(this);
@@ -32,15 +34,21 @@ class UserAccount extends Component {
     });
   }
 
+  handleDisplayNameChange(event) {
+    this.setState({
+      displayName: event.target.value
+    });
+  }
+
   handleLogin() {
     if (this.state.username && this.state.password) {
-      this.props.attemptLogin(this.state.username, this.state.password, this.state.loggedInFail);
+      this.props.attemptLogin(this.state.username, this.state.password);
     }
   }
 
   handleRegister() {
-    if (this.state.username && this.state.password) {
-      this.props.attemptRegister(this.state.username, this.state.password);
+    if (this.state.username && this.state.password && this.state.displayName) {
+      this.props.attemptRegister(this.state.username, this.state.password, this.state.displayName);
       this.setState({
         waitForAdmin: true
       });
@@ -54,11 +62,21 @@ class UserAccount extends Component {
   }
 
   render() {
+    const displayNameComponent = this.state.isLoginPage ? <noscript/> : (
+      <FormControl
+        type="text"
+        name="displayName"
+        onChange={this.handleDisplayNameChange}
+        placeholder="Display Name"
+        required
+        autoFocus />
+    );
     return (
       <div className="login-page">
         <Panel className="wrapper">
           <form >       
             <h2>{this.state.isLoginPage ? "Please login" : "Please register"}</h2>
+            {displayNameComponent}
             <FormControl
               type="text"
               name="username"
