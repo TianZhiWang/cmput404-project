@@ -24,13 +24,14 @@ from django.contrib.auth.models import User
 
 from django.db import models
 import uuid
+from django.utils import timezone
 
 class Author(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, related_name='author')
     displayName = models.CharField(max_length=150)
     host = models.URLField(default="http://127.0.0.1:8000")
-    url = models.URLField()
+    url = models.URLField(default="http://127.0.0.1:8000")
 
     def __unicode__(self):
         return str(self.displayName)
@@ -53,11 +54,17 @@ class Post(models.Model):
         ("SERVERONLY", "SERVERONLY"),
     )
 
+    contentTypeChoices = (
+        ('text/markdown', 'text/markdown'),
+        ('text/plain', 'text/plain')
+    )
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
     content = models.CharField(max_length=140)
     description = models.CharField(max_length=140)
-    contentType = models.CharField(max_length=32)
+    contentType = models.CharField(max_length=32, choices=contentTypeChoices)
     author = models.ForeignKey(Author)
     visibility = models.CharField(max_length=20, default="PUBLIC", choices=privacyChoices)
     # visibleTo will create an intermediate table to represent a ManyToMany relationship with users
@@ -75,6 +82,7 @@ class Comment(models.Model):
     post = models.ForeignKey(Post, related_name='comments')
     author = models.ForeignKey(Author)
     comment = models.CharField(max_length=140)
+    published = models.DateTimeField(default=timezone.now)
 
     def __unicode__(self):
         return self.comment

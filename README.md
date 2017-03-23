@@ -104,6 +104,7 @@ Libraries are listed in package.json and requirements.txt
 - Serializing many to many field http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0)
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
 - http://www.django-rest-framework.org/api-guide/fields/#uuidfield
+- https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).

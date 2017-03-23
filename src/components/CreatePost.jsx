@@ -28,7 +28,7 @@ class CreatePost extends Component {
       title: '',
       description: '',
       content: '',
-      contentType: 'plaintext'
+      contentType: 'text/plain'
     };
   }
 
@@ -83,7 +83,7 @@ class CreatePost extends Component {
     });
   }
   contentText (){
-    if (this.state.contentType == "plaintext"){
+    if (this.state.contentType == "text/plain"){
       return(
           <FormControl
             type='text'
@@ -144,17 +144,17 @@ class CreatePost extends Component {
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio
-              checked={this.state.contentType === 'plaintext'}
+              checked={this.state.contentType === 'text/plain'}
               inline={true}
               onChange={this.handleContentTypeChange}
-              value='plaintext'>
+              value='text/plain'>
               Plain Text
             </Radio>
             <Radio
-              checked={this.state.contentType === 'markdown'}
+              checked={this.state.contentType === 'text/markdown'}
               inline={true}
               onChange={this.handleContentTypeChange}
-              value='markdown'>
+              value='text/markdown'>
               Markdown
             </Radio>
           </ButtonGroup>

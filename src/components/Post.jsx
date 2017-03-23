@@ -37,7 +37,7 @@ class Post extends Component {
   }
 
   textTypehandler(){
-    if (this.props.contentType == "plaintext"){
+    if (this.props.contentType == "text/plain"){
       return(
         <div className='post-body'>
           {this.props.content}
