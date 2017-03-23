@@ -24,7 +24,6 @@ from rest_framework import serializers
 from models import Post, Comment, FollowingRelationship, Author
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from pagination import CommentsInPostPagination
 
 class AuthorSerializer(serializers.Serializer):
     id = serializers.UUIDField(format='hex_verbose')
@@ -34,13 +33,7 @@ class AuthorSerializer(serializers.Serializer):
     
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
-class CommentSerializer(serializers.HyperlinkedModelSerializer):
-    author = AuthorSerializer(read_only=True)
-    class Meta:
-        model = Comment
-        fields=('id', 'comment', 'author')
-
-class CommentPageSerializer(serializers.ModelSerializer):
+class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
         model = Comment
@@ -49,21 +42,44 @@ class CommentPageSerializer(serializers.ModelSerializer):
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
 # http://www.django-rest-framework.org/api-guide/relations/#api-reference
-class PostSerializer(serializers.HyperlinkedModelSerializer):
-    # comments = CommentSerializer(many=True, read_only=True)
+class PostSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     comments = serializers.SerializerMethodField('paginated_comments')
+    source = serializers.SerializerMethodField()
+    origin = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+    size = serializers.SerializerMethodField()
+    next = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo', 'published')
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published')
 
     def paginated_comments(self, obj):
         comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]
-
         serializer = CommentSerializer(comments, many=True)
         return serializer.data
 
+    def get_source(self, obj):
+        source = obj.source + "/posts/" + str(obj.id)
+        return source
+
+    def get_origin(self, obj):
+        origin = obj.origin + "/posts/" + str(obj.id)
+        return origin
+
+    def get_count(self, obj):
+        count = Comment.objects.all().filter(post__id=obj.id).count()
+        return count
+    
+    def get_size(self, obj):
+        comments = Comment.objects.all().filter(post__id=obj.id).count() 
+        size = comments if comments < 5 else 5
+        return size
+    
+    def get_next(self, obj):
+        next = obj.origin + "/posts/" + str(obj.id) + "/comments"
+        return next
 
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/

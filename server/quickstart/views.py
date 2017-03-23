@@ -255,8 +255,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 class LoginView(APIView):
     "Login and get a response"
     def post(self, request, format=None):
-        user = get_object_or_404(User, pk=request.user.id)
-        author = get_object_or_404(Author, user=user)
+        author = get_object_or_404(Author, user=request.user)
         serialized_data = AuthorSerializer(author).data
         return Response(data=serialized_data, status=200)
 
