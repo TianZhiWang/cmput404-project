@@ -27,7 +27,7 @@ import uuid
 from django.utils import timezone
 
 class Author(models.Model):
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, related_name='author')
     displayName = models.CharField(max_length=150)
@@ -38,7 +38,7 @@ class Author(models.Model):
         return str(self.displayName)
 
 class RemoteAuthor(models.Model):
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     displayName = models.CharField(max_length=150)
     host = models.URLField(default="http://127.0.0.1:8000")
@@ -63,7 +63,7 @@ class Post(models.Model):
         ('text/plain', 'text/plain')
     )
 
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
@@ -82,7 +82,7 @@ class Post(models.Model):
 # This model represents a comment object
 # A Post can have many Comments
 class Comment(models.Model):
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     # http://www.django-rest-framework.org/api-guide/relations/#api-reference
     post = models.ForeignKey(Post, related_name='comments')
