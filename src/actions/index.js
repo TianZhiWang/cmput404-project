@@ -112,7 +112,6 @@ export function loadPosts(user) {
 * Action that updates the state to log the user in
 */
 function logIn(user) {
-  print(user)
   return {
     type: types.LOGGED_IN,
     user
