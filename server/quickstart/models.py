@@ -23,9 +23,11 @@ from __future__ import unicode_literals
 from django.contrib.auth.models import User
 
 from django.db import models
+import uuid
 
 class Author(models.Model):
-    user = models.OneToOneField(User)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.OneToOneField(User, related_name='author')
     displayName = models.CharField(max_length=150)
     host = models.URLField(default="http://127.0.0.1:8000")
     url = models.URLField()
@@ -34,6 +36,7 @@ class Author(models.Model):
         return str(self.displayName)
 
 class RemoteAuthor(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     displayName = models.CharField(max_length=150)
 
     def __unicode__(self):
@@ -50,6 +53,7 @@ class Post(models.Model):
         ("SERVERONLY", "SERVERONLY"),
     )
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=140)
     content = models.CharField(max_length=140)
     description = models.CharField(max_length=140)
@@ -58,7 +62,7 @@ class Post(models.Model):
     visibility = models.CharField(max_length=20, default="PUBLIC", choices=privacyChoices)
     # visibleTo will create an intermediate table to represent a ManyToMany relationship with users
     # http://stackoverflow.com/a/2529875 Ludwik Trammer (http://stackoverflow.com/users/262618/ludwik-trammer) (MIT)
-    visibleTo = models.ManyToManyField(User, related_name="visibleTo", blank=True)
+    visibleTo = models.ManyToManyField(Author, related_name="visibleTo", blank=True)
 
     def __unicode__(self):
         return self.title
@@ -67,6 +71,7 @@ class Post(models.Model):
 # A Post can have many Comments
 class Comment(models.Model):
     # http://www.django-rest-framework.org/api-guide/relations/#api-reference
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     post = models.ForeignKey(Post, related_name='comments')
     author = models.ForeignKey(Author)
     comment = models.CharField(max_length=140)

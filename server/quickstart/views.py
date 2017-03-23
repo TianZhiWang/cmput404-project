@@ -56,8 +56,7 @@ class PostList(generics.ListCreateAPIView):
     # http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
     # Written by andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom
     def get_serializer_context(self):
-        user = get_object_or_404(User, pk=self.request.user.id)
-        author = get_object_or_404(Author, user=user)
+        author = get_object_or_404(Author, user=self.request.user)
         return {
             'author': author
         }
@@ -109,7 +108,7 @@ class AuthorList(APIView):
     Returns a list of all authors
     """
     def get(self, request, format=None):
-        currentUser = request.user.id
+        currentUser = request.user.author.id
         users = Author.objects.all()
         following = FollowingRelationship.objects.filter(user=currentUser).values('follows')
         followingUsers = Author.objects.filter(id__in=following)
@@ -184,7 +183,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-        posts = self.get_all_posts(request.user)
+        posts = self.get_all_posts(request.user.author)
 
         page = self.paginate_queryset(posts)
         if page is not None:

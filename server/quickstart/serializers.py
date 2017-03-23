@@ -26,7 +26,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 class AuthorSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.UUIDField(format='hex_verbose')
     displayName = serializers.CharField(max_length=150)
     url = serializers.URLField()
     host = serializers.URLField()

@@ -1,5 +1,4 @@
 import * as types from '../types';
-import uuid from 'uuid/v1';
 
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
@@ -113,6 +112,7 @@ export function loadPosts(user) {
 * Action that updates the state to log the user in
 */
 function logIn(user) {
+  print(user)
   return {
     type: types.LOGGED_IN,
     user
