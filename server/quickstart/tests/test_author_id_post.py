@@ -126,5 +126,41 @@ class AuthorPostTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+        print response.data["count"]
         self.assertTrue(response.data["count"] == 5)  # should get all posts made by me
 
+    def test_authoridposturl_get_stranger_posts(self):
+        """ GETing stranger posts by id should return the approprite number of posts """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.STRANGER_USER_NAME, self.STRANGER_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.friend_author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        print response.data["count"]
+        self.assertTrue(response.data["count"] == 2)  # should get PUBLIC and SERVERONLY
+
+    def test_authoridposturl_get_friend_posts(self):
+        """ GETing friend posts by id should return the approprite number of posts """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.friend_author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        print response.data["count"]
+        self.assertTrue(response.data["count"] == 4)  # should get PUBLIC, SERVERONLY, FRIENDS, and FOAF
+
+    def test_authoridposturl_get_foaf_posts(self):
+        """ GETing friend of a friend posts by id should return the approprite number of posts """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        print response.data["count"]
+        self.assertTrue(response.data["count"] == 3)  # should get PUBLIC, SERVERONLY, and FOAF
