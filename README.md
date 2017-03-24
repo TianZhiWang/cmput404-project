@@ -110,6 +110,9 @@ Libraries are listed in package.json and requirements.txt
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
 - http://www.django-rest-framework.org/api-guide/fields/#uuidfield
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+- https://docs.python.org/2/library/re.html
+- https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
+- https://regex101.com/
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).

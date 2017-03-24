@@ -94,6 +94,7 @@ class PostIdTest(APITestCase):
         postResponse = self.post_a_post_obj("test post", "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         postId = postResponse.data["id"]
         url = reverse("postId", args=[postId])
+        print url
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))

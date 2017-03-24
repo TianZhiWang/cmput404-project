@@ -5,6 +5,10 @@ let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 if(process.env.NODE_ENV === 'production') {
   URL_PREFIX = 'https://' + window.location.hostname;
 }
+
+function getUUIDFromId(id) {
+  return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
+}
 /*eslint-enable */
 /*
 * Adds a comment, to a post specified by postId
@@ -273,7 +277,7 @@ function followUser(currentUser, otherUser) {
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friends/${otherUser.id}/`, {
+  return fetch(`${URL_PREFIX}/friends/${getUUIDFromId(otherUser.id)}/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
@@ -307,7 +311,7 @@ export function toggleFollowStatus(currentUser, otherUser) {
 */
 export function deletePost(post, user){
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/author/${user.id}/posts/${post.id}/`, {
+    fetch(`${URL_PREFIX}/author/${getUUIDFromId(user.id)}/posts/${post.id}/`, {
       method: 'DELETE',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
