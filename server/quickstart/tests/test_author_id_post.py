@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
 
 class AuthorPostTest(APITestCase):
-    """ This is the home of all of our tests relating to the author/post url """
+    """ This is the home of all of our tests relating to the author/:id/posts url """
 
     AUTHOR_USER_NAME = 'author'
     AUTHOR_USER_PASS = 'password127'
@@ -126,7 +126,6 @@ class AuthorPostTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        print response.data["count"]
         self.assertTrue(response.data["count"] == 5)  # should get all posts made by me
 
     def test_authoridposturl_get_stranger_posts(self):
@@ -138,7 +137,6 @@ class AuthorPostTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        print response.data["count"]
         self.assertTrue(response.data["count"] == 2)  # should get PUBLIC and SERVERONLY
 
     def test_authoridposturl_get_friend_posts(self):
@@ -150,7 +148,6 @@ class AuthorPostTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        print response.data["count"]
         self.assertTrue(response.data["count"] == 4)  # should get PUBLIC, SERVERONLY, FRIENDS, and FOAF
 
     def test_authoridposturl_get_foaf_posts(self):
@@ -162,5 +159,4 @@ class AuthorPostTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        print response.data["count"]
         self.assertTrue(response.data["count"] == 3)  # should get PUBLIC, SERVERONLY, and FOAF

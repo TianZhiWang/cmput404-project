@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 urlpatterns = [
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/comments/$', views.CommentList.as_view(), name="postComment"),
     url(r'^posts/$', views.PostList.as_view(), name="post"),
+    url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostList.as_view(), name="postId"),  # TODO: impliment the proper view
     url(r'^authors/$', views.AuthorList.as_view(), name="author"),
     url(r'^author/posts/$', views.AllPostsAvailableToCurrentUser.as_view(), name="authorPost"),
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/$', views.AuthorDetail.as_view()),
