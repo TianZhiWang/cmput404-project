@@ -20,7 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor
+from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor, Node
 from django.contrib.auth.models import User
 from serializers import CommentSerializer, PostSerializer, AuthorSerializer
 from django.http import Http404
@@ -33,6 +33,9 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, PaginationMixin
 import re
+import requests
+from django.urls import reverse
+import json
 
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
@@ -187,15 +190,42 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-        posts = self.get_all_posts(request.user.author)
+        nodes = Node.objects.filter(user=request.user)
 
-        page = self.paginate_queryset(posts)
-        if page is not None:
-            serializer = PostSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
+        # Request originating from remote node
+        if (nodes.count() > 0):
+            node = nodes[0]
+            # Return everything not serverOnly
+            posts = Post.objects.exclude(visibility="SERVERONLY")
 
-        serializedPosts = PostSerializer(posts, many=True)        
-        return Response(serializedPosts.data)
+            page = self.paginate_queryset(posts)
+            if page is not None:
+                serializer = PostSerializer(page, many=True)
+                return self.get_paginated_response(serializer.data)
+
+            serializedPosts = PostSerializer(posts, many=True)        
+            return Response(serializedPosts.data)
+
+        # Request originating from an author
+        else:
+            author = get_object_or_404(Author, user=request.user)
+            posts = self.get_all_posts(author)
+            serializedPosts = PostSerializer(posts, many=True).data
+
+            # Get all posts from remote authors
+            nodes = list(Node.objects.all())
+            for node in nodes:
+                url = node.url + 'author/posts/'
+                print(url)
+                req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+                print(req.json())
+                data = json.loads(req.json())
+                if not hasattr(data, 'posts'):
+                    raise Exception('They didn\'t send posts in their request')
+                
+                serializedPosts += data['posts']
+            
+            return Response(serializedPosts)
 
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
