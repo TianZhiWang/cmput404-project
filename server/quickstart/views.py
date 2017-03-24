@@ -32,12 +32,16 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, PaginationMixin
+import re
 
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
     following_pks = [author['follows'] for author in following]
     followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')  # everyone that follows currentUser
     return followed.filter(user__in=following_pks)
+
+def get_author_id_from_url(author):
+    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
 
 class PostList(generics.ListCreateAPIView):
     """
@@ -56,8 +60,7 @@ class PostList(generics.ListCreateAPIView):
     # http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
     # Written by andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom
     def get_serializer_context(self):
-        user = get_object_or_404(User, pk=self.request.user.id)
-        author = get_object_or_404(Author, user=user)
+        author = get_object_or_404(Author, user=self.request.user)
         return {
             'author': author
         }
@@ -90,7 +93,7 @@ class CommentList(APIView):
     def post(self, request, post_id, format=None):
         data = request.data['comment']
         post = get_object_or_404(Post, pk=post_id)
-        author = get_object_or_404(Author, pk=data['author']['id'])
+        author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
         comment = Comment.objects.create(comment=data['comment'], post=post, author=author)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
@@ -109,7 +112,7 @@ class AuthorList(APIView):
     Returns a list of all authors
     """
     def get(self, request, format=None):
-        currentUser = request.user.id
+        currentUser = request.user.author.id
         users = Author.objects.all()
         following = FollowingRelationship.objects.filter(user=currentUser).values('follows')
         followingUsers = Author.objects.filter(id__in=following)
@@ -164,12 +167,12 @@ class FollowingRelationshipList(APIView):
 
         # Makes more sense to maybe check for foreign or remote before getting
         try:
-            author = Author.objects.get(pk=author_data['id'])
+            author = Author.objects.get(pk=get_author_id_from_url(author_data))
         except ObjectDoesNotExist:
             print('Foreign author')
             author = RemoteAuthor.objects.get_or_create(**author_data)
 
-        friend = get_object_or_404(Author, pk=friend_data['id'])
+        friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
 
         FollowingRelationship.objects.create(user=author, follows=friend)
         return Response(status=201)
@@ -184,7 +187,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-        posts = self.get_all_posts(request.user)
+        posts = self.get_all_posts(request.user.author)
 
         page = self.paginate_queryset(posts)
         if page is not None:
@@ -231,8 +234,8 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 
     def get(self, request, author_id, format=None):
         publicPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="PUBLIC") 
-        privateToUser = Post.objects.all().filter(visibility="PRIVATE", visibleTo=request.user) 
-        friendsOfCurrentUser = get_friends_of_authorPK(request.user.pk)
+        privateToUser = Post.objects.all().filter(visibility="PRIVATE", visibleTo=request.user.author) 
+        friendsOfCurrentUser = get_friends_of_authorPK(request.user.author.pk)
         friendsPosts = Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
         posts = publicPosts | privateToUser | friendsPosts
@@ -249,8 +252,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 class LoginView(APIView):
     "Login and get a response"
     def post(self, request, format=None):
-        user = get_object_or_404(User, pk=request.user.id)
-        author = get_object_or_404(Author, user=user)
+        author = get_object_or_404(Author, user=request.user)
         serialized_data = AuthorSerializer(author).data
         return Response(data=serialized_data, status=200)
 
@@ -271,7 +273,8 @@ class RegisterView(APIView):
         user.set_password(validated_data['password'])
         user.is_active = False
         user.save()
-        author = Author.objects.create(displayName=displayName, user=user)
+        host = str(request.scheme) + "://" + str(request.get_host())
+        author = Author.objects.create(displayName=displayName, user=user, host=host)
         author.save()
         return Response(status=200)
         

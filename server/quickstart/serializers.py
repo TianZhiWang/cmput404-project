@@ -26,10 +26,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 class AuthorSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
+    id = serializers.SerializerMethodField()
     displayName = serializers.CharField(max_length=150)
     url = serializers.URLField()
     host = serializers.URLField()
+
+    def get_id(self, obj):
+        return str(obj.host) + "/author/" + str(obj.id)
     
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
@@ -37,7 +40,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
         model = Comment
-        fields=('id', 'comment', 'author')
+        fields=('id', 'comment', 'author', 'published')
 
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
@@ -48,7 +51,7 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo', 'image')
+        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo', 'image', 'published')
 
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
