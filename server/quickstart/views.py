@@ -20,7 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor
+from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor, Node
 from django.contrib.auth.models import User
 from serializers import CommentSerializer, PostSerializer, AuthorSerializer
 from django.http import Http404
@@ -32,7 +32,10 @@ from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, PaginationMixin
+from requests.auth import HTTPBasicAuth
 import re
+import json
+import requests
 
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
@@ -43,27 +46,36 @@ def get_friends_of_authorPK(authorPK):
 def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
 
-class PostList(generics.ListCreateAPIView):
+class PostList(APIView, PaginationMixin):
     """
-    List all posts, or create a new post.
+    List all Public posts, or create a new post.
 
     get: 
-    returns all the posts.
+    returns all the Public posts.
 
     post: 
     create a new instance of post
     """
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
     pagination_class = PostsPagination
+    
+    def get(self, request, format=None):
+        publicPosts = Post.objects.filter(visibility="PUBLIC")
 
-    # http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
-    # Written by andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom
-    def get_serializer_context(self):
-        author = get_object_or_404(Author, user=self.request.user)
-        return {
-            'author': author
-        }
+        page = self.paginate_queryset(publicPosts)
+        if page is not None:
+            serializer = PostSerializer(publicPosts, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializedPosts = PostSerializer(posts, many=True)        
+        return Response(serializedPosts.data)
+
+    def post(self, request, format=None):
+        author = get_object_or_404(Author, user=request.user)
+        serializedPost = PostSerializer(data=request.data, context={'author': author})
+        if serializedPost.is_valid():
+            serializedPost.save()
+            return Response(serializedPost.data, status=201)
+        return Response(serializedPost.errors, status=400)
 
 class PostDetail(APIView):
     def delete(self, request, post_id, format=None):
