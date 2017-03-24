@@ -101,3 +101,30 @@ class AuthorPostTest(APITestCase):
         response = self.client.post(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
+    def post_a_post_obj(self, title, visibility, us, pw):
+        url = reverse("post")
+        obj = {
+            "title": title,
+            "content": "this is a post dude",
+            "description": "im not sure how to describe my post",
+            "contentType": "text/markdown",
+            "author": "",
+            "comments": [],
+            "visibility": visibility,
+            "visibleTo": []
+        }
+        basicAuth = self.getBasicAuthHeader(us, pw)
+        response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
+        return response
+
+    def test_authoridposturl_get_your_posts(self):
+        """ Should be able to get all my posts when accessing the url with my id """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 5)  # should get all posts made by me
+
