@@ -212,18 +212,23 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
 
+            # http://stackoverflow.com/a/6653873 Jack M. (http://stackoverflow.com/users/3421/jack-m) (CC-BY-SA 3.0)
+            friends = [str(uuid) for uuid in get_friends_of_authorPK(author.id).values_list('user', flat=True)]
+
             # Get all posts from remote authors
             nodes = list(Node.objects.all())
             for node in nodes:
                 url = node.url + 'author/posts/'
-                print(url)
                 req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
-                print(req.json())
-                data = json.loads(req.json())
-                if not hasattr(data, 'posts'):
-                    raise Exception('They didn\'t send posts in their request')
+                unfilteredForeignPosts = req.json()['posts']
                 
-                serializedPosts += data['posts']
+                for post in unfilteredForeignPosts:
+                    if post['visibility'] == 'PUBLIC':
+                        serializedPosts.append(post)
+                    elif post['visibility'] == 'FRIENDS' and (get_author_id_from_url(post['author']) in friends):
+                        serializedPosts.append(post)
+                    elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
+                        serializedPosts.append(post)
             
             return Response(serializedPosts)
 
