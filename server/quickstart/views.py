@@ -77,6 +77,13 @@ class PostDetail(APIView):
         post.delete()
         return Response(status=200)
 
+class SinglePost(APIView):
+    def get(self, request, post_id, format=None):
+        singlePost = get_object_or_404(Post, pk=post_id)
+        post = PostSerializer(singlePost)
+        return Response(post.data)
+
+
 class CommentList(APIView):
     """
     List all comments of a post, or create a new comment.
@@ -135,12 +142,7 @@ class AuthorList(APIView):
         return Response(formattedUsers)
 
 class AuthorDetail(APIView):
-    """
-    Get Author by Id
 
-    get:
-    Returns an author
-    """
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
         serialized_data = AuthorSerializer(author).data
