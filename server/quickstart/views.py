@@ -141,7 +141,7 @@ class CommentList(APIView, PaginationMixin):
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    author = Author.objects.create(id=author_data['id'], displayName=author_data['displayName'], host=author_data['host'])
+                    author = Author.objects.create(**author_data)
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
@@ -221,9 +221,13 @@ class CheckFriendship(APIView):
     check if two authors are friends
     """
     def get(self, request, author_id1, author_id2, format=None):
-        friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1).values_list('user', flat=True)]
-        author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
-        author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
+        try:
+            friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1).values_list('user', flat=True)]
+            author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
+            author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
+        except ValueError as e:
+            return Response(status=400)
+
         friendshipResult = {
             "query":"friends",
             "authors":[
@@ -236,8 +240,6 @@ class CheckFriendship(APIView):
             friendshipResult['friends']=True
             
         return Response(friendshipResult, status=200)       
-
-
 
 # TODO: How to add remote authors? Also how to link them?
 class FollowingRelationshipList(APIView):
@@ -278,25 +280,10 @@ class FollowingRelationshipList(APIView):
                 if Author.objects.filter(pk=friend_data['id']).exists():
                     friend = get_object_or_404(Author, pk=friend_data['id'])
                 else:
-                    friend = author = Author.objects.create(id=friend_data['id'], displayName=friend_data['displayName'], host=friend_data['host'])
+                    friend = Author.objects.create(**friend_data)
                 
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
-    
-    def delete(self, request, format=None):
-        if is_request_from_remote_node(request):
-            return Response(status=403)
-        
-        author_data = request.data['author']
-        friend_data = request.data['friend']
-        
-        author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
-        friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
-
-        followingRelationship = get_object_or_404(FollowingRelationship, user=author, follows=friend)
-        followingRelationship.delete()
-
-        return Response(status=200)
 
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
