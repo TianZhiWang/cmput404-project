@@ -20,7 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from models import Comment, Post, FollowingRelationship, Author, RemoteAuthor, Node
+from models import Comment, Post, FollowingRelationship, Author, Node
 from django.contrib.auth.models import User
 from serializers import CommentSerializer, PostSerializer, AuthorSerializer
 from django.http import Http404
