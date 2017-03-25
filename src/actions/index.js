@@ -277,9 +277,15 @@ function followUser(currentUser, otherUser) {
       query: 'friendrequest',
       author: {
         id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       },
       friend: {
-        id: otherUser.id
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       }
     }),
   });
