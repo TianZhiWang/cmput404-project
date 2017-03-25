@@ -65,3 +65,12 @@ class PostSerializer(serializers.ModelSerializer):
         for user in visibleTo:
             post.visibleTo.add(user)
         return post
+
+    def get_photo_url(self, car):
+        request = self.context.get('request')
+        photo_url = post.image.url
+        return request.build_absolute_uri(photo_url)
+
+    
+
+
