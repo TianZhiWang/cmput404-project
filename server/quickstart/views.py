@@ -47,7 +47,7 @@ def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
 
 def is_request_from_remote_node(request):
-    Node.objects.filter(user=request.user).count() != 0
+    return Node.objects.filter(user=request.user).count() != 0
 
 class PostList(generics.ListCreateAPIView):
     """
@@ -177,7 +177,7 @@ class FollowingRelationshipList(APIView):
             our_user = get_object_or_404(Author, pk=get_author_id_from_url(our_user_data))
 
             remote_user_data['id'] = get_author_id_from_url(remote_user_data)
-            remote_user = Author.objects.get_or_create(**remote_user_data)
+            remote_user = Author.objects.get_or_create(**remote_user_data)[0]
 
             FollowingRelationship.objects.create(user=remote_user, follows=our_user)
             return Response(status=201)
@@ -193,7 +193,7 @@ class FollowingRelationshipList(APIView):
                 return Response(status=201)
             # Other user remote
             else:
-                node = Node.objects.get(host=friend_data['host'])
+                node = Node.objects.get(url=friend_data['host'])
                 url = node.url + 'friendrequest/'
                 try:
                     req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=request.data)
