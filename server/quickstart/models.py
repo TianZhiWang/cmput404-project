@@ -65,6 +65,8 @@ class Post(models.Model):
 
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    source = models.URLField(default="http://127.0.0.1:8000")
+    origin = models.URLField(default="http://127.0.0.1:8000")
     published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
     content = models.CharField(max_length=140)
