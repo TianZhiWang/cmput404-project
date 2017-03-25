@@ -152,7 +152,7 @@ class CommentList(APIView, PaginationMixin):
         else:
             # Get the host associated with this post
             hostInfo = urlparse(request.data['post'])
-            host = str(host.scheme) + "://" + str(host.netloc)
+            host = str(hostInfo.scheme) + "://" + str(hostInfo.netloc)
             url = host + '/posts/' + str(post_id) + '/comments/'
             node = get_object_or_404(Node, url=host)
 
