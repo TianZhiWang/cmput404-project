@@ -109,7 +109,10 @@ class CommentList(APIView):
             if is_request_from_remote_node(request):
                 author_data = commentData['author']
                 author_data['id'] = get_author_id_from_url(author_data)
-                author = Author.objects.get_or_create(**author_data)[0]
+                if Author.objects.filter(pk=author_data['id']).exists():
+                    author = get_object_or_404(Author, pk=author_data['id'])
+                else:
+                    author = Author.objects.create(**author_data)
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
 
