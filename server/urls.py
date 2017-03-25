@@ -21,6 +21,8 @@ from server.quickstart import views
 from django.contrib import admin
 from django.views.generic import TemplateView
 
+
+
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
@@ -42,7 +44,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls, name="admin"),
     url(r'^$', TemplateView.as_view(template_name="react.html"), name="root"),
     url(r'^docs/', include('rest_framework_docs.urls')),
-    # url(r'^showimage/', include('showimage.url')),
+    url(r'^uploadimage/', include('imageupload_rest.urls',namespace = "uploadImage ")),
 ]
 
 

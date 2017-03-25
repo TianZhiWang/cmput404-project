@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'server.quickstart',
     'corsheaders',
     'rest_framework_docs',
+    'imageupload_rest',
 ]
 
 # https://github.com/ottoyiu/django-cors-headers
