@@ -37,6 +37,7 @@ import re
 import requests
 from django.urls import reverse
 import json
+from urlparse import urlparse
 
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
@@ -149,8 +150,9 @@ class CommentList(APIView, PaginationMixin):
         # It is one of there posts
         else:
             # Get the host associated with this post
-            host = re.search(r'^(.*)posts/.*$', request.data['post']).group(1)
-            url = host + 'posts/' + str(post_id) + '/comments/'
+            hostInfo = urlparse(request.data['post'])
+            host = str(host.scheme) + "://" + str(host.netloc)
+            url = host + '/posts/' + str(post_id) + '/comments/'
             node = get_object_or_404(Node, url=host)
 
             try:
@@ -284,6 +286,7 @@ class FollowingRelationshipList(APIView):
                 
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
+
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
             return Response(status=403)
