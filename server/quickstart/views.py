@@ -31,7 +31,7 @@ from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from pagination import PostsPagination, PaginationMixin
+from pagination import PostsPagination, PaginationMixin, CommentsPagination
 from requests.auth import HTTPBasicAuth
 import re
 import json
@@ -96,7 +96,7 @@ class PostDetail(APIView):
         post.delete()
         return Response(status=200)
 
-class CommentList(APIView):
+class CommentList(APIView, PaginationMixin):
     """
     List all comments of a post, or create a new comment.
 
@@ -106,11 +106,18 @@ class CommentList(APIView):
     post: 
     create a new instance of comment
     """
+    pagination_class = CommentsPagination
 
     # TODO: Wrap in pagination class
     def get(self, request, post_id, format=None):
-        comments = CommentSerializer(Comment.objects.filter(post=post_id), many=True)
-        return Response(comments.data, status=200)
+        comments = Comment.objects.filter(post=post_id)
+        page = self.paginate_queryset(comments)
+        if page is not None:
+            serializer = CommentSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=200)
     
     # TODO: Move validation, check if local or remote author
     # Can't user serializer as username isn't unique when it looks at user model
@@ -120,12 +127,15 @@ class CommentList(APIView):
         post = get_object_or_404(Post, pk=post_id)
         author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
         comment = Comment.objects.create(comment=data['comment'], post=post, author=author)
-
+        comments = Comment.objects.filter(post=post_id)
+        serializer = CommentSerializer(comments, many=True)
+        # return Response(serializer.data, status=200)
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({
             "query": "addComment",
             "success": True,
-            "message":"Comment Added"
+            "message":"Comment Added",
+            "data":serializer.data
             },
         status=200)
 
