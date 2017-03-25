@@ -28,3 +28,4 @@ db.sqlite3
 migrations
 server/quickstart/migrations
 server/static
+server/media
