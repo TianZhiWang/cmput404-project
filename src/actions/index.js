@@ -1,4 +1,5 @@
 import * as types from '../types';
+import uuidv4 from 'uuid/v4';
 
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
@@ -13,8 +14,25 @@ function getUUIDFromId(id) {
 /*
 * Adds a comment, to a post specified by postId
 */
-export function addComment(comment, postId, user) {
+// TODO: Add post origin to comment body
+export function addComment(comment, postId, postOrigin, user) {
   return function(dispatch) {
+    const requestBody = {
+      query: 'addComment',
+      post: postOrigin,
+      comment: {
+        comment,
+        author: {
+          id: user.id,
+          displayName: user.displayName,
+          host: user.host,
+          url: user.url
+        },
+        published: new Date().toISOString(),
+        id: uuidv4()
+      }
+    };
+
     fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
       method: 'POST',
       headers: {
@@ -22,25 +40,14 @@ export function addComment(comment, postId, user) {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        query: 'addComment',
-        comment: {
-          comment,
-          author: {
-            id: user.id,
-            displayName: user.displayName
-          }
-        }
-      }),
+      body: JSON.stringify(requestBody),
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res);
-      dispatch({type:types.ADD_COMMENT,
-        postId,
-        comment,
-        user,
-        res
+      dispatch({
+        type:types.ADD_COMMENT,
+        commentData: requestBody.comment,
+        postId: postId
       });
      // location.reload();
     })
@@ -90,7 +97,7 @@ export function addPost(post, user) {
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result.posts || []
+    posts: result || []
   };
 }
 
@@ -270,21 +277,43 @@ function followUser(currentUser, otherUser) {
       query: 'friendrequest',
       author: {
         id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       },
       friend: {
-        id: otherUser.id
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       }
     }),
   });
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friends/${getUUIDFromId(otherUser.id)}/`, {
+  return fetch(`${URL_PREFIX}/friendrequest/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`
-    }
+      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      },
+      friend: {
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      }
+    })
   });
 }
 

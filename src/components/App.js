@@ -83,8 +83,8 @@ export default connect(
     return {
       ...stateProps,
       ...ownProps,
-      addComment: function(text, postId) {
-        dispatch(actions.addComment(text, postId, user));
+      addComment: function(text, postId, postOrigin) {
+        dispatch(actions.addComment(text, postId, postOrigin, user));
       },
       addPost: function(post) {
         dispatch(actions.addPost(post, user));

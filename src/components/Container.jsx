@@ -37,6 +37,7 @@ class Container extends Component {
         <Col md={9}>
           <FriendList
             toggleFollowStatus={this.props.toggleFollowStatus}
+            user={this.props.user}
             users={this.props.users}
           />
         </Col>
