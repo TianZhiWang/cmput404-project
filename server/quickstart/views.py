@@ -46,6 +46,9 @@ def get_friends_of_authorPK(authorPK):
 def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
 
+def is_request_from_remote_node(request):
+    Node.objects.filter(user=request.user).count() != 0
+
 class PostList(generics.ListCreateAPIView):
     """
     List all posts, or create a new post.
@@ -165,22 +168,41 @@ class FriendsList(APIView):
 # TODO: How to add remote authors? Also how to link them?
 class FollowingRelationshipList(APIView):
     def post(self, request, format=None):
-        author_data = request.data['author']
-        friend_data = request.data['friend']
+        if is_request_from_remote_node(request):
+            our_user_data = request.data['friend']
+            remote_user_data = request.data['author']
 
-        # Makes more sense to maybe check for foreign or remote before getting
-        try:
-            author = Author.objects.get(pk=get_author_id_from_url(author_data))
-        except ObjectDoesNotExist:
-            print('Foreign author')
-            author = RemoteAuthor.objects.get_or_create(**author_data)
+            our_user = get_object_or_404(Author, pk=get_author_id_from_url(our_user_data))
 
-        friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
+            remote_user_data['id'] = get_author_id_from_url(remote_user_data)
+            remote_user = Author.objects.get_or_create(**remote_user_data)
 
-        FollowingRelationship.objects.create(user=author, follows=friend)
-        return Response(status=201)
+            FollowingRelationship.objects.create(user=remote_user, follows=our_user)
+            return Response(status=201)
+        else:
+            author_data = request.data['author']
+            friend_data = request.data['friend']
 
+            # Both our users
+            if (author_data['host'] == friend_data['host']):
+                author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
+                friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
+                FollowingRelationship.objects.create(user=author, follows=friend)
+                return Response(status=201)
+            # Other user remote
+            else:
+                node = Node.objects.get(host=friend_data['host'])
+                url = node.url + 'friendrequest/'
+                try:
+                    req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=request.data)
+                except:
+                    print("Other server is down or maybe we don't have the right node")
+                    return Response(status=500)
 
+                author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
+                friend_data['id'] = get_author_id_from_url(author)
+                friend = Author.objects.get_or_create(**friend_data)
+                return Response(status=201)
 
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
@@ -190,11 +212,10 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-        nodes = Node.objects.filter(user=request.user)
 
         # Request originating from remote node
-        if (nodes.count() > 0):
-            node = nodes[0]
+        if is_request_from_remote_node(request):
+            node = Node.objects.get(user=request.user)
             # Return everything not serverOnly
             posts = Post.objects.exclude(visibility="SERVERONLY")
 
@@ -219,16 +240,19 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             nodes = list(Node.objects.all())
             for node in nodes:
                 url = node.url + 'author/posts/'
-                req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
-                unfilteredForeignPosts = req.json()['posts']
-                
-                for post in unfilteredForeignPosts:
-                    if post['visibility'] == 'PUBLIC':
-                        serializedPosts.append(post)
-                    elif post['visibility'] == 'FRIENDS' and (get_author_id_from_url(post['author']) in friends):
-                        serializedPosts.append(post)
-                    elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
-                        serializedPosts.append(post)
+                try:
+                    req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+                    unfilteredForeignPosts = req.json()['posts']
+                    
+                    for post in unfilteredForeignPosts:
+                        if post['visibility'] == 'PUBLIC':
+                            serializedPosts.append(post)
+                        elif post['visibility'] == 'FRIENDS' and (get_author_id_from_url(post['author']) in friends):
+                            serializedPosts.append(post)
+                        elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
+                            serializedPosts.append(post)
+                except:
+                    print("Other server is down or giving bad data")
             
             return Response(serializedPosts)
 
