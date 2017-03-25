@@ -46,12 +46,45 @@ class CommentSerializer(serializers.ModelSerializer):
 # When we read we get the nested data, but we only have to passed the author_id when we write
 # http://www.django-rest-framework.org/api-guide/relations/#api-reference
 class PostSerializer(serializers.ModelSerializer):
-    comments = CommentSerializer(many=True, read_only=True)
     author = AuthorSerializer(read_only=True)
+    comments = serializers.SerializerMethodField('paginated_comments')
+    source = serializers.SerializerMethodField()
+    origin = serializers.SerializerMethodField()
+    count = serializers.SerializerMethodField()
+    size = serializers.SerializerMethodField()
+    next = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'description', 'contentType', 'author', 'comments', 'visibility', 'visibleTo', 'image', 'published')
+
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published','image')
+
+    def paginated_comments(self, obj):
+        comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]
+        serializer = CommentSerializer(comments, many=True)
+        return serializer.data
+
+    def get_source(self, obj):
+        source = obj.source + "/posts/" + str(obj.id)
+        return source
+
+    def get_origin(self, obj):
+        origin = obj.origin + "/posts/" + str(obj.id)
+        return origin
+
+    def get_count(self, obj):
+        count = Comment.objects.all().filter(post__id=obj.id).count()
+        return count
+    
+    def get_size(self, obj):
+        comments = Comment.objects.all().filter(post__id=obj.id).count() 
+        size = comments if comments < 5 else 5
+        return size
+    
+    def get_next(self, obj):
+        next = obj.origin + "/posts/" + str(obj.id) + "/comments"
+        return next
+
 
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/

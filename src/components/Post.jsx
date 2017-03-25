@@ -112,7 +112,7 @@ Post.propTypes = {
   contentType: PropTypes.string.isRequired,
   deletePost: PropTypes.func.isRequired,
   description: PropTypes.string,
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired
 };
