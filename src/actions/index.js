@@ -36,10 +36,12 @@ export function addComment(comment, postId, user) {
     })
     .then(res => res.json())
     .then((res) => {
+      console.log(res);
       dispatch({type:types.ADD_COMMENT,
         postId,
         comment,
-        user
+        user,
+        res
       });
      // location.reload();
     })

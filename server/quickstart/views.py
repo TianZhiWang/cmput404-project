@@ -31,7 +31,7 @@ from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from pagination import PostsPagination, PaginationMixin
+from pagination import PostsPagination, PaginationMixin, CommentsPagination
 from requests.auth import HTTPBasicAuth
 import re
 import requests
@@ -49,6 +49,13 @@ def get_author_id_from_url(author):
 
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).count() != 0
+
+def get_queryset_friends_of_a_friend(currentUser):
+        currentUserFriends = get_friends_of_authorPK(currentUser.pk)
+        temp = get_friends_of_authorPK(currentUser.pk)
+        for f in currentUserFriends:
+            temp = temp | get_friends_of_authorPK(f["user"])
+        return Post.objects.all().filter(author__in=temp).filter(visibility="FOAF")
 
 class PostList(APIView, PaginationMixin):
     """
@@ -82,6 +89,11 @@ class PostList(APIView, PaginationMixin):
         return Response(serializedPost.errors, status=400)
 
 class PostDetail(APIView):
+    def get(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        serializedPost = PostSerializer(post)        
+        return Response(serializedPost.data)
+
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
         post.delete()
@@ -94,7 +106,7 @@ class SinglePost(APIView):
         return Response(post.data)
 
 
-class CommentList(APIView):
+class CommentList(APIView, PaginationMixin):
     """
     List all comments of a post, or create a new comment.
 
@@ -104,11 +116,18 @@ class CommentList(APIView):
     post: 
     create a new instance of comment
     """
+    pagination_class = CommentsPagination
 
     # TODO: Wrap in pagination class
     def get(self, request, post_id, format=None):
-        comments = CommentSerializer(Comment.objects.filter(post=post_id), many=True)
-        return Response(comments.data, status=200)
+        comments = Comment.objects.filter(post=post_id)
+        page = self.paginate_queryset(comments)
+        if page is not None:
+            serializer = CommentSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=200)
     
     def post(self, request, post_id, format=None):
         # Is it one of our posts?
@@ -124,7 +143,7 @@ class CommentList(APIView):
                 else:
                     author = Author.objects.create(**author_data)
             else:
-                author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
+                author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
             comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
         # It is one of there posts
@@ -292,7 +311,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
         currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
-        friendOfAFriendPosts = self.get_queryset_friends_of_a_friend(currentUser)
+        friendOfAFriendPosts = get_queryset_friends_of_a_friend(currentUser)
         friendPosts = self.get_queryset_friends(currentUser)
         serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY") # TODO: check that user is on our server
         visibleToPosts = self.get_queryset_visible_to(currentUser)
@@ -308,13 +327,6 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     def get_queryset_visible_to(self, currentUser):
         return Post.objects.all().filter(visibility="PRIVATE", visibleTo=currentUser)
 
-    def get_queryset_friends_of_a_friend(self, currentUser):
-        currentUserFriends = get_friends_of_authorPK(currentUser.pk)
-        temp = get_friends_of_authorPK(currentUser.pk)
-        for f in currentUserFriends:
-            temp = temp | get_friends_of_authorPK(f["user"])
-        return Post.objects.all().filter(author__in=temp).filter(visibility="FOAF")
-
     def get_queryset_friends(self, currentUser):
         friendsOfCurrentUser = get_friends_of_authorPK(currentUser.pk)
 
@@ -325,12 +337,19 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
     pagination_class = PostsPagination
 
     def get(self, request, author_id, format=None):
-        publicPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="PUBLIC") 
-        privateToUser = Post.objects.all().filter(visibility="PRIVATE", visibleTo=request.user.author) 
-        friendsOfCurrentUser = get_friends_of_authorPK(request.user.author.pk)
-        friendsPosts = Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
-
-        posts = publicPosts | privateToUser | friendsPosts
+        user = get_object_or_404(Author, pk=author_id)
+        #If authenticated user is self should return all posts by user
+        if(user == request.user.author): 
+            posts = Post.objects.all().filter(author__id=author_id)
+        else:
+            publicPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="PUBLIC") 
+            privateToUser = Post.objects.all().filter(author__id=author_id).filter(visibility="PRIVATE", visibleTo=request.user.author) 
+            friendsOfCurrentUser = get_friends_of_authorPK(request.user.author.pk)
+            friendsPosts = Post.objects.all().filter(author__id=author_id).filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
+            friendOfAFriendPosts = get_queryset_friends_of_a_friend(request.user.author)
+            serverOnlyPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="SERVERONLY")
+            
+            posts = publicPosts | privateToUser | friendsPosts | friendOfAFriendPosts | serverOnlyPosts
 
         page = self.paginate_queryset(posts)
         if page is not None:
