@@ -13,20 +13,20 @@ const baseState = {
 };
 
 describe('posts reducer', function () {
-  describe('add comment', () => {
-    it('should add comment', () => {
-      const action = {
-        type: types.ADD_COMMENT,
-        postId: 111,
-        comment: "hello"
-      };
-      const state = [{ id: 111, comments: [] }];
-      assert.deepEqual(
-        posts(state, action),
-        [{ id: 111, comments: ["hello"] }]
-      );
-    });
-  });
+  // describe('add comment', () => {
+  //   it('should add comment', () => {
+  //     const action = {
+  //       type: types.ADD_COMMENT,
+  //       postId: 111,
+  //       comment: "hello"
+  //     };
+  //     const state = [{ id: 111, comments: [] }];
+  //     assert.deepEqual(
+  //       posts(state, action),
+  //       [{ id: 111, comments: ["hello"] }]
+  //     );
+  //   });
+  // });
 
   describe('add post', () => {
     it('should add post', () => {
