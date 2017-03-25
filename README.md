@@ -84,6 +84,8 @@ Libraries are listed in package.json and requirements.txt
 - [Django Nested Relations] (http://www.django-rest-framework.org/api-guide/relations/), accessed on March 9, 2017
 - [Django ManyToManyField](https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ManyToManyField), accessed March 12, 2017
 - [Django REST Framework Testing](http://www.django-rest-framework.org/api-guide/testing/), accessed March 12, 2017
+- [Django Framework Running Testing From A Directory](https://docs.djangoproject.com/en/1.8/topics/testing/overview/#running-tests), accessed March 22, 2017
+- [Django Framework Headers In Requests](https://docs.djangoproject.com/en/dev/topics/testing/tools/#making-requests), accessed March 23, 2017
 - Some code in server/quickstart/serializers.py was written by http://stackoverflow.com/a/33048798 joslarson (http://stackoverflow.com/users/3097518/joslarson) on StackOverflow, modified by Kyle Carlstrom (CC-BY-SA 3.0)
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#django.db.models.ForeignKey.on_delete (accessed on March 9, 2017)
 - Some code in server/quickstart/models.py is based on code written by http://stackoverflow.com/a/13496120 user1839132 (http://stackoverflow.com/users/1839132/user1839132) and modified by Kyle Carlstrom (CC-BY-SA 3.0)
@@ -108,6 +110,9 @@ Libraries are listed in package.json and requirements.txt
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
 - http://www.django-rest-framework.org/api-guide/fields/#uuidfield
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#datefield
+- https://docs.python.org/2/library/re.html
+- https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
+- https://regex101.com/
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).

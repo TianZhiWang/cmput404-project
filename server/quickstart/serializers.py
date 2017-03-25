@@ -26,10 +26,13 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 class AuthorSerializer(serializers.Serializer):
-    id = serializers.UUIDField(format='hex_verbose')
+    id = serializers.SerializerMethodField()
     displayName = serializers.CharField(max_length=150)
     url = serializers.URLField()
     host = serializers.URLField()
+
+    def get_id(self, obj):
+        return str(obj.host) + "/author/" + str(obj.id)
     
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write

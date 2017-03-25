@@ -105,3 +105,10 @@ class FollowingRelationship(models.Model):
 
     def __unicode__(self):
         return str(self.user) + '_follows_' + str(self.follows)
+
+#This model is used for connecting with other groups
+class Node(models.Model):
+    url = models.URLField()
+    user = models.OneToOneField(User)
+    username = models.CharField(max_length=140)
+    password = models.CharField(max_length=140)
