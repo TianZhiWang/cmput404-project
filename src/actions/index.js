@@ -1,4 +1,5 @@
 import * as types from '../types';
+import uuidv4 from 'uuid/v4';
 
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
@@ -14,8 +15,24 @@ function getUUIDFromId(id) {
 * Adds a comment, to a post specified by postId
 */
 // TODO: Add post origin to comment body
-export function addComment(comment, postId, user) {
+export function addComment(comment, postId, postOrigin, user) {
   return function(dispatch) {
+    const requestBody = {
+      query: 'addComment',
+      post: postOrigin,
+      comment: {
+        comment,
+        author: {
+          id: user.id,
+          displayName: user.displayName,
+          host: user.host,
+          url: user.url
+        },
+        published: new Date().toISOString(),
+        id: uuidv4()
+      }
+    };
+
     fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
       method: 'POST',
       headers: {
@@ -23,25 +40,14 @@ export function addComment(comment, postId, user) {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        query: 'addComment',
-        comment: {
-          comment,
-          author: {
-            id: user.id,
-            displayName: user.displayName
-          }
-        }
-      }),
+      body: JSON.stringify(requestBody),
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res);
-      dispatch({type:types.ADD_COMMENT,
-        postId,
-        comment,
-        user,
-        res
+      dispatch({
+        type:types.ADD_COMMENT,
+        commentData: requestBody.comment,
+        postId: postId
       });
      // location.reload();
     })
@@ -91,7 +97,7 @@ export function addPost(post, user) {
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result.posts || []
+    posts: result || []
   };
 }
 

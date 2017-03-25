@@ -23,7 +23,7 @@ class Post extends Component {
 
   handleAddComment() {
     if (this.state.newCommentText) {
-      this.props.addComment(this.state.newCommentText, this.props.id, this.props.comments.length);
+      this.props.addComment(this.state.newCommentText, this.props.id, this.props.origin);
       this.setState({
         newCommentText: ''
       });
@@ -113,6 +113,7 @@ Post.propTypes = {
   deletePost: PropTypes.func.isRequired,
   description: PropTypes.string,
   id: PropTypes.string.isRequired,
+  origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired
 };

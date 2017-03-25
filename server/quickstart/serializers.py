@@ -32,7 +32,7 @@ class AuthorSerializer(serializers.Serializer):
     host = serializers.URLField()
 
     def get_id(self, obj):
-        return str(obj.host) + "/author/" + str(obj.id)
+        return str(obj.host) + "author/" + str(obj.id)
     
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
