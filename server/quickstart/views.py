@@ -141,7 +141,7 @@ class CommentList(APIView, PaginationMixin):
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    author = Author.objects.create(**author_data)
+                    author = Author.objects.create(id=author_data['id'], displayName=author_data['displayName'], host=author_data['host'])
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
@@ -284,10 +284,24 @@ class FollowingRelationshipList(APIView):
                 if Author.objects.filter(pk=friend_data['id']).exists():
                     friend = get_object_or_404(Author, pk=friend_data['id'])
                 else:
-                    friend = Author.objects.create(**friend_data)
+                    friend = Author.objects.create(id=friend_data['id'], displayName=friend_data['displayName'], host=friend_data['host'])
                 
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
+    def delete(self, request, format=None):
+        if is_request_from_remote_node(request):
+            return Response(status=403)
+
+        author_data = request.data['author']
+        friend_data = request.data['friend']
+
+        author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
+        friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
+
+        followingRelationship = get_object_or_404(FollowingRelationship, user=author, follows=friend)
+        followingRelationship.delete()
+        
+        return Response(status=200)
 
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
