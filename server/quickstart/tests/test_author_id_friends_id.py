@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
 
-class authoridfriendidIdTest(APITestCase):
+class AuthorIdFriendIdTest(APITestCase):
     """ This is the home of all of our tests relating to the author/:id/friends/:id url """
 
     AUTHOR_USER_NAME = 'author'
