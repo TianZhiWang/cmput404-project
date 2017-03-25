@@ -220,8 +220,11 @@ class FriendsList(APIView):
         friends = get_friends_of_authorPK(author_id)
 
         users = Author.objects.filter(id__in=friends)
-        formatedUsers = AuthorSerializer(users,many=True).data
-        return Response({ "query": "friends","authors":formatedUsers})
+        authorsUrlArray = []
+        for author in users:
+            formatedauthor = AuthorSerializer(author).data
+            authorsUrlArray.append(formatedauthor['url'])
+        return Response({ "query": "friends","authors":authorsUrlArray})
 
 class CheckFriendship(APIView):
     """
