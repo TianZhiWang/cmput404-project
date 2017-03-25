@@ -83,7 +83,8 @@ class PostList(APIView, PaginationMixin):
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
-        serializedPost = PostSerializer(data=request.data, context={'author': author})
+        host = str(request.scheme) + "://" + str(request.get_host()) + "/"
+        serializedPost = PostSerializer(data=request.data, context={'author': author, 'host': host})
         if serializedPost.is_valid():
             serializedPost.save()
             return Response(serializedPost.data, status=201)

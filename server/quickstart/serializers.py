@@ -67,11 +67,11 @@ class PostSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_source(self, obj):
-        source = obj.source + "/posts/" + str(obj.id)
+        source = obj.source + "posts/" + str(obj.id)
         return source
 
     def get_origin(self, obj):
-        origin = obj.origin + "/posts/" + str(obj.id)
+        origin = obj.origin + "posts/" + str(obj.id)
         return origin
 
     def get_count(self, obj):
@@ -84,7 +84,7 @@ class PostSerializer(serializers.ModelSerializer):
         return size
     
     def get_next(self, obj):
-        next = obj.origin + "/posts/" + str(obj.id) + "/comments"
+        next = obj.origin + "posts/" + str(obj.id) + "/comments"
         return next
 
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
@@ -93,8 +93,9 @@ class PostSerializer(serializers.ModelSerializer):
     # modified by Kyle Carlstrom
     def create(self, validated_data):
         author = self.context['author']
+        host = self.context['host']
         visibleTo = validated_data.pop('visibleTo')
-        post = Post.objects.create(author=author, **validated_data)
+        post = Post.objects.create(author=author, origin=host, source=host, **validated_data)
         post.save()
         for user in visibleTo:
             post.visibleTo.add(user)
