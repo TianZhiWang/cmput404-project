@@ -100,14 +100,31 @@ class CommentList(APIView):
         comments = CommentSerializer(Comment.objects.filter(post=post_id), many=True)
         return Response(comments.data, status=200)
     
-    # TODO: Move validation, check if local or remote author
-    # Can't user serializer as username isn't unique when it looks at user model
-    # Decide if local or foreign from url of author
     def post(self, request, post_id, format=None):
-        data = request.data['comment']
-        post = get_object_or_404(Post, pk=post_id)
-        author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
-        comment = Comment.objects.create(comment=data['comment'], post=post, author=author)
+        commentData = request.data['comment']
+        # Is it one of our posts?
+        if Post.objects.filter(pk=post_id).exists():
+            post = get_object_or_404(Post, pk=post_id)
+
+            if is_request_from_remote_node(request):
+                author_data = commentData['author']
+                author_data['id'] = get_author_id_from_url(author_data)
+                author = Author.objects.get_or_create(**author_data)[0]
+            else:
+                author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
+
+            comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
+        # It is one of there posts
+        else:
+            # Get the host associated with this post
+            host = re.search(r'^(.*)posts/.*$', request.data['post'])[1]
+            url = host + '/post/' + str(post_id) + '/comments/'
+            node = get_object_or_404(Node, url=host)
+            try:
+                req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=request.data)
+            except:
+                print("Other server is down or maybe we don't have the right node")
+                return Response(status=500)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({

@@ -13,6 +13,7 @@ function getUUIDFromId(id) {
 /*
 * Adds a comment, to a post specified by postId
 */
+// TODO: Add post origin to comment body
 export function addComment(comment, postId, user) {
   return function(dispatch) {
     fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
