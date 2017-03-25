@@ -141,7 +141,7 @@ class CommentList(APIView, PaginationMixin):
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    author = Author.objects.create(author_data['id'], author_data['displayName'], author_data['host'])
+                    author = Author.objects.create(id=author_data['id'], displayName=author_data['displayName'], host=author_data['host'])
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
@@ -256,7 +256,7 @@ class FollowingRelationshipList(APIView):
                 if Author.objects.filter(pk=friend_data['id']).exists():
                     friend = get_object_or_404(Author, pk=friend_data['id'])
                 else:
-                    friend = author = Author.objects.create(friend_data['id'], friend_data['displayName'], friend_data['host'])
+                    friend = author = Author.objects.create(id=friend_data['id'], displayName=friend_data['displayName'], host=friend_data['host'])
                 
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
