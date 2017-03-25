@@ -24,8 +24,9 @@ from django.views.generic import TemplateView
 urlpatterns = [
     url(r'^author/posts/$', views.AllPostsAvailableToCurrentUser.as_view(), name="authorPost"),
     url(r'^posts/$', views.PostList.as_view(), name="post"),
-    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/posts/$', views.PostsByAuthorAvailableToCurrentUser.as_view()),
+    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/posts/$', views.PostsByAuthorAvailableToCurrentUser.as_view(), name="authorIdPosts"),
     # TODO: Add posts/<post_id> for access to a single post
+    url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view(), name="postId"),  # TODO: impliment the proper view
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/comments/$', views.CommentList.as_view(), name="postComment"),
     # TODO: http://service/author/<authorid>/friends/ I think this is getting all of the friends of that author?
     # TODO: http://service/author/<authorid>/friends/<authorid2> ask if 2 authors are friends
