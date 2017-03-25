@@ -292,12 +292,28 @@ function followUser(currentUser, otherUser) {
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friends/${getUUIDFromId(otherUser.id)}/`, {
+  return fetch(`${URL_PREFIX}/friendrequest/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`
-    }
+      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      },
+      friend: {
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      }
+    })
   });
 }
 

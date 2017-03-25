@@ -9,7 +9,7 @@ class FriendList extends Component {
   createUserList(people) {
     return (
       <ListGroup className='friend-list'>
-        {people.map(friend => (
+        {people.filter(friend => friend.id != this.props.user.id).map(friend => (
           <FriendListItem
             key={friend.id}
             toggleFollowStatus={this.props.toggleFollowStatus}
@@ -35,6 +35,7 @@ class FriendList extends Component {
 
 FriendList.propTypes = {
   toggleFollowStatus: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
   users: PropTypes.array.isRequired
 };
 
