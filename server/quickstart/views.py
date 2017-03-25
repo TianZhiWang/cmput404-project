@@ -206,7 +206,10 @@ class FriendsList(APIView):
     Returns a list of all authors that are friends
     """
     def get(self, request, author_id, format=None):
-        author = get_object_or_404(Author, pk=author_id)
+        try:
+            author = get_object_or_404(Author, pk=author_id)
+        except ValueError as e:
+            return Response(status=400)
         following = FollowingRelationship.objects.filter(user=author_id).values('follows') # everyone currentUser follows
         following_pks = [author['follows'] for author in following]
         followed = FollowingRelationship.objects.filter(follows=author_id).values('user')  # everyone that follows currentUser
