@@ -133,7 +133,7 @@ class AuthorPostTest(APITestCase):
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.STRANGER_USER_NAME, self.STRANGER_USER_PASS)
-        url = reverse("authorIdPosts", args=[self.friend_author.pk])
+        url = reverse("authorIdPosts", args=[self.stranger_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
@@ -155,7 +155,7 @@ class AuthorPostTest(APITestCase):
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
-        url = reverse("authorIdPosts", args=[self.author.pk])
+        url = reverse("authorIdPosts", args=[self.foaf_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
