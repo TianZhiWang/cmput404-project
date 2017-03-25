@@ -246,14 +246,19 @@ class FollowingRelationshipList(APIView):
                 node = Node.objects.get(url=friend_data['host'])
                 url = node.url + 'friendrequest/'
                 try:
-                    req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=request.data)
+                    req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
                 except:
                     print("Other server is down or maybe we don't have the right node")
                     return Response(status=500)
 
                 author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
-                friend_data['id'] = get_author_id_from_url(author)
-                friend = Author.objects.get_or_create(**friend_data)
+                friend_data['id'] = get_author_id_from_url(author_data)
+                if Author.objects.filter(pk=friend_data['id']).exists():
+                    friend = get_object_or_404(Author, pk=friend_data['id'])
+                else:
+                    friend = Author.objects.create(**friend_data)
+                
+                FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
 
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
