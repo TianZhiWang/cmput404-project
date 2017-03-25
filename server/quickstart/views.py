@@ -114,12 +114,15 @@ class CommentList(APIView, PaginationMixin):
         post = get_object_or_404(Post, pk=post_id)
         author = get_object_or_404(Author, pk=get_author_id_from_url(data['author']))
         comment = Comment.objects.create(comment=data['comment'], post=post, author=author)
-
+        comments = Comment.objects.filter(post=post_id)
+        serializer = CommentSerializer(comments, many=True)
+        # return Response(serializer.data, status=200)
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({
             "query": "addComment",
             "success": True,
-            "message":"Comment Added"
+            "message":"Comment Added",
+            "data":serializer.data
             },
         status=200)
 
