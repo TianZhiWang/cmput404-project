@@ -195,7 +195,14 @@ class AuthorDetail(APIView):
 
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
+
+        friends = get_friends_of_authorPK(author_id)
+        users = Author.objects.filter(id__in=friends)
+        formatedUsers = AuthorSerializer(users,many=True).data
+
         serialized_data = AuthorSerializer(author).data
+        serialized_data["friends"] = formatedUsers
+        
         return Response(data=serialized_data, status=200)
 
 class FriendsList(APIView):
@@ -207,10 +214,7 @@ class FriendsList(APIView):
     """
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
-        following = FollowingRelationship.objects.filter(user=author_id).values('follows') # everyone currentUser follows
-        following_pks = [author['follows'] for author in following]
-        followed = FollowingRelationship.objects.filter(follows=author_id).values('user')  # everyone that follows currentUser
-        friends = followed.filter(user__in=following_pks)
+        friends = get_friends_of_authorPK(author_id)
 
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
