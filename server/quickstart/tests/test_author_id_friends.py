@@ -94,12 +94,21 @@ class AuthorIdFriendsTest(APITestCase):
         response = self.client.put(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_authoridfriends_post_405(self):
+    def test_authoridfriends_post_has_correnct_num_of_friends(self):
         """ POST should throw a client error as it doesn't make sense to put at this endpoint """
         url = reverse("authorIdFriend", args=[self.author.pk])
+        obj = {
+            "query": "friends",
+            "author": self.author.pk,
+            "authors": [
+	            self.stranger_author.host + "/author/" + str(self.stranger_author.id),
+		        self.friend_author.host + "/author/" + str(self.friend_author.id)
+  	        ]
+        }
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
-        response = self.client.post(url, HTTP_AUTHORIZATION=basicAuth)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(len(response.data["authors"]) == 1)
 
     def test_author_has_correct_num_of_friends(self):
         """ The current author should have 1 friend """

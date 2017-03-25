@@ -37,6 +37,7 @@ import re
 import requests
 from django.urls import reverse
 import json
+from urlparse import urlparse
 
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
@@ -46,6 +47,9 @@ def get_friends_of_authorPK(authorPK):
 
 def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
+
+def get_author_id_from_url_string(string):
+    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', string).group(1)
 
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).count() != 0
@@ -82,7 +86,8 @@ class PostList(APIView, PaginationMixin):
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
-        serializedPost = PostSerializer(data=request.data, context={'author': author})
+        host = str(request.scheme) + "://" + str(request.get_host()) + "/"
+        serializedPost = PostSerializer(data=request.data, context={'author': author, 'host': host})
         if serializedPost.is_valid():
             serializedPost.save()
             return Response(serializedPost.data, status=201)
@@ -149,7 +154,8 @@ class CommentList(APIView, PaginationMixin):
         # It is one of there posts
         else:
             # Get the host associated with this post
-            host = re.search(r'^(.*)posts/.*$', request.data['post']).group(1)
+            hostInfo = urlparse(request.data['post'])
+            host = str(hostInfo.scheme) + "://" + str(hostInfo.netloc) + '/'
             url = host + 'posts/' + str(post_id) + '/comments/'
             node = get_object_or_404(Node, url=host)
 
@@ -211,6 +217,9 @@ class FriendsList(APIView):
 
     get:
     Returns a list of all authors that are friends
+
+    post:
+    post a list of authors, returns the ones that are friends
     """
     def get(self, request, author_id, format=None):
         try:
@@ -220,8 +229,28 @@ class FriendsList(APIView):
         friends = get_friends_of_authorPK(author_id)
 
         users = Author.objects.filter(id__in=friends)
-        formatedUsers = AuthorSerializer(users,many=True).data
-        return Response({ "query": "friends","authors":formatedUsers})
+        authorsUrlArray = []
+        for author in users:
+            formatedauthor = AuthorSerializer(author).data
+            authorsUrlArray.append(formatedauthor['url'])
+        return Response({ "query": "friends","authors":authorsUrlArray})
+
+    def post(self, request, author_id, format=None):
+        try:
+            author = get_object_or_404(Author, pk=author_id)
+        except ValueError as e:
+            return Response(status=400)
+
+        friends = get_friends_of_authorPK(author_id)
+
+        authors = request.data["authors"]
+        authors_pks = [get_author_id_from_url_string(author) for author in authors]
+        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends)
+        
+        formatedUsers = AuthorSerializer(filtered,many=True).data
+        urls = [user["id"] for user in formatedUsers]
+    
+        return Response({ "query":"friends", "author":author_id , "authors":urls})
 
 class CheckFriendship(APIView):
     """
@@ -291,6 +320,7 @@ class FollowingRelationshipList(APIView):
                 
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
+
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
             return Response(status=403)
