@@ -213,7 +213,10 @@ class FriendsList(APIView):
     Returns a list of all authors that are friends
     """
     def get(self, request, author_id, format=None):
-        author = get_object_or_404(Author, pk=author_id)
+        try:
+            author = get_object_or_404(Author, pk=author_id)
+        except ValueError as e:
+            return Response(status=400)
         friends = get_friends_of_authorPK(author_id)
 
         users = Author.objects.filter(id__in=friends)
