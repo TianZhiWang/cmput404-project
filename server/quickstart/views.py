@@ -216,6 +216,28 @@ class FriendsList(APIView):
         formatedUsers = AuthorSerializer(users,many=True).data
         return Response({ "query": "friends","authors":formatedUsers})
 
+class CheckFriendship(APIView):
+    """
+    check if two authors are friends
+    """
+    def get(self, request, author_id1, author_id2, format=None):
+        friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1).values_list('user', flat=True)]
+        author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
+        author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
+        friendshipResult = {
+            "query":"friends",
+            "authors":[
+            author1URL,
+            author2URL
+            ],
+            "friends": False
+        }
+        if(author_id2 in friendsOfCurrentUser):
+            friendshipResult['friends']=True
+            
+        return Response(friendshipResult, status=200)       
+
+
 
 # TODO: How to add remote authors? Also how to link them?
 class FollowingRelationshipList(APIView):

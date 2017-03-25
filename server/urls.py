@@ -28,7 +28,7 @@ urlpatterns = [
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.SinglePost.as_view(), name="postId"),
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/comments/$', views.CommentList.as_view(), name="postIdComments"),
     # TODO: http://service/author/<authorid>/friends/ I think this is getting all of the friends of that author?
-    # TODO: http://service/author/<authorid>/friends/<authorid2> ask if 2 authors are friends
+    url(r'^author/(?P<author_id1>[0-9a-zA-Z-]+)/friends/(?P<author_id2>[0-9a-zA-Z-]+)/$', views.CheckFriendship.as_view()),
     url(r'^friendrequest/$', views.FollowingRelationshipList.as_view(), name="friendRequest"), # TODO: Add unfriend
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/$', views.AuthorDetail.as_view()),
     ###### Divider - Locally used, not in API #######
