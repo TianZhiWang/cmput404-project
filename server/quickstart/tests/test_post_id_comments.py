@@ -60,13 +60,13 @@ class PostIdCommentsTest(APITestCase):
         """ Returns the b64encoded string created for a user and password to be used in the header """
         return "Basic %s" % base64.b64encode("%s:%s" % (us, pw))
 
-    def test_authoridposturl_get_unauth_401(self):
+    def test_postidcommentsurl_get_unauth_401(self):
         """ GETing the posts comments w/o any auth will result in a 401, even if the post doesn't exist yet """
         url = reverse("postIdComments", args=[1])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_authoridposturl_get_unactivated_401(self):
+    def test_postidcommentsurl_get_unactivated_401(self):
         """ GETing the posts comments w/ unactivated user w/o any auth will result in a 401, even if the post doesn't exist yet """
         url = reverse("postIdComments", args=[1])
         basicAuth = self.getBasicAuthHeader(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_PASS)
@@ -105,7 +105,7 @@ class PostIdCommentsTest(APITestCase):
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
         return response
 
-    def test_authoridposturl_get_basic_auth(self):
+    def test_postidcommentsurl_get_basic_auth(self):
         """ GETing the posts comments by author while loggin w/ Basic Auth as author should return a 2XX """
         postResponse = self.post_a_post_obj("a test post", "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         postid = postResponse.data["id"]
@@ -114,4 +114,3 @@ class PostIdCommentsTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-

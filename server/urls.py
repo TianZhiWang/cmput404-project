@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/$', views.AuthorDetail.as_view()),
     ###### Divider - Locally used, not in API #######
     url(r'^authors/$', views.AuthorList.as_view(), name="author"),
-    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/friends/$', views.FriendsList.as_view()),
+    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/friends/$', views.FriendsList.as_view(), name="authorIdFriend"),
     url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view(), name="authorPostId"),
     url(r'^login/$', views.LoginView.as_view(), name="login"),
     url(r'^register/$', views.RegisterView.as_view(), name="register"),
