@@ -48,6 +48,9 @@ def get_friends_of_authorPK(authorPK):
 def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
 
+def get_author_id_from_url_string(string):
+    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', string).group(1)
+
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).count() != 0
 
@@ -214,6 +217,9 @@ class FriendsList(APIView):
 
     get:
     Returns a list of all authors that are friends
+
+    post:
+    post a list of authors, returns the ones that are friends
     """
     def get(self, request, author_id, format=None):
         try:
@@ -228,6 +234,23 @@ class FriendsList(APIView):
             formatedauthor = AuthorSerializer(author).data
             authorsUrlArray.append(formatedauthor['url'])
         return Response({ "query": "friends","authors":authorsUrlArray})
+
+    def post(self, request, author_id, format=None):
+        try:
+            author = get_object_or_404(Author, pk=author_id)
+        except ValueError as e:
+            return Response(status=400)
+
+        friends = get_friends_of_authorPK(author_id)
+
+        authors = request.data["authors"]
+        authors_pks = [get_author_id_from_url_string(author) for author in authors]
+        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends)
+        
+        formatedUsers = AuthorSerializer(filtered,many=True).data
+        urls = [user["id"] for user in formatedUsers]
+    
+        return Response({ "query":"friends", "author":author_id , "authors":urls})
 
 class CheckFriendship(APIView):
     """
