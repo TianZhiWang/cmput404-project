@@ -101,9 +101,9 @@ class CommentList(APIView):
         return Response(comments.data, status=200)
     
     def post(self, request, post_id, format=None):
-        commentData = request.data['comment']
         # Is it one of our posts?
         if Post.objects.filter(pk=post_id).exists():
+            commentData = request.data['comment']
             post = get_object_or_404(Post, pk=post_id)
 
             if is_request_from_remote_node(request):
@@ -120,11 +120,12 @@ class CommentList(APIView):
         # It is one of there posts
         else:
             # Get the host associated with this post
-            host = re.search(r'^(.*)posts/.*$', request.data['post'])[1]
-            url = host + '/post/' + str(post_id) + '/comments/'
+            host = re.search(r'^(.*)posts/.*$', request.data['post']).group(1)
+            url = host + 'posts/' + str(post_id) + '/comments/'
             node = get_object_or_404(Node, url=host)
+
             try:
-                req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=request.data)
+                req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
             except:
                 print("Other server is down or maybe we don't have the right node")
                 return Response(status=500)
