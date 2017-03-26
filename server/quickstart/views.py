@@ -322,17 +322,15 @@ class FollowingRelationshipList(APIView):
                     print(str(e))
 
                 author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
+
                 friend_data['id'] = get_author_id_from_url(author_data)
-                if Author.objects.filter(pk=friend_data['id']).exists():
-                    friend = get_object_or_404(Author, pk=friend_data['id'])
+                serializer = AuthorSerializer(data=friend_data)
+                if serializer.is_valid():
+                    friend = Author.objects.get_or_create(**serializer.validated_data)[0]
+                    FollowingRelationship.objects.create(user=author, follows=friend)
+                    return Response(status=201)
                 else:
-                    serializer = AuthorSerializer(data=friend_data)
-                    if serializer.is_valid():
-                        friend = Author.objects.create(**serializer.validated_data)
-                        FollowingRelationship.objects.create(user=author, follows=friend)
-                        return Response(status=201)
-                    else:
-                        return Response({"error": "Bad data"}, status=400)
+                    return Response({'error': 'Could not create author'}, status=500)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
