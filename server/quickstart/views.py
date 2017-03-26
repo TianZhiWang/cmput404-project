@@ -165,7 +165,6 @@ class CommentList(APIView, PaginationMixin):
             except Exception as e:
                 print("Other server is down or maybe we don't have the right node")
                 print(str(e))
-                return Response(status=500)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({
@@ -314,7 +313,6 @@ class FollowingRelationshipList(APIView):
                 except Exception as e:
                     print("Exception occurred in friendrequest")
                     print(str(e))
-                    return Response(status=500)
 
                 author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
                 friend_data['id'] = get_author_id_from_url(author_data)
@@ -392,7 +390,6 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-                    return Response(status=500)
             
             return Response(serializedPosts)
 
