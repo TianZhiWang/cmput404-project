@@ -290,9 +290,9 @@ function followUser(currentUser, otherUser) {
       },
       friend: {
         id: otherUser.id,
-        host: currentUser.host,
-        url: currentUser.url,
-        displayName: currentUser.displayName
+        host: otherUser.host,
+        url: otherUser.url,
+        displayName: otherUser.displayName
       }
     }),
   });
@@ -316,9 +316,9 @@ function unfollowUser(currentUser, otherUser) {
       },
       friend: {
         id: otherUser.id,
-        host: currentUser.host,
-        url: currentUser.url,
-        displayName: currentUser.displayName
+        host: otherUser.host,
+        url: otherUser.url,
+        displayName: otherUser.displayName
       }
     })
   });

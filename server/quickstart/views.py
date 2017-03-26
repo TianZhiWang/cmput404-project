@@ -311,6 +311,7 @@ class FollowingRelationshipList(APIView):
                 return Response(status=201)
             # Other user remote
             else:
+                print('attempting to send friend request')
                 node = Node.objects.get(url=friend_data['host'])
                 url = node.url + 'friendrequest/'
                 try:
