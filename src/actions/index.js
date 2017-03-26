@@ -59,7 +59,7 @@ export function addPost(post, user) {
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': 'application/json',
+        'Content-Type': undefined,
         'Accept': 'application/json'
       },
       body: JSON.stringify({
@@ -70,12 +70,87 @@ export function addPost(post, user) {
         author: user.id,
         comments: post.comments,
         visibility:post.permission,
-        visibleTo: []
+        visibleTo: [],
+        image:post.image
       }),
     })
     .then(res => res.json())
     .then((res) => {
-      dispatch({type:types.ADD_POST,post: res});
+        console.log(res.id)
+        // dispatch({type:types.ADD_POST,post: res});
+        //             fetch(`${URL_PREFIX}/uploadimage/images/`, {
+        //             method: 'POST',
+        //             // transfomrRequest: transformImageRequest,
+        //             headers: {
+        //               // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        //               'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+        //               'Content-Type': "multipart/form-data",
+        //               // 'Accept': 'application/json'
+        //             },
+        //             body: {
+        //               "image": post.image,
+        //               "id": res.id,
+        //             }
+        //           })
+        //           .then(res2 => res.json())
+        //           .then((res2) => {
+        //             // console.log(res+"!!!")
+        //             // dispatch({type:types.ADD_POST,post: res});
+        //            // location.reload();
+        //           })
+        //           .catch((err) => {
+
+        //           });
+    })
+    .catch((err) => {
+
+    });
+  };
+}
+
+// https://github.com/ChristianKreuzberger/django-rest-imageupload-example/blob/master/tutorial/chapter1/step7.md
+function transformImageRequest(data) {
+    if (data === undefined)
+        return data;
+
+    var fd = new FormData();
+    angular.forEach(data, function(value, key) {
+      if (value instanceof FileList) {
+        if (value.length == 1) {
+          fd.append(key, value[0]);
+        } else {
+          angular.forEach(value, function(file, index) {
+            fd.append(key + '_' + index, file);
+          });
+        }
+      } else {
+        fd.append(key, value);
+      }
+    });
+
+    return fd;
+}
+
+function addPostImage(post,user){
+  return function(dispatch) {
+    fetch(`${URL_PREFIX}/uploadimage/images/`, {
+      method: 'POST',
+      // transfomrRequest: transformImageRequest,
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+        'Content-Type': "multipart/form-data",
+        // 'Accept': 'application/json'
+      },
+      body: {
+        "image": post.image,
+        "id": user.id,
+      }
+    })
+    .then(res => res.json())
+    .then((res) => {
+      console.log(res+"!!!")
+      // dispatch({type:types.ADD_POST,post: res});
      // location.reload();
     })
     .catch((err) => {

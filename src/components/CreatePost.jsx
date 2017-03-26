@@ -20,6 +20,7 @@ class CreatePost extends Component {
     this.handlePost = this.handlePost.bind(this);
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
     this.contentText = this.contentText.bind(this);
+    this.handleImageUpload = this.handleImageUpload.bind(this);
   }
 
   getInitialState() {
@@ -28,7 +29,8 @@ class CreatePost extends Component {
       title: '',
       description: '',
       content: '',
-      contentType: 'text/plain'
+      contentType: 'text/plain',
+      image: null
     };
   }
 
@@ -50,8 +52,11 @@ class CreatePost extends Component {
     });
   }
 
-  handleImageUpload() {
-    // handle image upload
+  handleImageUpload(event) {
+    console.log( event.target.files[0])
+    this.setState({
+      image: event.target.files[0]
+    });
   }
 
   handleContentTypeChange(event) {
@@ -61,6 +66,7 @@ class CreatePost extends Component {
   }
 
   handlePost() {
+    console.log(this.state.image)
     if (this.state.content) {
       this.props.addPost({
         content: this.state.content,
@@ -69,7 +75,8 @@ class CreatePost extends Component {
         contentType: this.state.contentType,
         permission: this.state.permission,
         // user_with_permission: this.state.user_with_permission
-        "comments": []
+        "comments": [],
+        image: this.state.image
       });
 
       this.setState(this.getInitialState());
@@ -140,7 +147,11 @@ class CreatePost extends Component {
           value={this.state.description}
           placeholder='description?'
           onChange={this.handleDescriptionChange}/>
+        <input 
+          type='file'
+          onChange={this.handleImageUpload}
 
+          />
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio
