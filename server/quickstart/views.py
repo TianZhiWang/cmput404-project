@@ -39,6 +39,9 @@ from django.urls import reverse
 import json
 from urlparse import urlparse
 
+# This function takes in an author's ID (UUID) and 
+# returns a django query set object containing all 
+# the friends that author has(in UUID, user column)
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
     following_pks = [author['follows'] for author in following]
@@ -63,13 +66,46 @@ def get_queryset_friends_of_a_friend(currentUser):
 
 class PostList(APIView, PaginationMixin):
     """
-    List all Public posts, or create a new post.
+    Endpoint: /posts/
+    Available Methods: GET, POST
+    This endpoint lists all the Public posts from our server and you can also create a new post
+    GET Response objects properties:
+        count - number of posts
+        previous - link the to previous page of posts(if applicatable)
+        next - link the to next page of posts(if applicatable)
+        posts: an array of posts
+            id - the UUID of the post
+            title - the title of the post
+            content - the content of the post
+            source - the url this post came from
+            origin - the original url of the post
+            description - the description of the post
+            contentType - content type of the post
+            author - the author object responsible for creating the post
+            count - the total number of comments
+            size - the current number of comments displayed
+            next - link to the next page of comments
+            comments - an array of comment object to this post
+                id - te UUID of the comment
+                comment - the content of the comment
+                author - the author object responsible for creating the comment
+                published - the date the post was created
+        visibility - the visibility level of this post
+        visibileTo - an array of author's UUID that are allowed to see this post 
+        published - the date the post was created
+        size - the total number of the posts in a page
 
-    get: 
-    returns all the Public posts.
-
-    post: 
-    create a new instance of post
+    POST Request objects properties:
+        source(string) - where the post came from, needs to be an url
+        origin(string) - where the post is originally from, needs to be an url
+        published(DateTimeField) - defaulted to current timezone
+        title (string) - the title of the post
+        content (string) - the text of the post
+        description (string) - the description of the post
+        contentType (string) - (text/plain or text/markdown) content type of the post
+        author (UUID) - the author id that made the post
+        visibility (string) - (PUBLIC, PRIVATE, FOAF, FRIENDS, SERVERONLY) the visibility level of this post
+        visibileTo (array) - contians an array of authors that can see this post
     """
     pagination_class = PostsPagination
     
@@ -105,6 +141,31 @@ class PostDetail(APIView):
         return Response(status=200)
 
 class SinglePost(APIView):
+    """
+    Endpoint: /posts/<post_id>/
+    Available Methods: GET
+    This endpoint list a single post 
+    GET Response objects properties:
+        id - the UUID of the post
+        title - the title of the post
+        content - the content of the post
+        source - the url this post came from
+        origin - the original url of the post
+        description - the description of the post
+        contentType - content type of the post
+        author - the author object responsible for creating the post
+        count - the number of comments
+        size - the current number of comments displayed
+        next - link to the next page of comments
+        comments - an array of comment object to this post
+            id - te UUID of the comment
+            comment - the content of the comment
+            author - the author object responsible for creating the comment
+            published - the date the post was created
+        visibility - the visibility level of this post
+        visibileTo - an array of author's UUID that are allowed to see this post 
+        published - the date the post was created
+    """
     def get(self, request, post_id, format=None):
         singlePost = get_object_or_404(Post, pk=post_id)
         post = PostSerializer(singlePost)
@@ -113,13 +174,22 @@ class SinglePost(APIView):
 
 class CommentList(APIView, PaginationMixin):
     """
-    List all comments of a post, or create a new comment.
+    Endpoint: posts/<post_id>)/comments/
+    This endpoint list all comments of a post, or create a new comment.
+    Available Methods: GET, POST
 
-    get: 
-    returns a list of all comments
+    GET Response objects properties: 
+    count - the number of comments 
+    previous - link the to previous page of posts(if applicatable)
+    next - link the to next page of posts(if applicatable) 
+    comments - an array of comment object to this post
+        id - te UUID of the comment 
+        comment - the content of the comment
+        author - the author object responsible for creating the comment
+        published - the date the post was created
 
-    post: 
-    create a new instance of comment
+    POST Request objects properties:
+    post - the 
     """
     pagination_class = CommentsPagination
 
