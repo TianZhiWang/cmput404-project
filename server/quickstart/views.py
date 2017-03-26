@@ -289,10 +289,13 @@ class FollowingRelationshipList(APIView):
             our_user = get_object_or_404(Author, pk=get_author_id_from_url(our_user_data))
 
             remote_user_data['id'] = get_author_id_from_url(remote_user_data)
-            remote_user = Author.objects.get_or_create(**remote_user_data)[0]
-
-            FollowingRelationship.objects.create(user=remote_user, follows=our_user)
-            return Response(status=201)
+            serializer = AuthorSerializer(data=remote_user_data)
+            if serializer.is_valid():
+                remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
+                FollowingRelationship.objects.create(user=remote_user, follows=our_user)
+                return Response(status=201)
+            else:
+                return Response({"error": "Bad data"}, status=500)
         else:
             author_data = request.data['author']
             friend_data = request.data['friend']
