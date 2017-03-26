@@ -66,6 +66,7 @@ class Post(models.Model):
     # visibleTo will create an intermediate table to represent a ManyToMany relationship with users
     # http://stackoverflow.com/a/2529875 Ludwik Trammer (http://stackoverflow.com/users/262618/ludwik-trammer) (MIT)
     visibleTo = models.ManyToManyField(Author, related_name="visibleTo", blank=True)
+    unlisted = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.title
@@ -80,6 +81,7 @@ class Comment(models.Model):
     author = models.ForeignKey(Author)
     comment = models.CharField(max_length=140)
     published = models.DateTimeField(default=timezone.now)
+    contentType = models.CharField(default='text/plain', max_length=32)
 
     def __unicode__(self):
         return self.comment
