@@ -159,3 +159,5 @@ class AuthorIdFriendIdTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_client_error(response.status_code))
+
+    # TODO: test formatting things
