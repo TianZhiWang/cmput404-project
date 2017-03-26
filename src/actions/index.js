@@ -33,7 +33,12 @@ export function addComment(comment, postId, postOrigin, user) {
       }
     };
 
-    fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
+    let postUUID = postId;
+    if (/^http/.test(postId)) {
+      postUUID = /\/([a-zA-Z0-9-]+)\/?$/.exec(postId, 'g')[1];
+    }
+
+    fetch(`${URL_PREFIX}/posts/${String(postUUID)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 

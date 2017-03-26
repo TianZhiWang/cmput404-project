@@ -161,8 +161,11 @@ class CommentList(APIView, PaginationMixin):
 
             try:
                 req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
-            except:
+                if req.status_code != requests.codes.ok:
+                    raise Exception(req.text)
+            except Exception as e:
                 print("Other server is down or maybe we don't have the right node")
+                print(e)
                 return Response(status=500)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
