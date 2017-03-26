@@ -47,6 +47,7 @@ class Profile extends Component {
   }
 
   render() {
+    console.log(this.state);
     //TODO fix this
     const button = () => {
       if(this.props.user.id === this.props.currentuser.id) {

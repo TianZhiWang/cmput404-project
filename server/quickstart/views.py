@@ -267,6 +267,7 @@ class CheckFriendship(APIView):
             author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
             author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
         except ValueError as e:
+            print('Error in getting friends ' + str(e))
             return Response(status=400)
 
         friendshipResult = {
@@ -277,6 +278,9 @@ class CheckFriendship(APIView):
             ],
             "friends": False
         }
+
+        print('friends of current user ' + str(friendsOfCurrentUser))
+        print('author_id ' + str(author_id2))
         if (author_id2 in friendsOfCurrentUser):
             friendshipResult['friends']=True
             
