@@ -29,7 +29,8 @@ export function addComment(comment, postId, postOrigin, user) {
           url: user.url
         },
         published: new Date().toISOString(),
-        id: uuidv4()
+        id: uuidv4(),
+        contentType: 'text/plain'
       }
     };
 

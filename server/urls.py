@@ -29,8 +29,8 @@ urlpatterns = [
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/comments/$', views.CommentList.as_view(), name="postIdComments"),
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/friends/$', views.FriendsList.as_view(), name="authorIdFriend"),
     url(r'^author/(?P<author_id1>[0-9a-zA-Z-]+)/friends/(?P<author_id2>[0-9a-zA-Z-]+)/$', views.CheckFriendship.as_view(), name="authorIdFriendId"),
-    url(r'^friendrequest/$', views.FollowingRelationshipList.as_view(), name="friendRequest"), # TODO: Add unfriend
-    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/$', views.AuthorDetail.as_view(), name="authorId"),
+    url(r'^friendrequest/$', views.FollowingRelationshipList.as_view(), name="friendRequest"),
+    url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)$', views.AuthorDetail.as_view(), name="authorId"),
     ###### Divider - Locally used, not in API #######
     url(r'^authors/$', views.AuthorList.as_view(), name="author"),
     url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view(), name="authorPostId"),
