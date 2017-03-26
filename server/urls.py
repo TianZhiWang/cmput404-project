@@ -29,14 +29,14 @@ urlpatterns = [
     url(r'^posts/(?P<post_id>[0-9a-zA-Z-]+)/comments/$', views.CommentList.as_view(), name="postIdComments"),
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/friends/$', views.FriendsList.as_view(), name="authorIdFriend"),
     url(r'^author/(?P<author_id1>[0-9a-zA-Z-]+)/friends/(?P<author_id2>[0-9a-zA-Z-]+)/$', views.CheckFriendship.as_view(), name="authorIdFriendId"),
-    url(r'^friendrequest/$', views.FollowingRelationshipList.as_view(), name="friendRequest"), # TODO: Add unfriend
+    url(r'^friendrequest/$', views.FollowingRelationshipList.as_view()), # TODO: Add unfriend
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)/$', views.AuthorDetail.as_view(), name="authorId"),
     ###### Divider - Locally used, not in API #######
-    url(r'^authors/$', views.AuthorList.as_view(), name="author"),
-    url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view(), name="authorPostId"),
-    url(r'^login/$', views.LoginView.as_view(), name="login"),
-    url(r'^register/$', views.RegisterView.as_view(), name="register"),
-    url(r'^admin/', admin.site.urls, name="admin"),
+    url(r'^authors/$', views.AuthorList.as_view()),
+    url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view()),
+    url(r'^login/$', views.LoginView.as_view()),
+    url(r'^register/$', views.RegisterView.as_view()),
+    url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name="react.html"), name="root"),
     url(r'^docs/', include('rest_framework_docs.urls'))
 ]
