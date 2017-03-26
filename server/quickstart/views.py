@@ -123,7 +123,6 @@ class CommentList(APIView, PaginationMixin):
     """
     pagination_class = CommentsPagination
 
-    # TODO: Wrap in pagination class
     def get(self, request, post_id, format=None):
         comments = Comment.objects.filter(post=post_id)
         page = self.paginate_queryset(comments)
@@ -146,7 +145,12 @@ class CommentList(APIView, PaginationMixin):
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    author = Author.objects.create(id=author_data['id'], displayName=author_data['displayName'], host=author_data['host'])
+                    serializer = AuthorSerializer(data=author_data)
+                    if serializer.is_valid():
+                        author = Author.objects.create(**serializer.validated_data)
+                        return Response(status=201)
+                    else:
+                        return Response({"error": "Bad data"}, status=400)
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
@@ -201,7 +205,6 @@ class AuthorList(APIView):
 class AuthorDetail(APIView):
 
     def get(self, request, author_id, format=None):
-        print("We got a connection", request)
         author = get_object_or_404(Author, pk=author_id)
 
         friends = get_friends_of_authorPK(author_id)
@@ -274,7 +277,7 @@ class CheckFriendship(APIView):
             ],
             "friends": False
         }
-        if(author_id2 in friendsOfCurrentUser):
+        if (author_id2 in friendsOfCurrentUser):
             friendshipResult['friends']=True
             
         return Response(friendshipResult, status=200)       
@@ -295,7 +298,7 @@ class FollowingRelationshipList(APIView):
                 FollowingRelationship.objects.create(user=remote_user, follows=our_user)
                 return Response(status=201)
             else:
-                return Response({"error": "Bad data"}, status=500)
+                return Response({"error": "Bad data"}, status=400)
         else:
             author_data = request.data['author']
             friend_data = request.data['friend']
@@ -322,10 +325,13 @@ class FollowingRelationshipList(APIView):
                 if Author.objects.filter(pk=friend_data['id']).exists():
                     friend = get_object_or_404(Author, pk=friend_data['id'])
                 else:
-                    friend = Author.objects.create(id=friend_data['id'], displayName=friend_data['displayName'], host=friend_data['host'])
-                
-                FollowingRelationship.objects.create(user=author, follows=friend)
-                return Response(status=201)
+                    serializer = AuthorSerializer(data=friend_data)
+                    if serializer.is_valid():
+                        friend = Author.objects.create(**serializer.validated_data)
+                        FollowingRelationship.objects.create(user=author, follows=friend)
+                        return Response(status=201)
+                    else:
+                        return Response({"error": "Bad data"}, status=400)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
