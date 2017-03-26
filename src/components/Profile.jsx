@@ -1,14 +1,11 @@
 import React, { Component, PropTypes } from 'react';
 import { Button } from 'react-bootstrap';
+import {URL_PREFIX} from '../constants';
 /*
 * Renders a author profile page
 */
 
-let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
-if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'https://' + window.location.hostname;
-}
 function getUUIDFromId(id) {
   return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
 }

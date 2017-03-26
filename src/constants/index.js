@@ -27,3 +27,7 @@ export const PERMISSIONS = Object.freeze({
     label: 'Server Only'
   })
 });
+
+/*eslint-disable */
+export const URL_PREFIX = process.env.NODE_ENV === 'production' ? `https://${window.location.hostname}` : `http://${window.location.hostname}:8000`;
+/*eslint-enable */
