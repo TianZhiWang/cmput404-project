@@ -123,7 +123,6 @@ class CommentList(APIView, PaginationMixin):
     """
     pagination_class = CommentsPagination
 
-    # TODO: Wrap in pagination class
     def get(self, request, post_id, format=None):
         comments = Comment.objects.filter(post=post_id)
         page = self.paginate_queryset(comments)
@@ -146,7 +145,12 @@ class CommentList(APIView, PaginationMixin):
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    author = Author.objects.create(id=author_data['id'], displayName=author_data['displayName'], host=author_data['host'])
+                    serializer = AuthorSerializer(data=author_data)
+                    if serializer.is_valid():
+                        author = Author.objects.create(**serializer.validated_data)
+                        return Response(status=201)
+                    else:
+                        return Response({"error": "Bad data"}, status=400)
             else:
                 author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
 
@@ -161,9 +165,10 @@ class CommentList(APIView, PaginationMixin):
 
             try:
                 req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
-            except:
+                req.raise_for_status()
+            except Exception as e:
                 print("Other server is down or maybe we don't have the right node")
-                return Response(status=500)
+                print(str(e))
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({
@@ -272,7 +277,7 @@ class CheckFriendship(APIView):
             ],
             "friends": False
         }
-        if(author_id2 in friendsOfCurrentUser):
+        if (author_id2 in friendsOfCurrentUser):
             friendshipResult['friends']=True
             
         return Response(friendshipResult, status=200)       
@@ -287,10 +292,13 @@ class FollowingRelationshipList(APIView):
             our_user = get_object_or_404(Author, pk=get_author_id_from_url(our_user_data))
 
             remote_user_data['id'] = get_author_id_from_url(remote_user_data)
-            remote_user = Author.objects.get_or_create(**remote_user_data)[0]
-
-            FollowingRelationship.objects.create(user=remote_user, follows=our_user)
-            return Response(status=201)
+            serializer = AuthorSerializer(data=remote_user_data)
+            if serializer.is_valid():
+                remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
+                FollowingRelationship.objects.create(user=remote_user, follows=our_user)
+                return Response(status=201)
+            else:
+                return Response({"error": "Bad data"}, status=400)
         else:
             author_data = request.data['author']
             friend_data = request.data['friend']
@@ -307,19 +315,23 @@ class FollowingRelationshipList(APIView):
                 url = node.url + 'friendrequest/'
                 try:
                     req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
-                except:
-                    print("Other server is down or maybe we don't have the right node")
-                    return Response(status=500)
+                    req.raise_for_status()
+                except Exception as e:
+                    print("Exception occurred in friendrequest")
+                    print(str(e))
 
                 author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
                 friend_data['id'] = get_author_id_from_url(author_data)
                 if Author.objects.filter(pk=friend_data['id']).exists():
                     friend = get_object_or_404(Author, pk=friend_data['id'])
                 else:
-                    friend = Author.objects.create(id=friend_data['id'], displayName=friend_data['displayName'], host=friend_data['host'])
-                
-                FollowingRelationship.objects.create(user=author, follows=friend)
-                return Response(status=201)
+                    serializer = AuthorSerializer(data=friend_data)
+                    if serializer.is_valid():
+                        friend = Author.objects.create(**serializer.validated_data)
+                        FollowingRelationship.objects.create(user=author, follows=friend)
+                        return Response(status=201)
+                    else:
+                        return Response({"error": "Bad data"}, status=400)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
@@ -374,6 +386,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                 url = node.url + 'author/posts/'
                 try:
                     req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+                    req.raise_for_status()
                     unfilteredForeignPosts = req.json()['posts']
                     
                     for post in unfilteredForeignPosts:
@@ -383,8 +396,9 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                             serializedPosts.append(post)
                         elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
                             serializedPosts.append(post)
-                except:
-                    print("Other server is down or giving bad data")
+                except Exception as e:
+                    print("Exception occurred in author/posts")
+                    print(str(e))
             
             return Response(serializedPosts)
 

@@ -86,6 +86,10 @@ export function users(state=[], action){
       }
       return user;
     });
+  case types.FINISH_LOADING_POSTS:
+    return [
+      ...action.authors
+    ];
   default:
     return state;
   }

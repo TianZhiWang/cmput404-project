@@ -43,7 +43,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
         model = Comment
-        fields=('id', 'comment', 'author', 'published')
+        fields=('id', 'comment', 'author', 'published', 'contentType')
 
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
