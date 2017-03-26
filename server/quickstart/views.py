@@ -203,6 +203,7 @@ class AuthorList(APIView):
 class AuthorDetail(APIView):
 
     def get(self, request, author_id, format=None):
+        print("We got a connection", request)
         author = get_object_or_404(Author, pk=author_id)
 
         friends = get_friends_of_authorPK(author_id)
