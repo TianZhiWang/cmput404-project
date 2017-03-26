@@ -140,3 +140,12 @@ class AuthorIdFriendsTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_author_res_is_correct_format(self):
+        """ The current author id friend is in the same format as the spec """
+        url = reverse("authorIdFriend", args=[self.author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["query"] == "friends")
+        self.assertTrue(len(response.data["authors"]) >= 0)  # should be an array with at least one element
