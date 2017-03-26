@@ -98,12 +98,12 @@ class AuthorIdFriendsTest(APITestCase):
         """ POST should throw a client error as it doesn't make sense to put at this endpoint """
         url = reverse("authorIdFriend", args=[self.author.pk])
         obj = {
-            "query": "friends",
-            "author": self.author.pk,
-            "authors": [
-	            self.stranger_author.host + "/author/" + str(self.stranger_author.id),
-		        self.friend_author.host + "/author/" + str(self.friend_author.id)
-  	        ]
+                "query": "friends",
+                "author": self.author.pk,
+                "authors": [
+                    self.stranger_author.host + "/author/" + str(self.stranger_author.id),
+                    self.friend_author.host + "/author/" + str(self.friend_author.id)
+                ]
         }
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
