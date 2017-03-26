@@ -13,10 +13,6 @@ class Container extends Component {
     super(props);
   }
 
-  componentDidMount() {
-    this.props.getUsers();
-  }
-
   render() {
     const contentPosts = () => (
         <Col md={9}>
