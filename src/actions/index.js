@@ -324,9 +324,9 @@ function unfollowUser(currentUser, otherUser) {
   });
 }
 
-export function toggleFollowStatus(currentUser, otherUser) {
+export function toggleFollowStatus(currentUser, otherUser, isFriend) {
   return function(dispatch) {
-    const toggleFollow = otherUser.isFollowing ? unfollowUser : followUser;
+    const toggleFollow = isFriend ? unfollowUser : followUser;
 
     return toggleFollow(currentUser, otherUser)
     .then(res => {

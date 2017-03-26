@@ -3,6 +3,7 @@ import {Grid, Row, Col} from 'react-bootstrap';
 import CreatePost from './CreatePost';
 import FriendList from './FriendList';
 import PostList from './PostList';
+import Profile from './Profile';
 import Sidebar from './Sidebar';
 
 /*
@@ -21,6 +22,7 @@ class Container extends Component {
             users={this.props.users}
           />
            <PostList
+            toggleFollowStatus={this.props.toggleFollowStatus}
             posts={this.props.posts}
             addComment={this.props.addComment}
             loadPosts={this.props.loadPosts}
@@ -38,6 +40,27 @@ class Container extends Component {
           />
         </Col>
     );
+    const contentProfile = () => (
+        <Col md={9}>
+          <Profile
+            toggleFollowStatus={this.props.toggleFollowStatus}
+            currentuser={this.props.user}
+            user={this.props.user}
+          />
+        </Col>
+    );
+    const pickTab = () => {
+      switch(this.props.activeTab) {
+      case 'stream':
+        return contentPosts();
+      case 'friends':
+        return contentFriends();
+      case 'profile':
+        return contentProfile();
+      default:
+        return contentPosts();
+      }
+    };
     return (
     <div className='coolbears-app'>
       <Grid>
@@ -47,7 +70,7 @@ class Container extends Component {
                 activeTab={this.props.activeTab}
                 switchTabs={this.props.switchTabs} />
             </Col>
-            {this.props.activeTab === 'stream' ? contentPosts(): contentFriends()}
+            {pickTab()}
         </Row>
       </Grid>
     </div>

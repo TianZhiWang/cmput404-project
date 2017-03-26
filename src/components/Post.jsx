@@ -1,8 +1,8 @@
 import React, {Component, PropTypes} from 'react';
-import {Panel, Button, FormControl} from 'react-bootstrap';
+import {Panel, Button, FormControl, Modal} from 'react-bootstrap';
 import CommentList from './CommentList';
 import Markdown from 'react-markdown';
-
+import Profile from './Profile';
 /*
 * Represents a post component with comments optionally
 */
@@ -19,6 +19,8 @@ class Post extends Component {
     this.textTypehandler = this.textTypehandler.bind(this);
     this.deleteButtonHandler = this.deleteButtonHandler.bind(this);
     this.handleDeletePost = this.handleDeletePost.bind(this);
+    this.showModal = this.showModal.bind(this);
+    this.hideModal = this.hideModal.bind(this);
   }
 
   handleAddComment() {
@@ -67,11 +69,19 @@ class Post extends Component {
     }
   }
 
+  showModal() {
+    this.setState({show:true});
+  }
+
+  hideModal() {
+    this.setState({show:false});
+  }
+
   render() {
     return (
       <div className='post'>
           <div className='post-header'>
-            <h4>
+            <h4 onClick={this.showModal}>
               {this.props.author.displayName}
             </h4>
             <div className='post-body'>
@@ -99,6 +109,16 @@ class Post extends Component {
                 </Button>
               </div>
           </div>
+          <Modal
+            show={this.state.show}
+            onHide={this.hideModal}
+            container={this}
+            aria-labelledby="contained-modal-title"
+          >
+            <Profile toggleFollowStatus={this.props.toggleFollowStatus}
+              currentuser={this.props.user} 
+              user={this.props.author}/>
+          </Modal>
       </div>
     );
   }
@@ -115,6 +135,7 @@ Post.propTypes = {
   id: PropTypes.string.isRequired,
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
+  toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
 
