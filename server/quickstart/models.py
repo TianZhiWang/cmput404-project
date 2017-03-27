@@ -27,11 +27,11 @@ import uuid
 from django.utils import timezone
 
 class Author(models.Model):
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(max_length=64, primary_key=True, editable=False)
     user = models.OneToOneField(User, related_name='author', null=True, blank=True)
     displayName = models.CharField(max_length=150)
-    host = models.URLField(default="http://127.0.0.1:8000/")
+    host = models.URLField()
+    url = models.URLField()
 
     def __unicode__(self):
         return str(self.displayName)
