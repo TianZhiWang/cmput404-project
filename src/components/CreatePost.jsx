@@ -5,6 +5,10 @@ import Select from 'react-select';
 import Markdown from 'react-markdown';
 import 'react-select/dist/react-select.css';
 
+function getUUIDFromId(id) {
+  return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
+}
+
 /*
 * Component for creating a new post, has multiple input fields to specify options
 */
@@ -97,13 +101,12 @@ class CreatePost extends Component {
     let user_with_permission = [];
 
     // create visible array, if permission dropdown is selected to a user
-    if (label!="Friends" && label!= "Public" && label!="Friends of Friends" && label!="Self"){
+    if (label!="Friends" && label!= "Public" && label!="Server Only" && label!="Self"){
       user_with_permission = this.props.users.filter(function getUser(value){
         return value.displayName == label;   
       })[0];
 
-      user_with_permission = user_with_permission.id.replace(user_with_permission.host+"author/","");
-      user_with_permission = [user_with_permission];
+      user_with_permission = [getUUIDFromId(user_with_permission.id)];
     }
 
     this.setState({
@@ -140,8 +143,8 @@ class CreatePost extends Component {
         value: PERMISSIONS.PUBLIC.value,
         label: PERMISSIONS.PUBLIC.label,
       }, {
-        value: PERMISSIONS.FRIENDS_OF_FRIENDS.value,
-        label: PERMISSIONS.FRIENDS_OF_FRIENDS.label
+        value: PERMISSIONS.SERVERONLY.value,
+        label: PERMISSIONS.SERVERONLY.label
       }, {
         value: PERMISSIONS.SELF.value,
         label: PERMISSIONS.SELF.label
