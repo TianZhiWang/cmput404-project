@@ -14,6 +14,8 @@ class RootTests(APITestCase):
     NOT_ACTIVE_USER_NAME = 'notActiveName'
     NOT_ACTIVE_USER_MAIL = 'notActiveName@example.com'
     NOT_ACTIVE_USER_PASS = 'password127'
+    
+    URL = 'http://127.0.0.1:8000/'
 
     def createAuthor(self, us, em, pw, isActive=True):
         authorUser = User.objects.create_user(us, em, pw)
