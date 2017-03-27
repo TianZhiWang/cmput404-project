@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
 
 class AuthorPostTest(APITestCase):
-    """ This is the home of all of our tests relating to the author/post url """
+    """ This is the home of all of our tests relating to the author/:id/posts url """
 
     AUTHOR_USER_NAME = 'author'
     AUTHOR_USER_PASS = 'password127'
@@ -49,54 +49,54 @@ class AuthorPostTest(APITestCase):
 
     def setUp(self):
         """ Set up is run before each test """
-        self.createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
-        self.createAuthor(self.STRANGER_USER_NAME, self.STRANGER_USER_MAIL, self.STRANGER_USER_PASS)
-        a = self.createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
-        b = self.createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, a)
-        self.createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, b)
+        self.not_active_author = self.createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
+        self.stranger_author = self.createAuthor(self.STRANGER_USER_NAME, self.STRANGER_USER_MAIL, self.STRANGER_USER_PASS)
+        self.author = self.createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
+        self.friend_author = self.createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, self.author)
+        self.foaf_author = self.createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, self.friend_author)
 
 
     def getBasicAuthHeader(self, us, pw):
         """ Returns the b64encoded string created for a user and password to be used in the header """
         return "Basic %s" % base64.b64encode("%s:%s" % (us, pw))
 
-    def test_authorposturl_get_unauth_401(self):
-        """ GETing the posts available to an author w/o any auth will result in a 401 """
-        url = reverse("authorPost")
+    def test_authoridposturl_get_unauth_401(self):
+        """ GETing the posts available to an author w/ my author id w/o any auth will result in a 401 """
+        url = reverse("authorIdPosts", args=[self.author.pk])
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_authorposturl_get_unactivated_401(self):
-        """ GETing the posts available to an unactivated user w/o any auth will result in a 401 """
-        url = reverse("authorPost")
+    def test_authoridposturl_get_unactivated_401(self):
+        """ GETing the posts available to an an author w/ unactivated user w/o any auth will result in a 401 """
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
-    def test_authorposturl_get_basic_auth(self):
-        """ GETing while loggin w/ Basic Auth should return a 2XX """
-        url = reverse("authorPost")
+    def test_authoridposturl_get_basic_auth(self):
+        """ GETing the posts by author while loggin w/ Basic Auth as author should return a 2XX """
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
 
-    def test_authorposturl_delete_405(self):
-        """ DELETE should throw a client error as it shouldn't be allowed to delete everyting """
-        url = reverse("authorPost")
+    def test_authoridposturl_delete_405(self):
+        """ DELETE should throw a client error as it shouldn't be allowed to delete everything for another author """
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_authorposturl_put_405(self):
+    def test_authoridposturl_put_405(self):
         """ PUT should throw a client error as it doesn't make sense to put at this endpoint """
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.put(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_authorposturl_post_405(self):
+    def test_authoridposturl_post_405(self):
         """ PUT should throw a client error as it doesn't make sense to put at this endpoint """
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.post(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -117,46 +117,46 @@ class AuthorPostTest(APITestCase):
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
         return response
 
-    def test_authorposturl_get_your_posts(self):
-        """ Should be able to get all my posts """
+    def test_authoridposturl_get_your_posts(self):
+        """ Should be able to get all my posts when accessing the url with my id """
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(len(response.data) == 5)  # should get all posts made by me
+        self.assertTrue(response.data["count"] == 5)  # should get all posts made by me
 
-    def test_authorposturl_get_stranger_posts(self):
-        """ GETing stranger posts should return the approprite number of posts """
+    def test_authoridposturl_get_stranger_posts(self):
+        """ GETing stranger posts by id should return the approprite number of posts """
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.STRANGER_USER_NAME, self.STRANGER_USER_PASS)
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.stranger_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(len(response.data) == 2)  # should get PUBLIC and SERVERONLY
+        self.assertTrue(response.data["count"] == 2)  # should get PUBLIC and SERVERONLY
 
-    def test_authorposturl_get_friend_posts(self):
-        """ GETing friend posts should return the approprite number of posts """
+    def test_authoridposturl_get_friend_posts(self):
+        """ GETing friend posts by id should return the approprite number of posts """
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.friend_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(len(response.data) == 4)  # should get PUBLIC, SERVERONLY, FRIENDS, and FOAF
+        self.assertTrue(response.data["count"] == 4)  # should get PUBLIC, SERVERONLY, FRIENDS, and FOAF
 
-    def test_authorposturl_get_foaf_posts(self):
-        """ GETing friend posts should return the approprite number of posts """
+    def test_authoridposturl_get_foaf_posts(self):
+        """ GETing friend of a friend posts by id should return the approprite number of posts """
         vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
-        url = reverse("authorPost")
+        url = reverse("authorIdPosts", args=[self.foaf_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(len(response.data) == 3)  # should get PUBLIC, SERVERONLY, and FOAF
+        self.assertTrue(response.data["count"] == 3)  # should get PUBLIC, SERVERONLY, and FOAF

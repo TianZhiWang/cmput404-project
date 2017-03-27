@@ -1,7 +1,7 @@
 from rest_framework import serializers
-from server.quickstart.models import Post
+from imageupload.models import UploadImages
 
 class uploadImageSerializer(serializers.ModelSerializer):
 	class Meta:
-		 model = Post
-		 fields = ('id','image')
+		 model = UploadImages
+		 fields = ('pk','image')

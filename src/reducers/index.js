@@ -18,15 +18,10 @@ export function posts(state=[], action) {
       if (post.id === action.postId) {
         return {
           ...post,
-          // comments: [
-          //   ...post.comments,
-          //   {
-          //     comment: action.comment,
-          //     author: action.user,
-          //     id: action.res.data.id
-          //   }
-          // ]
-          comments: action.res.data
+          comments: [
+            ...post.comments,
+            action.commentData
+          ]
         };
       }
       return post;
@@ -91,6 +86,10 @@ export function users(state=[], action){
       }
       return user;
     });
+  case types.FINISH_LOADING_POSTS:
+    return [
+      ...action.authors
+    ];
   default:
     return state;
   }

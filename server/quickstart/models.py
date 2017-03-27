@@ -29,20 +29,9 @@ from django.utils import timezone
 class Author(models.Model):
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.OneToOneField(User, related_name='author')
+    user = models.OneToOneField(User, related_name='author', null=True, blank=True)
     displayName = models.CharField(max_length=150)
-    host = models.URLField(default="http://127.0.0.1:8000")
-    url = models.URLField(default="http://127.0.0.1:8000")
-
-    def __unicode__(self):
-        return str(self.displayName)
-
-class RemoteAuthor(models.Model):
-    # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    displayName = models.CharField(max_length=150)
-    host = models.URLField(default="http://127.0.0.1:8000")
-    url = models.URLField(default="http://127.0.0.1:8000")
+    host = models.URLField(default="http://127.0.0.1:8000/")
 
     def __unicode__(self):
         return str(self.displayName)
@@ -65,8 +54,8 @@ class Post(models.Model):
 
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    source = models.URLField(default="http://127.0.0.1:8000")
-    origin = models.URLField(default="http://127.0.0.1:8000")
+    source = models.URLField()
+    origin = models.URLField()
     published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
     content = models.CharField(max_length=140)
@@ -78,7 +67,9 @@ class Post(models.Model):
     # http://stackoverflow.com/a/2529875 Ludwik Trammer (http://stackoverflow.com/users/262618/ludwik-trammer) (MIT)
     visibleTo = models.ManyToManyField(Author, related_name="visibleTo", blank=True)
     #save image to strftime formmating date
-    image = models.ImageField(upload_to='images', blank=True, null=True)
+    # image = models.ImageField(upload_to='images', blank=True, null=True)
+    image = models.CharField(max_length=140)
+    unlisted = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.title
@@ -93,6 +84,7 @@ class Comment(models.Model):
     author = models.ForeignKey(Author)
     comment = models.CharField(max_length=140)
     published = models.DateTimeField(default=timezone.now)
+    contentType = models.CharField(default='text/plain', max_length=32)
 
     def __unicode__(self):
         return self.comment

@@ -28,11 +28,14 @@ from django.contrib.auth import authenticate
 class AuthorSerializer(serializers.Serializer):
     id = serializers.SerializerMethodField()
     displayName = serializers.CharField(max_length=150)
-    url = serializers.URLField()
+    url = serializers.SerializerMethodField()
     host = serializers.URLField()
 
     def get_id(self, obj):
-        return str(obj.host) + "/author/" + str(obj.id)
+        return str(obj.host) + "author/" + str(obj.id)
+    
+    def get_url(self, obj):
+        return str(obj.host) + 'author/' + str(obj.id)
     
 # Serializes the Comment Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
@@ -40,7 +43,7 @@ class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     class Meta:
         model = Comment
-        fields=('id', 'comment', 'author', 'published')
+        fields=('id', 'comment', 'author', 'published', 'contentType')
 
 # Serializes the Post Model
 # When we read we get the nested data, but we only have to passed the author_id when we write
@@ -65,11 +68,11 @@ class PostSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_source(self, obj):
-        source = obj.source + "/posts/" + str(obj.id)
+        source = obj.source + "posts/" + str(obj.id)
         return source
 
     def get_origin(self, obj):
-        origin = obj.origin + "/posts/" + str(obj.id)
+        origin = obj.origin + "posts/" + str(obj.id)
         return origin
 
     def get_count(self, obj):
@@ -82,7 +85,7 @@ class PostSerializer(serializers.ModelSerializer):
         return size
     
     def get_next(self, obj):
-        next = obj.origin + "/posts/" + str(obj.id) + "/comments"
+        next = obj.origin + "posts/" + str(obj.id) + "/comments"
         return next
 
 
@@ -92,8 +95,9 @@ class PostSerializer(serializers.ModelSerializer):
     # modified by Kyle Carlstrom
     def create(self, validated_data):
         author = self.context['author']
+        host = self.context['host']
         visibleTo = validated_data.pop('visibleTo')
-        post = Post.objects.create(author=author, **validated_data)
+        post = Post.objects.create(author=author, origin=host, source=host, **validated_data)
         post.save()
         for user in visibleTo:
             post.visibleTo.add(user)

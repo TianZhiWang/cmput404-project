@@ -120,6 +120,7 @@ class PostTests(APITestCase):
         for v in vis:
             self.post_a_post_obj("testing a %s post" % v, v)
         url = reverse("post")
-        response = self.client.get(url)
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data["count"] == 1)  # only the PUBLIC post should be returned

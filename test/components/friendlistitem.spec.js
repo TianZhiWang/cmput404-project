@@ -14,8 +14,8 @@ describe('<FriendListItem>', function () {
     isFriend: true,
     username: ""
   };
-  it('Should render', () => {
-    const wrapper = shallow(<FriendListItem {...props}/>);
-    assert.equal(wrapper.find('.friend-list-item').length, 1);
-  });
+  // it('Should render', () => {
+  //   const wrapper = shallow(<FriendListItem {...props}/>);
+  //   assert.equal(wrapper.find('.friend-list-item').length, 1);
+  // });
 });

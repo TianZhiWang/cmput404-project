@@ -1,4 +1,6 @@
 import * as types from '../types';
+import uuidv4 from 'uuid/v4';
+import request from 'superagent';
 
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
@@ -13,34 +15,46 @@ function getUUIDFromId(id) {
 /*
 * Adds a comment, to a post specified by postId
 */
-export function addComment(comment, postId, user) {
+// TODO: Add post origin to comment body
+export function addComment(comment, postId, postOrigin, user) {
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
+    const requestBody = {
+      query: 'addComment',
+      post: postOrigin,
+      comment: {
+        comment,
+        author: {
+          id: user.id,
+          displayName: user.displayName,
+          host: user.host,
+          url: user.url
+        },
+        published: new Date().toISOString(),
+        id: uuidv4(),
+        contentType: 'text/plain'
+      }
+    };
+
+    let postUUID = postId;
+    if (/^http/.test(postId)) {
+      postUUID = /\/([a-zA-Z0-9-]+)\/?$/.exec(postId, 'g')[1];
+    }
+
+    fetch(`${URL_PREFIX}/posts/${String(postUUID)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
-      body: JSON.stringify({
-        query: 'addComment',
-        comment: {
-          comment,
-          author: {
-            id: user.id,
-            displayName: user.displayName
-          }
-        }
-      }),
+      body: JSON.stringify(requestBody),
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res)
-      dispatch({type:types.ADD_COMMENT,
-        postId,
-        comment,
-        user,
-        res
+      dispatch({
+        type:types.ADD_COMMENT,
+        commentData: requestBody.comment,
+        postId: postId
       });
      // location.reload();
     })
@@ -52,83 +66,138 @@ export function addComment(comment, postId, user) {
 /*
 * Adds a post by a user then returns an action to update the state
 */
+// export function addPost(post, user) {
+
+//   return function(dispatch) {
+//     fetch(`${URL_PREFIX}/posts/`, {
+//       method: 'POST',
+//       headers: {
+//         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+//         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+//         'Content-Type': 'application/json',
+//         'Accept': 'application/json'
+//       },
+//       body: JSON.stringify({
+//         title: post.title,
+//         content: post.content,
+//         description: post.description,
+//         contentType: post.contentType,
+//         author: user.id,
+//         comments: post.comments,
+//         visibility:post.permission,
+
+//         // image:post.image,
+//         visibleTo: post.user_with_permission
+//       }),
+//     })
+//     .then(res => res.json())
+//     .then((res) => {
+//         console.log(post.image)
+//         dispatch({type:types.ADD_POST,post: res});
+//         // learned from https://visionmedia.github.io/superagent/docs/test.html
+//               let upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
+                               
+//                                .field('image', post.image)
+//                                .auth('joshdeng', 'j69pbxq9');
+
+//               upload.end((err, res) => {
+//                 if (err) {
+//                   console.error(err);
+//                 }
+
+//                 if (res) {
+//                   console.log(res)
+//                 }
+//               });
+                   
+//     })
+//     .catch((err) => {
+
+//     });
+//   };
+// }
+
 export function addPost(post, user) {
+
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/posts/`, {
-      method: 'POST',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': undefined,
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        title: post.title,
-        content: post.content,
-        description: post.description,
-        contentType: post.contentType,
-        author: user.id,
-        comments: post.comments,
-        visibility:post.permission,
-        visibleTo: [],
-        image:post.image
-      }),
-    })
-    .then(res => res.json())
-    .then((res) => {
-        console.log(res.id)
-        // dispatch({type:types.ADD_POST,post: res});
-        //             fetch(`${URL_PREFIX}/uploadimage/images/`, {
-        //             method: 'POST',
-        //             // transfomrRequest: transformImageRequest,
-        //             headers: {
-        //               // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        //               'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        //               'Content-Type': "multipart/form-data",
-        //               // 'Accept': 'application/json'
-        //             },
-        //             body: {
-        //               "image": post.image,
-        //               "id": res.id,
-        //             }
-        //           })
-        //           .then(res2 => res.json())
-        //           .then((res2) => {
-        //             // console.log(res+"!!!")
-        //             // dispatch({type:types.ADD_POST,post: res});
-        //            // location.reload();
-        //           })
-        //           .catch((err) => {
+    if (post.image){
+    console.log(post.image)
+       
+        // learned from https://visionmedia.github.io/superagent/docs/test.html
+              let upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
+                               
+                               .field('image', post.image)
+                               .auth('joshdeng', 'j69pbxq9');
 
-        //           });
-    })
-    .catch((err) => {
+              upload.end((err, res) => {
+                if (err) {
+                  console.error(err);
+                }
 
-    });
+                if (res) {
+                  console.log(JSON.parse(res.text).image)
+                   fetch(`${URL_PREFIX}/posts/`, {
+                      method: 'POST',
+                      headers: {
+                        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+                        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                      },
+                      body: JSON.stringify({
+                        title: post.title,
+                        content: post.content,
+                        description: post.description,
+                        contentType: post.contentType,
+                        author: user.id,
+                        comments: post.comments,
+                        visibility:post.permission,
+                        image: JSON.parse(res.text).image,
+                        visibleTo: post.user_with_permission
+                      }),
+                    })
+                    .then(res => res.json())
+                    .then((res) => {
+                         dispatch({type:types.ADD_POST,post: res});
+                                   
+                    })
+                    .catch((err) => {
+
+                    });
+                }
+              });
+
+   }else{
+       fetch(`${URL_PREFIX}/posts/`, {
+                      method: 'POST',
+                      headers: {
+                        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+                        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                      },
+                      body: JSON.stringify({
+                        title: post.title,
+                        content: post.content,
+                        description: post.description,
+                        contentType: post.contentType,
+                        author: user.id,
+                        comments: post.comments,
+                        visibility:post.permission,
+                        image: "NO_IMAGE",
+                        visibleTo: post.user_with_permission
+                      }),
+                    })
+                    .then(res => res.json())
+                    .then((res) => {
+                         dispatch({type:types.ADD_POST,post: res});
+                                   
+                    })
+                    .catch((err) => {
+
+                    });
+   }
   };
-}
-
-// https://github.com/ChristianKreuzberger/django-rest-imageupload-example/blob/master/tutorial/chapter1/step7.md
-function transformImageRequest(data) {
-    if (data === undefined)
-        return data;
-
-    var fd = new FormData();
-    angular.forEach(data, function(value, key) {
-      if (value instanceof FileList) {
-        if (value.length == 1) {
-          fd.append(key, value[0]);
-        } else {
-          angular.forEach(value, function(file, index) {
-            fd.append(key + '_' + index, file);
-          });
-        }
-      } else {
-        fd.append(key, value);
-      }
-    });
-
-    return fd;
 }
 
 function addPostImage(post,user){
@@ -144,7 +213,7 @@ function addPostImage(post,user){
       },
       body: {
         "image": post.image,
-        "id": user.id,
+        "id": "1a3a3325-f565-419d-a882-d6327b7ecf10",
       }
     })
     .then(res => res.json())
@@ -165,7 +234,8 @@ function addPostImage(post,user){
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result.posts || []
+    posts: result || [],
+    authors: result.map(post => post.author) || []
   };
 }
 
@@ -345,27 +415,49 @@ function followUser(currentUser, otherUser) {
       query: 'friendrequest',
       author: {
         id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       },
       friend: {
-        id: otherUser.id
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
       }
     }),
   });
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friends/${getUUIDFromId(otherUser.id)}/`, {
+  return fetch(`${URL_PREFIX}/friendrequest/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`
-    }
+      'Authorization': `Basic ${btoa(`${currentUser.username}:${currentUser.password}`)}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      },
+      friend: {
+        id: otherUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      }
+    })
   });
 }
 
-export function toggleFollowStatus(currentUser, otherUser) {
+export function toggleFollowStatus(currentUser, otherUser, isFriend) {
   return function(dispatch) {
-    const toggleFollow = otherUser.isFollowing ? unfollowUser : followUser;
+    const toggleFollow = isFriend ? unfollowUser : followUser;
 
     return toggleFollow(currentUser, otherUser)
     .then(res => {

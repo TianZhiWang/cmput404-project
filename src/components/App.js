@@ -83,8 +83,8 @@ export default connect(
     return {
       ...stateProps,
       ...ownProps,
-      addComment: function(text, postId) {
-        dispatch(actions.addComment(text, postId, user));
+      addComment: function(text, postId, postOrigin) {
+        dispatch(actions.addComment(text, postId, postOrigin, user));
       },
       addPost: function(post) {
         dispatch(actions.addPost(post, user));
@@ -104,8 +104,8 @@ export default connect(
       getUsers: function() {
         dispatch(actions.getUsers(user));
       },
-      toggleFollowStatus: function(otherUser) {
-        dispatch(actions.toggleFollowStatus(user, otherUser));
+      toggleFollowStatus: function(otherUser, isFriend) {
+        dispatch(actions.toggleFollowStatus(user, otherUser, isFriend));
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
