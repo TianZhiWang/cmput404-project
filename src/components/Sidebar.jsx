@@ -20,6 +20,7 @@ class Sidebar extends Component {
           onSelect={this.props.switchTabs}>
           <NavItem eventKey={'stream'}>Stream</NavItem>
           <NavItem eventKey={'friends'}>Following</NavItem>
+          <NavItem eventKey={'profile'}>Profile</NavItem>
         </Nav>
       </div>
     );

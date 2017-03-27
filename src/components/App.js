@@ -104,8 +104,8 @@ export default connect(
       getUsers: function() {
         dispatch(actions.getUsers(user));
       },
-      toggleFollowStatus: function(otherUser) {
-        dispatch(actions.toggleFollowStatus(user, otherUser));
+      toggleFollowStatus: function(otherUser, isFriend) {
+        dispatch(actions.toggleFollowStatus(user, otherUser, isFriend));
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));

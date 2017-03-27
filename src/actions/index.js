@@ -29,11 +29,17 @@ export function addComment(comment, postId, postOrigin, user) {
           url: user.url
         },
         published: new Date().toISOString(),
-        id: uuidv4()
+        id: uuidv4(),
+        contentType: 'text/plain'
       }
     };
 
-    fetch(`${URL_PREFIX}/posts/${String(postId)}/comments/`, {
+    let postUUID = postId;
+    if (/^http/.test(postId)) {
+      postUUID = /\/([a-zA-Z0-9-]+)\/?$/.exec(postId, 'g')[1];
+    }
+
+    fetch(`${URL_PREFIX}/posts/${String(postUUID)}/comments/`, {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
@@ -97,7 +103,8 @@ export function addPost(post, user) {
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result || []
+    posts: result || [],
+    authors: result.map(post => post.author) || []
   };
 }
 
@@ -317,9 +324,9 @@ function unfollowUser(currentUser, otherUser) {
   });
 }
 
-export function toggleFollowStatus(currentUser, otherUser) {
+export function toggleFollowStatus(currentUser, otherUser, isFriend) {
   return function(dispatch) {
-    const toggleFollow = otherUser.isFollowing ? unfollowUser : followUser;
+    const toggleFollow = isFriend ? unfollowUser : followUser;
 
     return toggleFollow(currentUser, otherUser)
     .then(res => {
