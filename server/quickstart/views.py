@@ -49,7 +49,6 @@ def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values_list('follows', flat=True) # everyone currentUser follows
     authors = Author.objects.filter(pk__in=following)
 
-    # http://stackoverflow.com/a/11244370
     friends = []
     for author in authors:
         try:
