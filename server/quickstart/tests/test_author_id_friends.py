@@ -98,12 +98,12 @@ class AuthorIdFriendsTest(APITestCase):
         """ POST should throw a client error as it doesn't make sense to put at this endpoint """
         url = reverse("authorIdFriend", args=[self.author.pk])
         obj = {
-            "query": "friends",
-            "author": self.author.pk,
-            "authors": [
-	            self.stranger_author.host + "/author/" + str(self.stranger_author.id),
-		        self.friend_author.host + "/author/" + str(self.friend_author.id)
-  	        ]
+                "query": "friends",
+                "author": self.author.pk,
+                "authors": [
+                    self.stranger_author.host + "/author/" + str(self.stranger_author.id),
+                    self.friend_author.host + "/author/" + str(self.friend_author.id)
+                ]
         }
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
@@ -140,3 +140,12 @@ class AuthorIdFriendsTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_author_res_is_correct_format(self):
+        """ The current author id friend is in the same format as the spec """
+        url = reverse("authorIdFriend", args=[self.author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["query"] == "friends")
+        self.assertTrue(len(response.data["authors"]) >= 0)  # should be an array with at least one element
