@@ -39,17 +39,33 @@ from django.urls import reverse
 import json
 from urlparse import urlparse
 
+def get_author_id_from_url_string(string):
+    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', string).group(1)
+
 def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
     following_pks = [author['follows'] for author in following]
-    followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')  # everyone that follows currentUser
-    return followed.filter(user__in=following_pks)
+    authors = Author.objects.filter(pk__in=following_pks)
+
+    friends = []
+    for author in authors:
+        try:
+            url = author.host + 'author/' + get_author_id_from_url_string(author.id) + '/friends/' + str(authorPK)
+            node = Node.objects.get(url=author.host)
+            req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+            req.raise_for_status()
+
+            if (req.json()['friends']):
+                friends.append(author.id)
+
+        except Exception as e:
+            print("Error in trying to get friends")
+            print(str(e))
+
+    return friends
 
 def get_author_id_from_url(author):
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
-
-def get_author_id_from_url_string(string):
-    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', string).group(1)
 
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).count() != 0
@@ -263,7 +279,7 @@ class CheckFriendship(APIView):
     """
     def get(self, request, author_id1, author_id2, format=None):
         try:
-            friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1).values_list('user', flat=True)]
+            friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1)]
             author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
             author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
         except ValueError as e:
@@ -381,7 +397,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             serializedPosts = PostSerializer(posts, many=True).data
 
             # http://stackoverflow.com/a/6653873 Jack M. (http://stackoverflow.com/users/3421/jack-m) (CC-BY-SA 3.0)
-            friends = [str(uuid) for uuid in get_friends_of_authorPK(author.id).values_list('user', flat=True)]
+            friends = [str(uuid) for uuid in get_friends_of_authorPK(author.id)]
 
             # Get all posts from remote authors
             nodes = list(Node.objects.all())
