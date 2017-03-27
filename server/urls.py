@@ -32,11 +32,11 @@ urlpatterns = [
     url(r'^friendrequest/$', views.FollowingRelationshipList.as_view(), name="friendRequest"),
     url(r'^author/(?P<author_id>[0-9a-zA-Z-]+)$', views.AuthorDetail.as_view(), name="authorId"),
     ###### Divider - Locally used, not in API #######
-    url(r'^authors/$', views.AuthorList.as_view(), name="author"),
-    url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view(), name="authorPostId"),
-    url(r'^login/$', views.LoginView.as_view(), name="login"),
-    url(r'^register/$', views.RegisterView.as_view(), name="register"),
-    url(r'^admin/', admin.site.urls, name="admin"),
+    url(r'^authors/$', views.AuthorList.as_view()),
+    url(r'^author/([0-9a-zA-Z-]+)/posts/(?P<post_id>[0-9a-zA-Z-]+)/$', views.PostDetail.as_view()),
+    url(r'^login/$', views.LoginView.as_view()),
+    url(r'^register/$', views.RegisterView.as_view()),
+    url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name="react.html"), name="root"),
     url(r'^docs/', include('rest_framework_docs.urls'))
 ]

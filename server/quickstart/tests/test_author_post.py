@@ -160,3 +160,39 @@ class AuthorPostTest(APITestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(len(response.data) == 3)  # should get PUBLIC, SERVERONLY, and FOAF
+
+    def test_authorposturl_get_author_posts_format_id_title_content_and_more(self):
+        """ Format: GET has same post id, title, content, and more as the POST that created it """
+        postResponse = self.post_a_post_obj("author format post", "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        url = reverse("authorPost")
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(len(response.data) == 1)  # should only get one PUBLIC post by author
+        self.assertTrue(response.data[0]["id"] == postResponse.data["id"])  # the id of the post during the POST and GET should be equal
+        self.assertTrue(response.data[0]["title"] == postResponse.data["title"])
+        self.assertTrue(response.data[0]["content"] == postResponse.data["content"])
+        self.assertTrue(response.data[0]["description"] == postResponse.data["description"])
+        self.assertTrue(response.data[0]["contentType"] == postResponse.data["contentType"])
+        self.assertTrue(response.data[0]["visibility"] == postResponse.data["visibility"])
+        self.assertTrue(response.data[0]["published"] == postResponse.data["published"])
+        self.assertTrue(response.data[0]["count"] == postResponse.data["count"])  # related to comments
+        self.assertTrue(response.data[0]["size"] == postResponse.data["size"])  # related to comments
+        self.assertTrue(response.data[0]["next"] == postResponse.data["next"])  # should have a next field
+        self.assertTrue(response.data[0]["source"] == postResponse.data["source"])
+        self.assertTrue(response.data[0]["origin"] == postResponse.data["origin"])
+        self.assertTrue(response.data[0]["next"] == postResponse.data["next"])
+        self.assertTrue(response.data[0]["comments"] == postResponse.data["comments"])
+        self.assertTrue(response.data[0]["visibleTo"] == postResponse.data["visibleTo"])
+        try:
+            self.assertTrue(response.data[0]["junk"] == postResponse.data["id"])
+        except KeyError as e:
+            self.assertTrue(True)  # A non-existant field on the response will throw a key error
+        try:
+            self.assertTrue(response.data[0]["id"] == postResponse.data["junk"])
+        except KeyError as e:
+            self.assertTrue(True)  # A non-existant field on the postResponse will throw a key error
+        try:
+            self.assertTrue(response.data[0]["junk"] == postResponse.data["junk"])
+        except KeyError as e:
+            self.assertTrue(True)  # A non-existant field on both will throw a key error

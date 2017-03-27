@@ -102,15 +102,15 @@ class AuthorIdFriendIdTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_author_is_friends_with_friend(self):
-        """ The current author should have be friends with author_friend """
+        """ The current author should have be friends with friend_author """
         url = reverse("authorIdFriendId", args=[self.author.pk, self.friend_author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(response.data["friends"])  # NOTE: the friendship between author and author_friend is created in setUp
+        self.assertTrue(response.data["friends"])  # NOTE: the friendship between author and friend_author is created in setUp
 
     def test_friend_is_friends_with_foaf_and_author(self):
-        """ author_friend should be friends with author and foaf as friendship is a two way relationship, and author should see that """
+        """ friend_author should be friends with author and foaf as friendship is a two way relationship, and author should see that """
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         # is friend friends with author?
         urlA = reverse("authorIdFriendId", args=[self.friend_author.pk, self.author.pk])
@@ -121,8 +121,8 @@ class AuthorIdFriendIdTest(APITestCase):
         # assert that the above two questions are true
         self.assertTrue(status.is_success(responseA.status_code))
         self.assertTrue(status.is_success(responseB.status_code))
-        self.assertTrue(responseA.data["friends"])  # NOTE: the friendship between author_friend and author is created in setUp
-        self.assertTrue(responseB.data["friends"])  # NOTE: the friendship between author_friend and foaf is created in setUp
+        self.assertTrue(responseA.data["friends"])  # NOTE: the friendship between friend_author and author is created in setUp
+        self.assertTrue(responseB.data["friends"])  # NOTE: the friendship between friend_author and foaf is created in setUp
 
     def test_stranger_is_not_friends_with_author(self):
         """ The stranger author should have no friends, and author should be able to see that """
@@ -159,3 +159,33 @@ class AuthorIdFriendIdTest(APITestCase):
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_author_is_friends_with_friend_format_query(self):
+        """ Formatting query : The query should be friends """
+        url = reverse("authorIdFriendId", args=[self.author.pk, self.friend_author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["query"] == "friends")
+
+    def test_author_is_friends_with_friend_format_friends(self):
+        """ Formatting friends : Should have something in the friends field """
+        url = reverse("authorIdFriendId", args=[self.author.pk, self.friend_author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["friends"])  # they should be friends, if no such field a KeyError will be thrown
+
+    def test_author_is_friends_with_friend_format_authors(self):
+        """ Formatting authors : Should return the urls of the authors involved """
+        url = reverse("authorIdFriendId", args=[self.author.pk, self.friend_author.pk])
+        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(len(response.data["authors"]) == 2)
+        author_id_in_authors_zero = response.data["authors"][0].find(str(self.author.pk)) != -1
+        author_id_in_authors_one = response.data["authors"][1].find(str(self.author.pk)) != -1
+        friend_id_in_authors_zero = response.data["authors"][0].find(str(self.friend_author.pk)) != -1
+        friend_id_in_authors_one = response.data["authors"][1].find(str(self.friend_author.pk)) != -1
+        self.assertTrue(author_id_in_authors_zero or author_id_in_authors_one)
+        self.assertTrue(friend_id_in_authors_zero or friend_id_in_authors_one)
