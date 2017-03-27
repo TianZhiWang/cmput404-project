@@ -340,7 +340,10 @@ class FollowingRelationshipList(APIView):
                 friend_data['id'] = get_author_id_from_url_string(author_data['id'])
                 serializer = CreateAuthorSerializer(data=friend_data)
                 if serializer.is_valid():
-                    friend = Author.objects.get_or_create(**serializer.validated_data)[0]
+                    if not Author.objects.filter(pk=friend_data['id']).exists():
+                        friend = Author.objects.create(**serializer.validated_data)
+                    else:
+                        friend = Author.objects.get(pk=friend_data['id'])
                     FollowingRelationship.objects.create(user=author, follows=friend)
                     return Response(status=201)
                 else:
