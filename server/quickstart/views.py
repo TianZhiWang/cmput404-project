@@ -294,7 +294,6 @@ class CheckFriendship(APIView):
             ],
             "friends": isFriends
         }
-            
         return Response(friendshipResult, status=200)       
 
 # TODO: How to add remote authors? Also how to link them?

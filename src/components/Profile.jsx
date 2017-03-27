@@ -22,7 +22,7 @@ class Profile extends Component {
   }
 
   componentDidMount() {
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.currentuser.id)}/friends/${getUUIDFromId(this.props.user.id)}/`, {
+    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.currentuser.id)}/}/`, {
       method: 'GET',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
@@ -36,7 +36,11 @@ class Profile extends Component {
       return res;
     })
     .then(res => res.json())
-    .then(res => {this.setState({isFriends:res.friends});})
+    .then(res => {
+      this.setState({
+        isFriends: res.friends.filter(friend => friend.url === this.props.currentuser.id).length !== 0
+      });
+    })
     .catch(err => {
       console.log(err, 'Could not get isfriends');
     });
