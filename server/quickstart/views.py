@@ -75,7 +75,7 @@ def get_friends_of_authorPK(authorPK):
     return friends
 
 def is_request_from_remote_node(request):
-    return Node.objects.filter(user=request.user).count() != 0
+    return Node.objects.filter(user=request.user).exists()
 
 class PostList(APIView, PaginationMixin):
     """
@@ -337,7 +337,7 @@ class FollowingRelationshipList(APIView):
 
                 author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
 
-                friend_data['id'] = get_author_id_from_url_string(author_data['id'])
+                friend_data['id'] = get_author_id_from_url_string(friend_data['id'])
                 serializer = CreateAuthorSerializer(data=friend_data)
                 if serializer.is_valid():
                     if not Author.objects.filter(pk=friend_data['id']).exists():
