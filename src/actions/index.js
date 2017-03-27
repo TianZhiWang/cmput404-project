@@ -66,29 +66,27 @@ export function addComment(comment, postId, postOrigin, user) {
 /*
 * Adds a post by a user then returns an action to update the state
 */
-
 export function addPost(post, user) {
 
   return function(dispatch) {
     if (post.image){
-  
-      // learned from https://visionmedia.github.io/superagent/docs/test.html
-      const upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
-                               
-                               .field('image', post.image)
-                               .auth(user.username, user.password);
-
-      upload.end((err, res) => {
-        if (err) {
-          console.error(err);
+      const formData = new FormData();
+      formData.append('type', 'file');
+      formData.append('image', post.image);
+      fetch(`${URL_PREFIX}/uploadimage/images/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
         }
-
+      })
+      .then(res => res.json())
+      .then(res => {
         if (res) {
-      
           fetch(`${URL_PREFIX}/posts/`, {
             method: 'POST',
             headers: {
-                        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+              // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
               'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
               'Content-Type': 'application/json',
               'Accept': 'application/json'
@@ -101,18 +99,15 @@ export function addPost(post, user) {
               author: user.id,
               comments: post.comments,
               visibility:post.permission,
-              image: JSON.parse(res.text).image,
+              image: res.image,
               visibleTo: post.user_with_permission
             }),
           })
-                    .then(res => res.json())
-                    .then((res) => {
-                      dispatch({type:types.ADD_POST,post: res});
-                                   
-                    })
-                    .catch((err) => {
-
-                    });
+          .then(res => res.json())
+          .then((res) => {
+            dispatch({type:types.ADD_POST,post: res});            
+          })
+          .catch((err) => { });
         }
       });
 
@@ -120,7 +115,7 @@ export function addPost(post, user) {
       fetch(`${URL_PREFIX}/posts/`, {
         method: 'POST',
         headers: {
-                        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+          // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
           'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -137,42 +132,12 @@ export function addPost(post, user) {
           visibleTo: post.user_with_permission
         }),
       })
-                    .then(res => res.json())
-                    .then((res) => {
-                      dispatch({type:types.ADD_POST,post: res});
-                                   
-                    })
-                    .catch((err) => {
-
-                    });
+      .then(res => res.json())
+      .then((res) => {
+        dispatch({type:types.ADD_POST,post: res});
+      })
+      .catch((err) => { });
     }
-  };
-}
-
-function addPostImage(post,user){
-  return function(dispatch) {
-    fetch(`${URL_PREFIX}/uploadimage/images/`, {
-      method: 'POST',
-      // transfomrRequest: transformImageRequest,
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': "multipart/form-data",
-        // 'Accept': 'application/json'
-      },
-      body: {
-        "image": post.image,
-        "id": "1a3a3325-f565-419d-a882-d6327b7ecf10",
-      }
-    })
-    .then(res => res.json())
-    .then((res) => {
-      // dispatch({type:types.ADD_POST,post: res});
-     // location.reload();
-    })
-    .catch((err) => {
-
-    });
   };
 }
 

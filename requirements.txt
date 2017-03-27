@@ -7,12 +7,13 @@ djangorestframework==3.5.4
 drfdocs==0.0.11
 gunicorn==19.7.0
 oauthlib==2.0.1
+olefile==0.44
 packaging==16.8
+Pillow==4.0.0
 psycopg2==2.7
 pyparsing==2.2.0
-six==1.10.0
-whitenoise==3.3.0
 python-openid==2.2.5
 requests==2.13.0
 requests-oauthlib==0.8.0
 six==1.10.0
+whitenoise==3.3.0
