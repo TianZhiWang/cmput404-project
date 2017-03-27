@@ -66,56 +66,6 @@ export function addComment(comment, postId, postOrigin, user) {
 /*
 * Adds a post by a user then returns an action to update the state
 */
-// export function addPost(post, user) {
-
-//   return function(dispatch) {
-//     fetch(`${URL_PREFIX}/posts/`, {
-//       method: 'POST',
-//       headers: {
-//         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-//         'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-//         'Content-Type': 'application/json',
-//         'Accept': 'application/json'
-//       },
-//       body: JSON.stringify({
-//         title: post.title,
-//         content: post.content,
-//         description: post.description,
-//         contentType: post.contentType,
-//         author: user.id,
-//         comments: post.comments,
-//         visibility:post.permission,
-
-//         // image:post.image,
-//         visibleTo: post.user_with_permission
-//       }),
-//     })
-//     .then(res => res.json())
-//     .then((res) => {
-//         console.log(post.image)
-//         dispatch({type:types.ADD_POST,post: res});
-//         // learned from https://visionmedia.github.io/superagent/docs/test.html
-//               let upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
-                               
-//                                .field('image', post.image)
-//                                .auth('joshdeng', 'j69pbxq9');
-
-//               upload.end((err, res) => {
-//                 if (err) {
-//                   console.error(err);
-//                 }
-
-//                 if (res) {
-//                   console.log(res)
-//                 }
-//               });
-                   
-//     })
-//     .catch((err) => {
-
-//     });
-//   };
-// }
 
 export function addPost(post, user) {
 

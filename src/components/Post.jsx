@@ -72,7 +72,7 @@ class Post extends Component {
 
   imageHandler(){
     if (this.props.image!="NO_IMAGE"){
-      return <div><img src={this.props.image}/></div>
+      return <div><img src={this.props.image}/></div>;
     }
   }
 

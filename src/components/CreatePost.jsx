@@ -97,9 +97,9 @@ class CreatePost extends Component {
     
     // get select user with permission
     // author:Dhiraj http://stackoverflow.com/questions/30306486/get-selected-option-text-using-react-js
-    var index = event.nativeEvent.target.selectedIndex;
-    var label = event.nativeEvent.target[index].text;
-    var user_with_permission = [];
+    const index = event.nativeEvent.target.selectedIndex;
+    const label = event.nativeEvent.target[index].text;
+    let user_with_permission = [];
 
     // create visible array, if permission dropdown is selected to a user
     if (label!="Friends" && label!= "Public" && label!="Friends of Friends" && label!="Self"){
@@ -107,8 +107,8 @@ class CreatePost extends Component {
         return value.displayName == label;   
       })[0];
 
-      user_with_permission = user_with_permission.id.replace(user_with_permission.host+"author/","")
-      user_with_permission = [user_with_permission]
+      user_with_permission = user_with_permission.id.replace(user_with_permission.host+"author/","");
+      user_with_permission = [user_with_permission];
     }
 
     this.setState({
@@ -153,7 +153,7 @@ class CreatePost extends Component {
         label: PERMISSIONS.SELF.label
       }
     ];
-    let options = [
+    const options = [
       ...staticOptions,
       ...this.props.users.map(user => ({
         label: user.displayName,
@@ -203,9 +203,11 @@ class CreatePost extends Component {
             options={options}
             value={this.state.permission}
             />*/}
-            <select id = 'permissionSelect' onChange={this.handlePermissionChange} >
+            <select id = 'permissionSelect' 
+            onChange={this.handlePermissionChange} >
               {options.map((option, index) => {
-               return <option key={index} value={option.value}>{option.label}</option>
+                return <option key={index}
+                 value={option.value}>{option.label}</option>;
               })}
             </select>
             <Button
@@ -225,8 +227,9 @@ class CreatePost extends Component {
 
 CreatePost.propTypes = {
   addPost: PropTypes.func.isRequired,
-  users: PropTypes.array.isRequired,
   getUsers: PropTypes.func.isRequired,
+  users: PropTypes.array.isRequired,
+  
 
 };
 

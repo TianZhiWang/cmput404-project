@@ -114,7 +114,8 @@ Libraries are listed in package.json and requirements.txt
 - https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
 - https://regex101.com/
 - superagent https://www.npmjs.com/package/superagent
-- react-cloudinary https://github.com/cloudinary/cloudinary-react
+- react-cloudinary: https://github.com/cloudinary/cloudinary-react
+- image tutorial: https://www.youtube.com/watch?v=HSgyPfibrqQ&t=1s
 
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).
