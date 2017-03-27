@@ -20,6 +20,7 @@ class Container extends Component {
           <CreatePost
             addPost={this.props.addPost}
             users={this.props.users}
+            getUsers={this.props.getUsers}
           />
            <PostList
             toggleFollowStatus={this.props.toggleFollowStatus}

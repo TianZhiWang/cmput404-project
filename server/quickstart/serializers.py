@@ -59,7 +59,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published')
+
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published','image')
 
     def paginated_comments(self, obj):
         comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]
@@ -87,6 +88,7 @@ class PostSerializer(serializers.ModelSerializer):
         next = obj.origin + "posts/" + str(obj.id) + "/comments"
         return next
 
+
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
     # http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0),
@@ -100,3 +102,7 @@ class PostSerializer(serializers.ModelSerializer):
         for user in visibleTo:
             post.visibleTo.add(user)
         return post
+
+    
+
+
