@@ -71,82 +71,81 @@ export function addPost(post, user) {
 
   return function(dispatch) {
     if (post.image){
-    console.log(post.image)
-       
-        // learned from https://visionmedia.github.io/superagent/docs/test.html
-              let upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
+  
+      // learned from https://visionmedia.github.io/superagent/docs/test.html
+      const upload = request.post(`${URL_PREFIX}/uploadimage/images/`)
                                
                                .field('image', post.image)
                                .auth(user.username, user.password);
 
-              upload.end((err, res) => {
-                if (err) {
-                  console.error(err);
-                }
+      upload.end((err, res) => {
+        if (err) {
+          console.error(err);
+        }
 
-                if (res) {
-                  console.log(JSON.parse(res.text).image)
-                   fetch(`${URL_PREFIX}/posts/`, {
-                      method: 'POST',
-                      headers: {
+        if (res) {
+      
+          fetch(`${URL_PREFIX}/posts/`, {
+            method: 'POST',
+            headers: {
                         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-                        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                      },
-                      body: JSON.stringify({
-                        title: post.title,
-                        content: post.content,
-                        description: post.description,
-                        contentType: post.contentType,
-                        author: user.id,
-                        comments: post.comments,
-                        visibility:post.permission,
-                        image: JSON.parse(res.text).image,
-                        visibleTo: post.user_with_permission
-                      }),
-                    })
+              'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              title: post.title,
+              content: post.content,
+              description: post.description,
+              contentType: post.contentType,
+              author: user.id,
+              comments: post.comments,
+              visibility:post.permission,
+              image: JSON.parse(res.text).image,
+              visibleTo: post.user_with_permission
+            }),
+          })
                     .then(res => res.json())
                     .then((res) => {
-                         dispatch({type:types.ADD_POST,post: res});
+                      dispatch({type:types.ADD_POST,post: res});
                                    
                     })
                     .catch((err) => {
 
                     });
-                }
-              });
+        }
+      });
 
-   }else{
-       fetch(`${URL_PREFIX}/posts/`, {
-                      method: 'POST',
-                      headers: {
+    }else{
+      fetch(`${URL_PREFIX}/posts/`, {
+        method: 'POST',
+        headers: {
                         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-                        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                      },
-                      body: JSON.stringify({
-                        title: post.title,
-                        content: post.content,
-                        description: post.description,
-                        contentType: post.contentType,
-                        author: user.id,
-                        comments: post.comments,
-                        visibility:post.permission,
-                        image: "NO_IMAGE",
-                        visibleTo: post.user_with_permission
-                      }),
-                    })
+          'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          title: post.title,
+          content: post.content,
+          description: post.description,
+          contentType: post.contentType,
+          author: user.id,
+          comments: post.comments,
+          visibility:post.permission,
+          image: "NO_IMAGE",
+          visibleTo: post.user_with_permission
+        }),
+      })
                     .then(res => res.json())
                     .then((res) => {
-                         dispatch({type:types.ADD_POST,post: res});
+                      dispatch({type:types.ADD_POST,post: res});
                                    
                     })
                     .catch((err) => {
 
                     });
-   }
+    }
   };
 }
 
@@ -168,7 +167,6 @@ function addPostImage(post,user){
     })
     .then(res => res.json())
     .then((res) => {
-      console.log(res+"!!!")
       // dispatch({type:types.ADD_POST,post: res});
      // location.reload();
     })
