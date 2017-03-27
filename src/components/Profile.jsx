@@ -22,7 +22,7 @@ class Profile extends Component {
   }
 
   componentDidMount() {
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.currentuser.id)}/}/`, {
+    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.currentuser.id)}/`, {
       method: 'GET',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
