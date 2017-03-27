@@ -223,7 +223,7 @@ class AuthorDetail(APIView):
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
 
-        friends = [author['id'] for author in get_friends_of_authorPK(author_id)]
+        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
 
@@ -247,7 +247,7 @@ class FriendsList(APIView):
             author = get_object_or_404(Author, pk=author_id)
         except ValueError as e:
             return Response(status=400)
-        friends = [author['id'] for author in get_friends_of_authorPK(author_id)]
+        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
 
         users = Author.objects.filter(id__in=friends)
         authorsUrlArray = []
@@ -391,7 +391,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
 
-            friends = [author['url'] for author in get_friends_of_authorPK(author.id)]
+            friends = [authorData['url'] for authorData in get_friends_of_authorPK(author.id)]
             # Get all posts from remote authors
             for node in Node.objects.all():
                 url = node.url + 'author/posts/'
@@ -432,7 +432,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
         return Post.objects.all().filter(visibility="PRIVATE", visibleTo=currentUser)
 
     def get_queryset_friends(self, currentUser):
-        friendsOfCurrentUser = [author['id'] for author in get_friends_of_authorPK(currentUser.pk)]
+        friendsOfCurrentUser = [authorData['id'] for authorData in get_friends_of_authorPK(currentUser.pk)]
 
         return Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
