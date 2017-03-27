@@ -26,3 +26,4 @@ venv
 db.sqlite3
 
 server/static
+server/media
