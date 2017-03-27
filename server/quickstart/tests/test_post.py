@@ -13,30 +13,32 @@ class PostTests(APITestCase):
     AUTHOR_USER_NAME = 'aName'
     AUTHOR_USER_PASS = 'password127'
     AUTHOR_USER_MAIL = 'aName@example.com'
+
     NOT_ACTIVE_USER_NAME = 'notActiveName'
     NOT_ACTIVE_USER_MAIL = 'notActiveName@example.com'
     NOT_ACTIVE_USER_PASS = 'password127'
 
+    URL = 'http://127.0.0.1:8000/'
+
+    def createAuthor(self, us, em, pw, isActive=True):
+        authorUser = User.objects.create_user(us, em, pw)
+        authorUser.is_active = isActive
+        authorUser.save()
+        author = Author.objects.create(id=us, displayName=us, user=authorUser, url=self.URL, host=self.URL)
+        author.save()
+        return author
+
+    def createAuthorFriend(self, us, em, pw, friend):
+        author = self.createAuthor(us, em, pw)
+        FollowingRelationship.objects.create(user=author, follows=friend)
+        FollowingRelationship.objects.create(user=friend, follows=author)
+        return author
+
     def setUp(self):
         """ Set up is run before each test """
-        # accessed on March 12, 2017
-        # from http://www.django-rest-framework.org/api-guide/testing/
-        self.authorUser = User.objects.create_user(self.AUTHOR_USER_NAME,
-                                                   self.AUTHOR_USER_MAIL,
-                                                   self.AUTHOR_USER_PASS)
-        self.authorUser.save()
-        author = Author.objects.create(displayName=self.AUTHOR_USER_NAME,
-                                       user=self.authorUser)
-        author.save()
+        self.not_active_author = self.createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
+        self.author = self.createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
 
-        self.unAuthorizedUser = User.objects.create_user(self.NOT_ACTIVE_USER_NAME,
-                                                         self.NOT_ACTIVE_USER_MAIL,
-                                                         self.NOT_ACTIVE_USER_PASS)
-        self.unAuthorizedUser.is_active = False  # this is crucial to make an unAuthorizedUser
-        self.unAuthorizedUser.save()
-        unAuthAuthor = Author.objects.create(displayName=self.NOT_ACTIVE_USER_NAME,
-                                             user=self.unAuthorizedUser)
-        unAuthAuthor.save()
 
     def getBasicAuthHeader(self, us, pw):
         """ Returns the b64encoded string created for a user and password to be used in the header """

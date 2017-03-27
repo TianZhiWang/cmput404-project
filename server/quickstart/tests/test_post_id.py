@@ -29,23 +29,21 @@ class PostIdTest(APITestCase):
     NOT_ACTIVE_USER_PASS = 'password127'
     NOT_ACTIVE_USER_MAIL = 'notative@example.com'
 
+    URL = 'http://127.0.0.1:8000/'
+
     def createAuthor(self, us, em, pw, isActive=True):
         authorUser = User.objects.create_user(us, em, pw)
         authorUser.is_active = isActive
         authorUser.save()
-        author = Author.objects.create(displayName=us, user=authorUser)
+        author = Author.objects.create(id=us, displayName=us, user=authorUser, url=self.URL, host=self.URL)
         author.save()
         return author
 
     def createAuthorFriend(self, us, em, pw, friend):
-        authorUser = User.objects.create_user(us, em, pw)
-        authorUser.save()
-        author = Author.objects.create(displayName=us, user=authorUser)
-        author.save()
+        author = self.createAuthor(us, em, pw)
         FollowingRelationship.objects.create(user=author, follows=friend)
         FollowingRelationship.objects.create(user=friend, follows=author)
         return author
-
 
     def setUp(self):
         """ Set up is run before each test """

@@ -22,7 +22,7 @@
 # SOFTWARE.
 from models import Comment, Post, FollowingRelationship, Author, Node
 from django.contrib.auth.models import User
-from serializers import CommentSerializer, PostSerializer, AuthorSerializer
+from serializers import CommentSerializer, PostSerializer, AuthorSerializer, InternalAuthorSerializer, CreateAuthorSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -38,28 +38,44 @@ import requests
 from django.urls import reverse
 import json
 from urlparse import urlparse
-
-def get_friends_of_authorPK(authorPK):
-    following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
-    following_pks = [author['follows'] for author in following]
-    followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')  # everyone that follows currentUser
-    return followed.filter(user__in=following_pks)
-
-def get_author_id_from_url(author):
-    return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', author['id']).group(1)
+import uuid
 
 def get_author_id_from_url_string(string):
+    if 'http' not in string:
+        return string
     return re.search(r'author\/([a-zA-Z0-9-]+)\/?$', string).group(1)
 
-def is_request_from_remote_node(request):
-    return Node.objects.filter(user=request.user).count() != 0
+def get_friends_of_authorPK(authorPK):
+    following = FollowingRelationship.objects.filter(user=authorPK).values_list('follows', flat=True) # everyone currentUser follows
+    authors = Author.objects.filter(pk__in=following)
 
-def get_queryset_friends_of_a_friend(currentUser):
-        currentUserFriends = get_friends_of_authorPK(currentUser.pk)
-        temp = get_friends_of_authorPK(currentUser.pk)
-        for f in currentUserFriends:
-            temp = temp | get_friends_of_authorPK(f["user"])
-        return Post.objects.all().filter(author__in=temp).filter(visibility="FOAF")
+    # http://stackoverflow.com/a/11244370
+    friends = []
+    for author in authors:
+        try:
+            url = author.host + 'author/' + author.id + '/friends/' + str(authorPK)
+            node = Node.objects.get(url=author.host)
+            req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+            req.raise_for_status()
+
+            if (req.json()['friends']):
+                friends.append(InternalAuthorSerializer(author).data)
+
+        except Node.DoesNotExist as e:
+            # Get everyone following the current user, check if the author in this
+            followed_by = FollowingRelationship.objects.filter(follows=authorPK).values_list('user', flat=True)
+            followed_by = Author.objects.filter(pk__in=followed_by)
+            if author in followed_by:
+                friends.append(InternalAuthorSerializer(author).data)
+
+        except Exception as e:
+            print("Error in trying to get friends")
+            print(str(e))
+
+    return friends
+
+def is_request_from_remote_node(request):
+    return Node.objects.filter(user=request.user).exists()
 
 class PostList(APIView, PaginationMixin):
     """
@@ -141,18 +157,18 @@ class CommentList(APIView, PaginationMixin):
 
             if is_request_from_remote_node(request):
                 author_data = commentData['author']
-                author_data['id'] = get_author_id_from_url(author_data)
+                author_data['id'] = get_author_id_from_url_string(author_data['id'])
                 if Author.objects.filter(pk=author_data['id']).exists():
                     author = get_object_or_404(Author, pk=author_data['id'])
                 else:
-                    serializer = AuthorSerializer(data=author_data)
+                    serializer = CreateAuthorSerializer(data=author_data)
                     if serializer.is_valid():
                         author = Author.objects.create(**serializer.validated_data)
                         return Response(status=201)
                     else:
                         return Response({"error": "Bad data"}, status=400)
             else:
-                author = get_object_or_404(Author, pk=get_author_id_from_url(commentData['author']))
+                author = get_object_or_404(Author, pk=get_author_id_from_url_string(commentData['author']['id']))
 
             comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
         # It is one of there posts
@@ -207,7 +223,7 @@ class AuthorDetail(APIView):
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
 
-        friends = get_friends_of_authorPK(author_id)
+        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
 
@@ -231,7 +247,7 @@ class FriendsList(APIView):
             author = get_object_or_404(Author, pk=author_id)
         except ValueError as e:
             return Response(status=400)
-        friends = get_friends_of_authorPK(author_id)
+        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
 
         users = Author.objects.filter(id__in=friends)
         authorsUrlArray = []
@@ -263,23 +279,21 @@ class CheckFriendship(APIView):
     """
     def get(self, request, author_id1, author_id2, format=None):
         try:
-            friendsOfCurrentUser = [str(uuid) for uuid in get_friends_of_authorPK(author_id1).values_list('user', flat=True)]
-            author1URL = AuthorSerializer(get_object_or_404(Author, pk=author_id1)).data['url']
-            author2URL = AuthorSerializer(get_object_or_404(Author, pk=author_id2)).data['url']
+            author = get_object_or_404(Author, pk=author_id1)
+            follows = get_object_or_404(Author, pk=author_id2)
+            isFriends = FollowingRelationship.objects.filter(user=author, follows=follows).exists()
         except ValueError as e:
+            print('Error in getting friends ' + str(e))
             return Response(status=400)
 
         friendshipResult = {
             "query":"friends",
             "authors":[
-            author1URL,
-            author2URL
+            author.url,
+            follows.url
             ],
-            "friends": False
+            "friends": isFriends
         }
-        if (author_id2 in friendsOfCurrentUser):
-            friendshipResult['friends']=True
-            
         return Response(friendshipResult, status=200)       
 
 # TODO: How to add remote authors? Also how to link them?
@@ -289,10 +303,10 @@ class FollowingRelationshipList(APIView):
             our_user_data = request.data['friend']
             remote_user_data = request.data['author']
 
-            our_user = get_object_or_404(Author, pk=get_author_id_from_url(our_user_data))
+            our_user = get_object_or_404(Author, pk=get_author_id_from_url_string(our_user_data['id']))
 
-            remote_user_data['id'] = get_author_id_from_url(remote_user_data)
-            serializer = AuthorSerializer(data=remote_user_data)
+            remote_user_data['id'] = get_author_id_from_url_string(remote_user_data['id'])
+            serializer = CreateAuthorSerializer(data=remote_user_data)
             if serializer.is_valid():
                 remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
                 FollowingRelationship.objects.create(user=remote_user, follows=our_user)
@@ -305,12 +319,13 @@ class FollowingRelationshipList(APIView):
 
             # Both our users
             if (author_data['host'] == friend_data['host']):
-                author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
-                friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
+                author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
+                friend = get_object_or_404(Author, pk=get_author_id_from_url_string(friend_data['id']))
                 FollowingRelationship.objects.create(user=author, follows=friend)
                 return Response(status=201)
             # Other user remote
             else:
+                print('attempting to send friend request')
                 node = Node.objects.get(url=friend_data['host'])
                 url = node.url + 'friendrequest/'
                 try:
@@ -320,18 +335,19 @@ class FollowingRelationshipList(APIView):
                     print("Exception occurred in friendrequest")
                     print(str(e))
 
-                author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
-                friend_data['id'] = get_author_id_from_url(author_data)
-                if Author.objects.filter(pk=friend_data['id']).exists():
-                    friend = get_object_or_404(Author, pk=friend_data['id'])
-                else:
-                    serializer = AuthorSerializer(data=friend_data)
-                    if serializer.is_valid():
+                author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
+
+                friend_data['id'] = get_author_id_from_url_string(friend_data['id'])
+                serializer = CreateAuthorSerializer(data=friend_data)
+                if serializer.is_valid():
+                    if not Author.objects.filter(pk=friend_data['id']).exists():
                         friend = Author.objects.create(**serializer.validated_data)
-                        FollowingRelationship.objects.create(user=author, follows=friend)
-                        return Response(status=201)
                     else:
-                        return Response({"error": "Bad data"}, status=400)
+                        friend = Author.objects.get(pk=friend_data['id'])
+                    FollowingRelationship.objects.create(user=author, follows=friend)
+                    return Response(status=201)
+                else:
+                    return Response({'error': 'Could not create author'}, status=500)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
@@ -340,8 +356,8 @@ class FollowingRelationshipList(APIView):
         author_data = request.data['author']
         friend_data = request.data['friend']
 
-        author = get_object_or_404(Author, pk=get_author_id_from_url(author_data))
-        friend = get_object_or_404(Author, pk=get_author_id_from_url(friend_data))
+        author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
+        friend = get_object_or_404(Author, pk=get_author_id_from_url_string(friend_data['id']))
 
         followingRelationship = get_object_or_404(FollowingRelationship, user=author, follows=friend)
         followingRelationship.delete()
@@ -377,12 +393,9 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
 
-            # http://stackoverflow.com/a/6653873 Jack M. (http://stackoverflow.com/users/3421/jack-m) (CC-BY-SA 3.0)
-            friends = [str(uuid) for uuid in get_friends_of_authorPK(author.id).values_list('user', flat=True)]
-
+            friends = [authorData['url'] for authorData in get_friends_of_authorPK(author.id)]
             # Get all posts from remote authors
-            nodes = list(Node.objects.all())
-            for node in nodes:
+            for node in Node.objects.all():
                 url = node.url + 'author/posts/'
                 try:
                     req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
@@ -392,7 +405,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                     for post in unfilteredForeignPosts:
                         if post['visibility'] == 'PUBLIC':
                             serializedPosts.append(post)
-                        elif post['visibility'] == 'FRIENDS' and (get_author_id_from_url(post['author']) in friends):
+                        elif post['visibility'] == 'FRIENDS' and (post['author'] in friends):
                             serializedPosts.append(post)
                         elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
                             serializedPosts.append(post)
@@ -405,11 +418,10 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
         currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
-        friendOfAFriendPosts = get_queryset_friends_of_a_friend(currentUser)
         friendPosts = self.get_queryset_friends(currentUser)
         serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY") # TODO: check that user is on our server
         visibleToPosts = self.get_queryset_visible_to(currentUser)
-        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | friendOfAFriendPosts | visibleToPosts
+        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | visibleToPosts
 
         # (CC-BY-SA 3.0) as it was posted before Feb 1, 2016
         # stackoverflow (http://stackoverflow.com/questions/20135343/django-unique-filtering)
@@ -422,7 +434,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
         return Post.objects.all().filter(visibility="PRIVATE", visibleTo=currentUser)
 
     def get_queryset_friends(self, currentUser):
-        friendsOfCurrentUser = get_friends_of_authorPK(currentUser.pk)
+        friendsOfCurrentUser = [authorData['id'] for authorData in get_friends_of_authorPK(currentUser.pk)]
 
         return Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
@@ -438,12 +450,11 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
         else:
             publicPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="PUBLIC") 
             privateToUser = Post.objects.all().filter(author__id=author_id).filter(visibility="PRIVATE", visibleTo=request.user.author) 
-            friendsOfCurrentUser = get_friends_of_authorPK(request.user.author.pk)
+            friendsOfCurrentUser = [author['id'] for author in get_friends_of_authorPK(request.user.author.pk)]
             friendsPosts = Post.objects.all().filter(author__id=author_id).filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
-            friendOfAFriendPosts = get_queryset_friends_of_a_friend(request.user.author)
             serverOnlyPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="SERVERONLY")
             
-            posts = publicPosts | privateToUser | friendsPosts | friendOfAFriendPosts | serverOnlyPosts
+            posts = publicPosts | privateToUser | friendsPosts | serverOnlyPosts
 
         page = self.paginate_queryset(posts)
         if page is not None:
@@ -478,8 +489,10 @@ class RegisterView(APIView):
         user.set_password(validated_data['password'])
         user.is_active = False
         user.save()
-        host = str(request.scheme) + "://" + str(request.get_host())
-        author = Author.objects.create(displayName=displayName, user=user, host=host)
+        host = str(request.scheme) + "://" + str(request.get_host()) + "/"
+        id = str(uuid.uuid4())
+        url = host + "author/" + id + "/"
+        author = Author.objects.create(displayName=displayName, user=user, host=host, id=id, url=url)
         author.save()
         return Response(status=200)
         
