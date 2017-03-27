@@ -66,34 +66,77 @@ export function addComment(comment, postId, postOrigin, user) {
 * Adds a post by a user then returns an action to update the state
 */
 export function addPost(post, user) {
-  return function(dispatch) {
-    fetch(`${URL_PREFIX}/posts/`, {
-      method: 'POST',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify({
-        title: post.title,
-        content: post.content,
-        description: post.description,
-        contentType: post.contentType,
-        author: user.id,
-        comments: post.comments,
-        visibility:post.permission,
-        visibleTo: []
-      }),
-    })
-    .then(res => res.json())
-    .then((res) => {
-      dispatch({type:types.ADD_POST,post: res});
-     // location.reload();
-    })
-    .catch((err) => {
 
-    });
+  return function(dispatch) {
+    if (post.image){
+      const formData = new FormData();
+      formData.append('type', 'file');
+      formData.append('image', post.image);
+      fetch(`${URL_PREFIX}/uploadimage/images/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
+        }
+      })
+      .then(res => res.json())
+      .then(res => {
+        if (res) {
+          fetch(`${URL_PREFIX}/posts/`, {
+            method: 'POST',
+            headers: {
+              // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+              'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+              title: post.title,
+              content: post.content,
+              description: post.description,
+              contentType: post.contentType,
+              author: user.id,
+              comments: post.comments,
+              visibility:post.permission,
+              image: res.image,
+              visibleTo: post.user_with_permission
+            }),
+          })
+          .then(res => res.json())
+          .then((res) => {
+            dispatch({type:types.ADD_POST,post: res});            
+          })
+          .catch((err) => { });
+        }
+      });
+
+    }else{
+      fetch(`${URL_PREFIX}/posts/`, {
+        method: 'POST',
+        headers: {
+          // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+          'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          title: post.title,
+          content: post.content,
+          description: post.description,
+          contentType: post.contentType,
+          author: user.id,
+          comments: post.comments,
+          visibility:post.permission,
+          image: "NO_IMAGE",
+          visibleTo: post.user_with_permission
+        }),
+      })
+      .then(res => res.json())
+      .then((res) => {
+        dispatch({type:types.ADD_POST,post: res});
+      })
+      .catch((err) => { });
+    }
   };
 }
 

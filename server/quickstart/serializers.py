@@ -68,7 +68,8 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published')
+
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published','image')
 
     def paginated_comments(self, obj):
         comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]
@@ -109,3 +110,7 @@ class PostSerializer(serializers.ModelSerializer):
         for user in visibleTo:
             post.visibleTo.add(user)
         return post
+
+    
+
+

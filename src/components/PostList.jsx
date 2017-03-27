@@ -19,6 +19,7 @@ class PostList extends Component {
             contentType = {post.contentType}
             user = {this.props.user}
             deletePost = {this.props.deletePost}
+            image = {post.image}
             {...post}
           />
         ))}
@@ -33,7 +34,7 @@ PostList.propTypes = {
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired,
 };
 
 export default PostList;

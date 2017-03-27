@@ -20,6 +20,7 @@ class CreatePost extends Component {
     this.handlePost = this.handlePost.bind(this);
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
     this.contentText = this.contentText.bind(this);
+    this.handleImageUpload = this.handleImageUpload.bind(this);
   }
 
   getInitialState() {
@@ -28,8 +29,14 @@ class CreatePost extends Component {
       title: '',
       description: '',
       content: '',
-      contentType: 'text/plain'
+      contentType: 'text/plain',
+      image: null,
+      user_with_permission:[],
     };
+  }
+  componentDidMount() {
+    this.props.getUsers();
+    
   }
 
   handleTitleChange(event) {
@@ -50,8 +57,11 @@ class CreatePost extends Component {
     });
   }
 
-  handleImageUpload() {
-    // handle image upload
+  handleImageUpload(event) {
+    // console.log( event.target.files[0])
+    this.setState({
+      image: event.target.files[0]
+    });
   }
 
   handleContentTypeChange(event) {
@@ -61,6 +71,7 @@ class CreatePost extends Component {
   }
 
   handlePost() {
+    // console.log(this.state.image)
     if (this.state.content) {
       this.props.addPost({
         content: this.state.content,
@@ -68,18 +79,36 @@ class CreatePost extends Component {
         description: this.state.description,
         contentType: this.state.contentType,
         permission: this.state.permission,
-        // user_with_permission: this.state.user_with_permission
+
+        image: this.state.image,
+        user_with_permission: this.state.user_with_permission,
         "comments": []
       });
-
       this.setState(this.getInitialState());
     }
   }
 
   handlePermissionChange(event) {
+    
+    // get select user with permission
+    // author:Dhiraj http://stackoverflow.com/questions/30306486/get-selected-option-text-using-react-js
+    const index = event.nativeEvent.target.selectedIndex;
+    const label = event.nativeEvent.target[index].text;
+    let user_with_permission = [];
+
+    // create visible array, if permission dropdown is selected to a user
+    if (label!="Friends" && label!= "Public" && label!="Friends of Friends" && label!="Self"){
+      user_with_permission = this.props.users.filter(function getUser(value){
+        return value.displayName == label;   
+      })[0];
+
+      user_with_permission = user_with_permission.id.replace(user_with_permission.host+"author/","");
+      user_with_permission = [user_with_permission];
+    }
+
     this.setState({
-      permission: event.value,
-      user_with_permission: event.user
+      permission: event.target.value,
+      user_with_permission: user_with_permission
     });
   }
   contentText (){
@@ -103,7 +132,6 @@ class CreatePost extends Component {
   }
 
   render() {
-
     const staticOptions = [
       {
         value: PERMISSIONS.FRIENDS.value,
@@ -122,7 +150,7 @@ class CreatePost extends Component {
     const options = [
       ...staticOptions,
       ...this.props.users.map(user => ({
-        label: user.username,
+        label: user.displayName,
         value: PERMISSIONS.USER.value,
         user: user.id
       }))
@@ -140,7 +168,10 @@ class CreatePost extends Component {
           value={this.state.description}
           placeholder='description?'
           onChange={this.handleDescriptionChange}/>
-
+        <input 
+          type='file'
+          onChange={this.handleImageUpload}
+          />
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio
@@ -159,16 +190,19 @@ class CreatePost extends Component {
             </Radio>
           </ButtonGroup>
           <div className='buttons'>
-            <Select
+            {/*<Select
             name='permissions'
             onChange={this.handlePermissionChange}
             options={options}
             value={this.state.permission}
-            />
-            <Button
-              onClick={this.handleImageUpload}>
-              <Glyphicon glyph='picture'/>
-            </Button>
+            />*/}
+            <select id = 'permissionSelect' 
+            onChange={this.handlePermissionChange} >
+              {options.map((option, index) => {
+                return <option key={index}
+                 value={option.value}>{option.label}</option>;
+              })}
+            </select>
             <Button
               onClick={this.handlePost}>
               Post
@@ -182,6 +216,7 @@ class CreatePost extends Component {
 
 CreatePost.propTypes = {
   addPost: PropTypes.func.isRequired,
+  getUsers: PropTypes.func.isRequired,
   users: PropTypes.array.isRequired,
 };
 

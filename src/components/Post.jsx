@@ -21,6 +21,7 @@ class Post extends Component {
     this.handleDeletePost = this.handleDeletePost.bind(this);
     this.showModal = this.showModal.bind(this);
     this.hideModal = this.hideModal.bind(this);
+    this.imageHandler = this.imageHandler.bind(this);
   }
 
   handleAddComment() {
@@ -69,6 +70,12 @@ class Post extends Component {
     }
   }
 
+  imageHandler(){
+    if (this.props.image!="NO_IMAGE"){
+      return <div><img src={this.props.image}/></div>;
+    }
+  }
+
   showModal() {
     this.setState({show:true});
   }
@@ -91,7 +98,8 @@ class Post extends Component {
             <div className='post-body'>
               {this.props.description}
             </div>
-            {this.deleteButtonHandler()}
+            {this.imageHandler()}
+            {this.deleteButtonHandler()}   
 
           </div>
           <div className='post-footer'>
@@ -136,7 +144,8 @@ Post.propTypes = {
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  user: PropTypes.object.isRequired,
+  image: PropTypes.string.isRequired
 };
 
 export default Post;
