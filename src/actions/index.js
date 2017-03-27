@@ -147,7 +147,7 @@ function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
     posts: result || [],
-    authors: result.map(post => post.author) || []
+    authors: []
   };
 }
 

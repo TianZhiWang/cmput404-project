@@ -25,7 +25,7 @@ class CreatePost extends Component {
 
   getInitialState() {
     return {
-      permission: PERMISSIONS.FRIENDS.value,
+      permission: PERMISSIONS.PUBLIC.value,
       title: '',
       description: '',
       content: '',
@@ -81,34 +81,16 @@ class CreatePost extends Component {
         permission: this.state.permission,
 
         image: this.state.image,
-        user_with_permission: this.state.user_with_permission,
+        user_with_permission: [],
         "comments": []
       });
       this.setState(this.getInitialState());
     }
   }
 
-  handlePermissionChange(event) {
-    
-    // get select user with permission
-    // author:Dhiraj http://stackoverflow.com/questions/30306486/get-selected-option-text-using-react-js
-    const index = event.nativeEvent.target.selectedIndex;
-    const label = event.nativeEvent.target[index].text;
-    let user_with_permission = [];
-
-    // create visible array, if permission dropdown is selected to a user
-    if (label!="Friends" && label!= "Public" && label!="Friends of Friends" && label!="Self"){
-      user_with_permission = this.props.users.filter(function getUser(value){
-        return value.displayName == label;   
-      })[0];
-
-      user_with_permission = user_with_permission.id.replace(user_with_permission.host+"author/","");
-      user_with_permission = [user_with_permission];
-    }
-
+  handlePermissionChange(obj) {
     this.setState({
-      permission: event.target.value,
-      user_with_permission: user_with_permission
+      permission: obj.value
     });
   }
   contentText (){
@@ -140,20 +122,12 @@ class CreatePost extends Component {
         value: PERMISSIONS.PUBLIC.value,
         label: PERMISSIONS.PUBLIC.label,
       }, {
-        value: PERMISSIONS.FRIENDS_OF_FRIENDS.value,
-        label: PERMISSIONS.FRIENDS_OF_FRIENDS.label
-      }, {
-        value: PERMISSIONS.SELF.value,
-        label: PERMISSIONS.SELF.label
+        value: PERMISSIONS.SERVERONLY.value,
+        label: PERMISSIONS.SERVERONLY.label
       }
     ];
     const options = [
-      ...staticOptions,
-      ...this.props.users.map(user => ({
-        label: user.displayName,
-        value: PERMISSIONS.USER.value,
-        user: user.id
-      }))
+      ...staticOptions
     ];
     return (
       <div className='create-post'>
@@ -190,19 +164,12 @@ class CreatePost extends Component {
             </Radio>
           </ButtonGroup>
           <div className='buttons'>
-            {/*<Select
-            name='permissions'
-            onChange={this.handlePermissionChange}
-            options={options}
-            value={this.state.permission}
-            />*/}
-            <select id = 'permissionSelect' 
-            onChange={this.handlePermissionChange} >
-              {options.map((option, index) => {
-                return <option key={index}
-                 value={option.value}>{option.label}</option>;
-              })}
-            </select>
+            <Select
+              name='permissions'
+              onChange={this.handlePermissionChange}
+              options={options}
+              value={this.state.permission}
+            />
             <Button
               onClick={this.handlePost}>
               Post
