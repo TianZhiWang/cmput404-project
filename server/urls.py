@@ -21,8 +21,6 @@ from server.quickstart import views
 from django.contrib import admin
 from django.views.generic import TemplateView
 
-
-
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
@@ -46,6 +44,4 @@ urlpatterns = [
     url(r'^uploadimage/', include('imageupload_rest.urls',namespace = "uploadImage ")),
 ]
 
-
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-

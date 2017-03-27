@@ -113,8 +113,6 @@ Libraries are listed in package.json and requirements.txt
 - https://docs.python.org/2/library/re.html
 - https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
 - https://regex101.com/
-- superagent https://www.npmjs.com/package/superagent
-- react-cloudinary: https://github.com/cloudinary/cloudinary-react
 - image tutorial: https://www.youtube.com/watch?v=HSgyPfibrqQ&t=1s
 
 # About this project

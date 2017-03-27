@@ -35,7 +35,6 @@ PostList.propTypes = {
   posts: PropTypes.array.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
-
 };
 
 export default PostList;

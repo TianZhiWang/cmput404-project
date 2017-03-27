@@ -97,7 +97,6 @@ class PostSerializer(serializers.ModelSerializer):
         next = obj.origin + "posts/" + str(obj.id) + "/comments"
         return next
 
-
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
     # http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0),

@@ -83,13 +83,8 @@ class CreatePost extends Component {
         image: this.state.image,
         user_with_permission: this.state.user_with_permission,
         "comments": []
-
       });
-
       this.setState(this.getInitialState());
-
-      
-      
     }
   }
 
@@ -115,7 +110,6 @@ class CreatePost extends Component {
       permission: event.target.value,
       user_with_permission: user_with_permission
     });
-
   }
   contentText (){
     if (this.state.contentType == "text/plain"){
@@ -177,7 +171,6 @@ class CreatePost extends Component {
         <input 
           type='file'
           onChange={this.handleImageUpload}
-
           />
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
@@ -211,10 +204,6 @@ class CreatePost extends Component {
               })}
             </select>
             <Button
-              onClick={this.handleImageUpload}>
-              <Glyphicon glyph='picture'/>
-            </Button>
-            <Button
               onClick={this.handlePost}>
               Post
             </Button>
@@ -229,8 +218,6 @@ CreatePost.propTypes = {
   addPost: PropTypes.func.isRequired,
   getUsers: PropTypes.func.isRequired,
   users: PropTypes.array.isRequired,
-  
-
 };
 
 export default CreatePost;

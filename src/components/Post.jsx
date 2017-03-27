@@ -99,9 +99,7 @@ class Post extends Component {
               {this.props.description}
             </div>
             {this.imageHandler()}
-            {this.deleteButtonHandler()}
-           
-            
+            {this.deleteButtonHandler()}   
 
           </div>
           <div className='post-footer'>
