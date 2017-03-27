@@ -34,10 +34,6 @@ class CreatePost extends Component {
       user_with_permission:[],
     };
   }
-  componentDidMount() {
-    this.props.getUsers();
-    
-  }
 
   handleTitleChange(event) {
     this.setState({
