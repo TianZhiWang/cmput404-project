@@ -100,17 +100,12 @@ class PostList(APIView, PaginationMixin):
     create a new instance of post
     """
     pagination_class = PostsPagination
+    serializer_class = PostSerializer
     
     def get(self, request, format=None):
         publicPosts = Post.objects.filter(visibility="PUBLIC")
 
-        page = self.paginate_queryset(publicPosts)
-        if page is not None:
-            serializer = PostSerializer(publicPosts, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializedPosts = PostSerializer(posts, many=True)        
-        return Response(serializedPosts.data)
+        return self.paginated_response(publicPosts)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
@@ -150,16 +145,12 @@ class CommentList(APIView, PaginationMixin):
     create a new instance of comment
     """
     pagination_class = CommentsPagination
+    serializer_class = CommentSerializer
 
     def get(self, request, post_id, format=None):
         comments = Comment.objects.filter(post=post_id)
-        page = self.paginate_queryset(comments)
-        if page is not None:
-            serializer = CommentSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = CommentSerializer(comments, many=True)
-        return Response(serializer.data, status=200)
+        
+        return self.paginated_response(comments)
     
     def post(self, request, post_id, format=None):
         # Is it one of our posts?
@@ -259,6 +250,7 @@ class FriendsList(APIView):
             author = get_object_or_404(Author, pk=author_id)
         except ValueError as e:
             return Response(status=400)
+            
         friends = get_friend_ids_of_author(author_id)
 
         users = Author.objects.filter(id__in=friends)
@@ -381,9 +373,11 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     Returns a list of all posts that is visiable to current author
     """
     pagination_class = PostsPagination
+    serializer_class = PostSerializer
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
+
 
         # Request originating from remote node
         if is_request_from_remote_node(request):
@@ -391,13 +385,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             # Return everything not serverOnly
             posts = Post.objects.exclude(visibility="SERVERONLY")
 
-            page = self.paginate_queryset(posts)
-            if page is not None:
-                serializer = PostSerializer(page, many=True)
-                return self.get_paginated_response(serializer.data)
-
-            serializedPosts = PostSerializer(posts, many=True)        
-            return Response(serializedPosts.data)
+            return self.paginated_response(posts)
 
         # Request originating from an author
         else:
@@ -450,6 +438,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
         If we are requesting, need to do filtering based off of friend relationships
     """
     pagination_class = PostsPagination
+    serializer_class = PostSerializer
 
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
@@ -465,12 +454,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
             if (not (is_friend) or author_id == request.user.author.id):
                 posts = posts.exclude(visibility="FRIENDS")
 
-        page = self.paginate_queryset(posts)
-        if page is not None:
-            serializer = PostSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        return Response(PostSerializer(posts, many=True).data)
+        return self.paginated_response(posts)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
