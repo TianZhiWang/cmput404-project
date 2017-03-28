@@ -58,14 +58,14 @@ def get_friends_of_authorPK(authorPK):
             req.raise_for_status()
 
             if (req.json()['friends']):
-                friends.append(InternalAuthorSerializer(author).data)
+                friends.append(author)
 
         except Node.DoesNotExist as e:
             # Get everyone following the current user, check if the author in this
             followed_by = FollowingRelationship.objects.filter(follows=authorPK).values_list('user', flat=True)
             followed_by = Author.objects.filter(pk__in=followed_by)
             if author in followed_by:
-                friends.append(InternalAuthorSerializer(author).data)
+                friends.append(author)
 
         except Exception as e:
             print("Error in trying to get friends")
@@ -73,8 +73,21 @@ def get_friends_of_authorPK(authorPK):
 
     return friends
 
+def get_friend_ids_of_author(authorPK):
+    return [author.id for author in get_friends_of_authorPK(authorPK)]
+
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).exists()
+
+def does_author_exist(author_id):
+    return Author.objects.filter(id=author_id).exists()
+
+def is_friends(author_id1, author_id2):
+    if (does_author_exist(author_id1) and does_author_exist(author_id2)):
+        return False
+
+    return (FollowingRelationship.objects.filter(user__id=author_id1, follows__id=author_id2).exists()
+        and FollowingRelationship.objects.filter(user__id=author_id2, follows__id=author_id1).exists())
 
 class PostList(APIView, PaginationMixin):
     """
@@ -222,7 +235,7 @@ class AuthorDetail(APIView):
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
 
-        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
+        friends = get_friend_ids_of_author(author_id)
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
 
@@ -246,7 +259,7 @@ class FriendsList(APIView):
             author = get_object_or_404(Author, pk=author_id)
         except ValueError as e:
             return Response(status=400)
-        friends = [authorData['id'] for authorData in get_friends_of_authorPK(author_id)]
+        friends = get_friend_ids_of_author(author_id)
 
         users = Author.objects.filter(id__in=friends)
         authorsUrlArray = []
@@ -261,8 +274,7 @@ class FriendsList(APIView):
         except ValueError as e:
             return Response(status=400)
 
-        friends = get_friends_of_authorPK(author_id)
-        friends_pks = [ friend["id"] for friend in friends]
+        friends_pks = get_friend_ids_of_author(author_id)
 
         authors = request.data["authors"]
         authors_pks = [get_author_id_from_url_string(author) for author in authors]
@@ -393,7 +405,6 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
 
-            friends = [authorData['url'] for authorData in get_friends_of_authorPK(author.id)]
             # Get all posts from remote authors
             for node in Node.objects.all():
                 url = node.url + 'author/posts/'
@@ -407,8 +418,6 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                             serializedPosts.append(post)
                         elif post['visibility'] == 'FRIENDS' and (post['author'] in friends):
                             serializedPosts.append(post)
-                        elif post['visibility'] == 'PRIVATE' and (str(author.id) in post['visibleTo']):
-                            serializedPosts.append(post)
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
@@ -417,11 +426,10 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
 
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.all().filter(visibility="PUBLIC")
-        currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
+        currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk)
         friendPosts = self.get_queryset_friends(currentUser)
-        serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY") # TODO: check that user is on our server
-        visibleToPosts = self.get_queryset_visible_to(currentUser)
-        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | visibleToPosts
+        serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY")
+        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts
 
         # (CC-BY-SA 3.0) as it was posted before Feb 1, 2016
         # stackoverflow (http://stackoverflow.com/questions/20135343/django-unique-filtering)
@@ -430,39 +438,38 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
         return intersection.distinct()  # I don't want to return more than one of the same post
         # end of code from Peter DeGlopper
 
-    def get_queryset_visible_to(self, currentUser):
-        return Post.objects.all().filter(visibility="PRIVATE", visibleTo=currentUser)
-
     def get_queryset_friends(self, currentUser):
-        friendsOfCurrentUser = [authorData['id'] for authorData in get_friends_of_authorPK(currentUser.pk)]
+        friendsOfCurrentUser = get_friend_ids_of_author(currentUser.pk)
 
         return Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
 class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
-
+    """
+        This should return all posts made by 'author_id' that are visible to the requesting User
+        If Remote Node asking, return all Post objects made by that user that are not 'SERVERONLY'
+        If we are requesting, need to do filtering based off of friend relationships
+    """
     pagination_class = PostsPagination
 
     def get(self, request, author_id, format=None):
-        user = get_object_or_404(Author, pk=author_id)
-        #If authenticated user is self should return all posts by user
-        if(user == request.user.author): 
+        if is_request_from_remote_node(request):
+            posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
+        
+        elif (author_id == request.user.author.id):
             posts = Post.objects.all().filter(author__id=author_id)
+
         else:
-            publicPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="PUBLIC") 
-            privateToUser = Post.objects.all().filter(author__id=author_id).filter(visibility="PRIVATE", visibleTo=request.user.author) 
-            friendsOfCurrentUser = [author['id'] for author in get_friends_of_authorPK(request.user.author.pk)]
-            friendsPosts = Post.objects.all().filter(author__id=author_id).filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
-            serverOnlyPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="SERVERONLY")
-            
-            posts = publicPosts | privateToUser | friendsPosts | serverOnlyPosts
+            posts = Post.objects.filter(author__id=author_id)
+            # If authenticated user is self should return all posts by user
+            if not (is_friends(author_id, request.user.author.id) or author_id == request.user.author.id):
+                posts = posts.exclude(visibility="FRIENDS")
 
         page = self.paginate_queryset(posts)
         if page is not None:
             serializer = PostSerializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializedPosts = PostSerializer(posts, many=True)
-        return Response(serializedPosts.data)
+        return Response(PostSerializer(posts, many=True).data)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
