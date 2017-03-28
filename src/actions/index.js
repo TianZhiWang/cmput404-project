@@ -8,6 +8,9 @@ if(process.env.NODE_ENV === 'production') {
 }
 
 function getUUIDFromId(id) {
+  if (!/http/.test(id)) {
+    return id;
+  }
   return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
 }
 /*eslint-enable */
