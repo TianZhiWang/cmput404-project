@@ -104,9 +104,6 @@ class AuthorIdTest(APITestCase):
         url = reverse("authorId", args=[self.author.pk])
         basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
-        # eg url = /author/684a1a11-1698-4942-89c2-2f1bb6650a60/
-        url_no_trailing_slash = url[:-1]
-        self.assertTrue(response.data["id"].find(url_no_trailing_slash) != -1)  # .find return -1 if not found
         self.assertTrue(status.is_success(response.status_code))
 
     def test_authorid_get_in_proper_format_display_name(self):

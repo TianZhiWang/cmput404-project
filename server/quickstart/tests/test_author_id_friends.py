@@ -93,7 +93,7 @@ class AuthorIdFriendsTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_authoridfriends_post_has_correnct_num_of_friends(self):
-        """ POST should throw a client error as it doesn't make sense to put at this endpoint """
+        """ The author should have 1 friend """
         url = reverse("authorIdFriend", args=[self.author.pk])
         obj = {
                 "query": "friends",

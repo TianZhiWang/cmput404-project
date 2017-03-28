@@ -76,6 +76,19 @@ def get_friends_of_authorPK(authorPK):
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).exists()
 
+def get_local_friends_of_authorPK(authorPK):
+    following = FollowingRelationship.objects.filter(user=authorPK).values('follows') # everyone currentUser follows
+    following_pks = [author['follows'] for author in following]
+    followed = FollowingRelationship.objects.filter(follows=authorPK).values('user')  # everyone that follows currentUser
+    return followed.filter(user__in=following_pks)
+
+def get_queryset_friends_of_a_friend(currentUser):
+        currentUserFriends = get_local_friends_of_authorPK(currentUser.pk)
+        temp = get_local_friends_of_authorPK(currentUser.pk)
+        for f in currentUserFriends:
+            temp = temp | get_local_friends_of_authorPK(f["user"])
+        return Post.objects.all().filter(author__in=temp).filter(visibility="FOAF")
+
 class PostList(APIView, PaginationMixin):
     """
     List all Public posts, or create a new post.
@@ -262,10 +275,12 @@ class FriendsList(APIView):
             return Response(status=400)
 
         friends = get_friends_of_authorPK(author_id)
+        friends_pks = [ friend["id"] for friend in friends]
 
         authors = request.data["authors"]
         authors_pks = [get_author_id_from_url_string(author) for author in authors]
-        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends)
+
+        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends_pks)
         
         formatedUsers = AuthorSerializer(filtered,many=True).data
         urls = [user["id"] for user in formatedUsers]
@@ -288,8 +303,8 @@ class CheckFriendship(APIView):
         friendshipResult = {
             "query":"friends",
             "authors":[
-            author.url,
-            follows.url
+            author.url + author.id,
+            follows.url + follows.id
             ],
             "friends": isFriends
         }
@@ -419,8 +434,9 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
         currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk) # TODO: test currentUser.pk works
         friendPosts = self.get_queryset_friends(currentUser)
         serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY") # TODO: check that user is on our server
+        friendOfAFriendPosts = get_queryset_friends_of_a_friend(currentUser)
         visibleToPosts = self.get_queryset_visible_to(currentUser)
-        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | visibleToPosts
+        intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts | friendOfAFriendPosts | visibleToPosts
 
         # (CC-BY-SA 3.0) as it was posted before Feb 1, 2016
         # stackoverflow (http://stackoverflow.com/questions/20135343/django-unique-filtering)
@@ -451,9 +467,10 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
             privateToUser = Post.objects.all().filter(author__id=author_id).filter(visibility="PRIVATE", visibleTo=request.user.author) 
             friendsOfCurrentUser = [author['id'] for author in get_friends_of_authorPK(request.user.author.pk)]
             friendsPosts = Post.objects.all().filter(author__id=author_id).filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
+            friendOfAFriendPosts = get_queryset_friends_of_a_friend(request.user.author)
             serverOnlyPosts = Post.objects.all().filter(author__id=author_id).filter(visibility="SERVERONLY")
             
-            posts = publicPosts | privateToUser | friendsPosts | serverOnlyPosts
+            posts = publicPosts | privateToUser | friendsPosts | serverOnlyPosts | friendOfAFriendPosts
 
         page = self.paginate_queryset(posts)
         if page is not None:
