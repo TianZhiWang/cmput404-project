@@ -197,30 +197,6 @@ class CommentList(APIView, PaginationMixin):
             },
         status=200)
 
-class AuthorList(APIView):
-    """
-    List all authors, or create a new author.
-
-    get:
-    Returns a list of all authors
-    """
-    def get(self, request, format=None):
-        currentUser = request.user.author.id
-        users = Author.objects.all()
-        following = FollowingRelationship.objects.filter(user=currentUser).values('follows')
-        followingUsers = Author.objects.filter(id__in=following)
-        followed = FollowingRelationship.objects.filter(follows=currentUser).values('user')
-        followedUsers = Author.objects.filter(id__in=followed)
-
-        formattedUsers = []
-        for user in users:
-            author = AuthorSerializer(user).data
-            author['isFollowing'] = (user in followingUsers)
-            author['isFollowed'] = (user in followedUsers)
-            formattedUsers.append(author)
-        
-        return Response(formattedUsers)
-
 class AuthorDetail(APIView):
 
     def get(self, request, author_id, format=None):
