@@ -34,12 +34,6 @@ class AuthorSerializer(serializers.Serializer):
     def get_id(self, obj):
         return obj.url
 
-class InternalAuthorSerializer(serializers.Serializer):
-    id = serializers.CharField(max_length=64)
-    displayName = serializers.CharField(max_length=150)
-    url = serializers.URLField()
-    host = serializers.URLField()
-
 class CreateAuthorSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=64)
     displayName = serializers.CharField(max_length=150)

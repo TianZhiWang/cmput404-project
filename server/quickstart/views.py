@@ -22,7 +22,7 @@
 # SOFTWARE.
 from models import Comment, Post, FollowingRelationship, Author, Node
 from django.contrib.auth.models import User
-from serializers import CommentSerializer, PostSerializer, AuthorSerializer, InternalAuthorSerializer, CreateAuthorSerializer
+from serializers import CommentSerializer, PostSerializer, AuthorSerializer, CreateAuthorSerializer
 from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
