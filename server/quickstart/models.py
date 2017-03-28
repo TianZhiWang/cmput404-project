@@ -68,7 +68,7 @@ class Post(models.Model):
     visibleTo = models.ManyToManyField(Author, related_name="visibleTo", blank=True)
     #save image to strftime formmating date
     # image = models.ImageField(upload_to='images', blank=True, null=True)
-    image = models.CharField(max_length=140)
+    # image = models.CharField(max_length=140)
     unlisted = models.BooleanField(default=False)
 
     def __unicode__(self):

@@ -1,4 +1,3 @@
-import base64
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.test import Client
@@ -6,6 +5,7 @@ from server.quickstart.models import Post, Author
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
 
 class PostTests(APITestCase):
     """ This is the home of all of our tests relating to the post url """
@@ -20,29 +20,10 @@ class PostTests(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
-    def createAuthor(self, us, em, pw, isActive=True):
-        authorUser = User.objects.create_user(us, em, pw)
-        authorUser.is_active = isActive
-        authorUser.save()
-        author = Author.objects.create(id=us, displayName=us, user=authorUser, url=self.URL, host=self.URL)
-        author.save()
-        return author
-
-    def createAuthorFriend(self, us, em, pw, friend):
-        author = self.createAuthor(us, em, pw)
-        FollowingRelationship.objects.create(user=author, follows=friend)
-        FollowingRelationship.objects.create(user=friend, follows=author)
-        return author
-
     def setUp(self):
         """ Set up is run before each test """
-        self.not_active_author = self.createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
-        self.author = self.createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
-
-
-    def getBasicAuthHeader(self, us, pw):
-        """ Returns the b64encoded string created for a user and password to be used in the header """
-        return "Basic %s" % base64.b64encode("%s:%s" % (us, pw))
+        self.not_active_author = createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
+        self.author = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
 
     def test_posturl_get_unauth_401(self):
         """ GETing the public posts w/o any auth will result in a 401 """
@@ -53,21 +34,21 @@ class PostTests(APITestCase):
     def test_posturl_get_basic_auth(self):
         """ GETing while loggin w/ Basic Auth should return a 2XX """
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
 
     def test_posturl_get_unactivated_401(self):
         """ GETing the public posts w/o being active will result in a 401 """
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_PASS)
         response = self.client.get(url, AUTH_TYPE="Basic", HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_posturl_get_as_author_2XX(self):
         """ GETing the public posts when logged in as an author will result in a 2XX and data """
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data)
@@ -76,7 +57,7 @@ class PostTests(APITestCase):
         """ POST an empty post expecting a 4XX (is_client_error) """
         url = reverse("post")
         obj = {}
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_client_error(response.status_code))
         self.assertNotEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
@@ -93,7 +74,7 @@ class PostTests(APITestCase):
             "visibility": visibility,
             "visibleTo": []
         }
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
         return response
 
@@ -105,14 +86,14 @@ class PostTests(APITestCase):
     def test_posturl_delete_405(self):
         """ DELETE should throw a client error as it shouldn't be allowed to delete everyting """
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_posturl_put_405(self):
         """ PUT should throw a client error as it doesn't make sense to put at this endpoint """
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.put(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
@@ -122,7 +103,7 @@ class PostTests(APITestCase):
         for v in vis:
             self.post_a_post_obj("testing a %s post" % v, v)
         url = reverse("post")
-        basicAuth = self.getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data["count"] == 1)  # only the PUBLIC post should be returned

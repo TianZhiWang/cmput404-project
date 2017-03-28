@@ -262,10 +262,11 @@ class FriendsList(APIView):
             return Response(status=400)
 
         friends = get_friends_of_authorPK(author_id)
+        friends_pks = [ friend["id"] for friend in friends]
 
         authors = request.data["authors"]
         authors_pks = [get_author_id_from_url_string(author) for author in authors]
-        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends)
+        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends_pks)
         
         formatedUsers = AuthorSerializer(filtered,many=True).data
         urls = [user["id"] for user in formatedUsers]
