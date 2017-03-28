@@ -98,18 +98,18 @@ class AuthorPostTest(APITestCase):
 
     def test_authoridposturl_get_your_posts(self):
         """ Should be able to get all my posts when accessing the url with my id """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         url = reverse("authorIdPosts", args=[self.author.pk])
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
-        self.assertTrue(response.data["count"] == 4)  # should get all posts made by me
+        self.assertTrue(response.data["count"] == 3)  # should get all posts made by me
 
     def test_authoridposturl_get_stranger_posts(self):
         """ GETing stranger posts by id should return the approprite number of posts """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.STRANGER_USER_NAME, self.STRANGER_USER_PASS)
         url = reverse("authorIdPosts", args=[self.stranger_author.pk])
@@ -120,7 +120,7 @@ class AuthorPostTest(APITestCase):
 
     def test_authoridposturl_get_friend_posts(self):
         """ GETing friend posts by id should return the approprite number of posts """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
         url = reverse("authorIdPosts", args=[self.friend_author.pk])
@@ -131,7 +131,7 @@ class AuthorPostTest(APITestCase):
 
     def test_authoridposturl_get_foaf_posts(self):
         """ GETing friend of a friend posts by id should return the approprite number of posts """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
         url = reverse("authorIdPosts", args=[self.foaf_author.pk])
@@ -142,7 +142,7 @@ class AuthorPostTest(APITestCase):
 
     def test_authoridposturl_get_author_posts_format_is_paginated(self):
         """ The format : is paginated (aka has a default count and page size """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
         url = reverse("authorIdPosts", args=[self.foaf_author.pk])
@@ -154,7 +154,7 @@ class AuthorPostTest(APITestCase):
 
     def test_authoridposturl_get_author_posts_format_posts(self):
         """ The format : posts should be returned as an array, and in this case with three posts """
-        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
         for v in vis:
             self.post_a_post_obj("%s post" % v, v, self.FOAF_USER_NAME, self.FOAF_USER_PASS)
         url = reverse("authorIdPosts", args=[self.foaf_author.pk])

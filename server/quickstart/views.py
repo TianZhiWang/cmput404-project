@@ -83,7 +83,7 @@ def does_author_exist(author_id):
     return Author.objects.filter(id=author_id).exists()
 
 def is_friends(author_id1, author_id2):
-    if (does_author_exist(author_id1) and does_author_exist(author_id2)):
+    if (not does_author_exist(author_id1) and not does_author_exist(author_id2)):
         return False
 
     return (FollowingRelationship.objects.filter(user__id=author_id1, follows__id=author_id2).exists()
@@ -461,7 +461,8 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
         else:
             posts = Post.objects.filter(author__id=author_id)
             # If authenticated user is self should return all posts by user
-            if not (is_friends(author_id, request.user.author.id) or author_id == request.user.author.id):
+            is_friend = is_friends(author_id, request.user.author.id)
+            if (not (is_friend) or author_id == request.user.author.id):
                 posts = posts.exclude(visibility="FRIENDS")
 
         page = self.paginate_queryset(posts)
