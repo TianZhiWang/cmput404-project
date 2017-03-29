@@ -382,17 +382,6 @@ class FriendRequestList(APIView):
         
         return Response(status=200)
 
-class FriendRequestView(APIView):
-    def post(self, request, requester_id, format=None):
-        requester = get_object_or_404(Author, pk=requester_id)
-        requestee = get_object_or_404(Author, user=request.user)
-        friendRequest = get_object_or_404(FriendRequest, requestee=requestee, requester=requester)
-        FollowingRelationship.objects.get_or_create(user=user, follows=requester)
-        friendRequest.delete()
-
-        return Response(status=200)
-
-
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
     Returns a list of all posts that is visiable to current author
