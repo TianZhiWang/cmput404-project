@@ -133,12 +133,6 @@ class PostDetail(APIView):
         post.delete()
         return Response(status=200)
 
-class SinglePost(APIView):
-    def get(self, request, post_id, format=None):
-        singlePost = get_object_or_404(Post, pk=post_id)
-        post = PostSerializer(singlePost)
-        return Response(post.data)
-
 
 class CommentList(APIView, PaginationMixin):
     """
