@@ -265,12 +265,12 @@ class CheckFriendship(APIView):
     """
     def get(self, request, author_id1, author_id2, format=None):
         try:
-            author = get_object_or_404(Author, pk=author_id1)
-            follows = get_object_or_404(Author, pk=author_id2)
+            author = Author.objects.get(pk=author_id1)
+            follows = Author.objects.get(pk=author_id2)
             isFriends = FollowingRelationship.objects.filter(user=author, follows=follows).exists()
-        except ValueError as e:
+        except Exception as e:
             print('Error in getting friends ' + str(e))
-            return Response(status=400)
+            return Response({'Error': 'Could not get both authors', 'Message': str(e)}, status=400)
 
         friendshipResult = {
             "query":"friends",
