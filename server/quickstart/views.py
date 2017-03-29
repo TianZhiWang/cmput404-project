@@ -412,10 +412,10 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             return Response(serializedPosts)
 
     def get_all_posts(self, currentUser):
-        publicPosts = Post.objects.all().filter(visibility="PUBLIC")
-        currentUserPosts = Post.objects.all().filter(author__id=currentUser.pk)
+        publicPosts = Post.objects.filter(visibility="PUBLIC")
+        currentUserPosts = Post.objects.filter(author__id=currentUser.pk)
         friendPosts = self.get_queryset_friends(currentUser)
-        serverOnlyPosts = Post.objects.all().filter(visibility="SERVERONLY")
+        serverOnlyPosts = Post.objects.filter(visibility="SERVERONLY")
         intersection = publicPosts | currentUserPosts | friendPosts | serverOnlyPosts
 
         # (CC-BY-SA 3.0) as it was posted before Feb 1, 2016
@@ -428,7 +428,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     def get_queryset_friends(self, currentUser):
         friendsOfCurrentUser = get_friend_ids_of_author(currentUser.pk)
 
-        return Post.objects.all().filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
+        return Post.objects.filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
 class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
     """
@@ -444,7 +444,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
             posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
         
         elif (author_id == request.user.author.id):
-            posts = Post.objects.all().filter(author__id=author_id)
+            posts = Post.objects.filter(author__id=author_id)
 
         else:
             posts = Post.objects.filter(author__id=author_id)
