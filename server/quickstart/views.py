@@ -90,9 +90,14 @@ def is_friends(author_id1, author_id2):
     return (FollowingRelationship.objects.filter(user__id=author_id1, follows__id=author_id2).exists()
         and FollowingRelationship.objects.filter(user__id=author_id2, follows__id=author_id1).exists())
 
+def append_trailing_slash(string):
+    return string if string[-1] == '/' else string + '/'
+
 def transform_author_id_to_uuid(author):
     new_author = copy(author)
     new_author['id'] = get_author_id_from_url_string(author['id'])
+    new_author['url'] = append_trailing_slash(new_author['url'])
+    new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
 
 class PostList(APIView, PaginationMixin):
