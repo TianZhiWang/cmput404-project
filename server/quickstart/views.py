@@ -93,7 +93,7 @@ def is_friends(author_id1, author_id2):
 def append_trailing_slash(string):
     return string if string[-1] == '/' else string + '/'
 
-def transform_author_id_to_uuid(author):
+def validate_and_transform_author(author):
     new_author = copy(author)
     new_author['id'] = get_author_id_from_url_string(author['id'])
     new_author['url'] = append_trailing_slash(new_author['url'])
@@ -163,10 +163,10 @@ class CommentList(APIView, PaginationMixin):
             commentData = request.data['comment']
             post = get_object_or_404(Post, pk=post_id)
 
-            author_data = transform_author_id_to_uuid(commentData['author'])
+            author_data = validate_and_transform_author(commentData['author'])
             serializer = CreateAuthorSerializer(data=author_data)
             if serializer.is_valid():
-                author = Author.objects.get_or_create(**serializer.validated_data)[0]
+                author = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
             else:
                 return Response({'Error': 'Could not add comment, bad author data', 'Message': serializer.errors}, status=400)
 
@@ -311,7 +311,7 @@ class FriendRequestList(APIView):
 
         serializer = CreateAuthorSerializer(data=author_data)
         if serializer.is_valid():
-            remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
+            remote_user = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
             return self._handle_friend_request(requester=remote_user, requestee=our_user)
 
         return Response({"error": "Data we received is invalid", "data": request.data}, status=400)
@@ -337,15 +337,15 @@ class FriendRequestList(APIView):
 
         serializer = CreateAuthorSerializer(data=friend_data)
         if serializer.is_valid():
-            friend = Author.objects.get_or_create(**serializer.validated_data)[0]
+            friend = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
             return self._handle_friend_request(requester=author, requestee=friend)
         
         print('Could not create remote author', str(friend_data))
         return Response({'error': 'Could not create author', 'data': request.data}, status=500)
 
     def post(self, request, format=None):
-        author_data = transform_author_id_to_uuid(request.data['author'])
-        friend_data = transform_author_id_to_uuid(request.data['friend'])
+        author_data = validate_and_transform_author(request.data['author'])
+        friend_data = validate_and_transform_author(request.data['friend'])
 
         if is_request_from_remote_node(request):
             return self._handle_friend_request_from_remote_node(author_data, request_data)
@@ -361,8 +361,8 @@ class FriendRequestList(APIView):
         if is_request_from_remote_node(request):
             return Response(status=403)
 
-        author_data = transform_author_id_to_uuid(author_data)
-        friend_data = transform_author_id_to_uuid(friend_data)
+        author_data = validate_and_transform_author(author_data)
+        friend_data = validate_and_transform_author(friend_data)
 
         author = get_object_or_404(Author, pk=author_data['id'])
         friend = get_object_or_404(Author, pk=friend_data['id'])
