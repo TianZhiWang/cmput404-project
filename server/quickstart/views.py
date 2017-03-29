@@ -244,18 +244,17 @@ class FriendsList(APIView):
 
     def post(self, request, author_id, format=None):
         try:
-            author = get_object_or_404(Author, pk=author_id)
-        except ValueError as e:
-            return Response(status=400)
+            author = Author.objects.get(pk=author_id)
+        except Author.DoesNotExist as e:
+            return Response({'Error': 'Author does not exist'}, status=404)
 
-        friends_pks = get_friend_ids_of_author(author_id)
-
-        authors = request.data["authors"]
-        authors_pks = [get_author_id_from_url_string(author) for author in authors]
-        filtered = Author.objects.filter(id__in=authors_pks) & Author.objects.filter(id__in=friends_pks)
-        
-        formatedUsers = AuthorSerializer(filtered,many=True).data
-        urls = [user["id"] for user in formatedUsers]
+        authors = request.data['authors']
+        if is_request_from_remote_node(request):
+            following = FollowingRelationship.objects.filter(user__id=author_id).select_related('user').values_list('url', flat=True)
+            urls = following & authors
+        else:
+            friends_pks = get_friend_ids_of_author(author_id)
+            urls = Author.objects.filter(pk__in=friends_pks).values_list('url', flat=True)
     
         return Response({ "query":"friends", "author":author_id , "authors":urls})
 
