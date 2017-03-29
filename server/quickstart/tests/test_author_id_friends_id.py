@@ -60,11 +60,11 @@ class AuthorIdFriendIdTest(APITestCase):
         self.assertTrue(status.is_success(response.status_code))
 
     def test_authoridfriendid_delete_405(self):
-        """ DELETE should throw a client error as it shouldn't be allowed to delete the check if two people are friends """
+        """ DELETE should delete a relationship """
         url = reverse("authorIdFriendId", args=[self.author.pk, self.friend_author.pk])
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_authoridfriendid_put_405(self):
         """ PUT should throw a client error as it doesn't make sense to put a friendship comparison """

@@ -271,6 +271,14 @@ class CheckFriendship(APIView):
             "friends": isFriends
         }
         return Response(friendshipResult, status=200)
+    
+    def delete(self, request, author_id1, author_id2, format=None):
+        try:
+            FollowingRelationship.objects.get(user__id=author_id1, follows__id=author_id2).delete()
+        except Exception as e:
+            return Response({'Error': str(e)}, status=400)
+        
+        return Response(status=200)
 
 # TODO: How to add remote authors? Also how to link them?
 class FriendRequestList(APIView):
