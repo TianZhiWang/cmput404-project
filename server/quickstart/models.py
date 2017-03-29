@@ -97,8 +97,18 @@ class FollowingRelationship(models.Model):
     user = models.ForeignKey(Author)
     follows = models.ForeignKey(Author, related_name='follows')
 
+    class Meta:
+        unique_together = ('user', 'follows')
+
     def __unicode__(self):
         return str(self.user) + '_follows_' + str(self.follows)
+
+class FriendRequest(models.Model):
+    requestee = models.ForeignKey(Author)
+    requester = models.ForeignKey(Author, related_name='requester')
+
+    class Meta:
+        unique_together = ('requestee', 'requester')
 
 #This model is used for connecting with other groups
 class Node(models.Model):

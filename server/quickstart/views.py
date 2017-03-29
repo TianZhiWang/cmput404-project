@@ -20,7 +20,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-from models import Comment, Post, FollowingRelationship, Author, Node
+from models import Comment, Post, FollowingRelationship, Author, Node, FriendRequest
 from django.contrib.auth.models import User
 from serializers import CommentSerializer, PostSerializer, AuthorSerializer, CreateAuthorSerializer
 from django.http import Http404
@@ -39,6 +39,7 @@ from django.urls import reverse
 import json
 from urlparse import urlparse
 import uuid
+from copy import copy
 
 def get_author_id_from_url_string(string):
     if 'http' not in string:
@@ -88,6 +89,11 @@ def is_friends(author_id1, author_id2):
 
     return (FollowingRelationship.objects.filter(user__id=author_id1, follows__id=author_id2).exists()
         and FollowingRelationship.objects.filter(user__id=author_id2, follows__id=author_id1).exists())
+
+def transform_author_id_to_uuid(author):
+    new_author = copy(author)
+    new_author['id'] = get_author_id_from_url_string(author['id'])
+    return new_author
 
 class PostList(APIView, PaginationMixin):
     """
@@ -274,75 +280,126 @@ class CheckFriendship(APIView):
             ],
             "friends": isFriends
         }
-        return Response(friendshipResult, status=200)       
+        return Response(friendshipResult, status=200)
 
 # TODO: How to add remote authors? Also how to link them?
-class FollowingRelationshipList(APIView):
+class FriendRequestList(APIView):
+    def get(self, request, format=None):
+        author = get_object_or_404(Author, user=request.user)
+        friend_requests = FriendRequest.objects.filter(requestee=author).values_list('requester', flat=True)
+        authors = Author.objects.filter(pk__in=friend_requests)
+        return Response(AuthorSerializer(authors, many=True).data, status=200)
+    
+    def _handle_friend_request(self, requestee, requester):
+        # If requester sends duplicate request, ignore it
+        if FriendRequest.objects.filter(requestee=requestee, requester=requester).exists():
+            print('Friend request already exists')
+            return Response({'Error': 'friend request already exists'}, status=400)
+        # If requester sends a request to an requestee they are already following, don't do anything
+        if FollowingRelationship.objects.filter(user=requester, follows=requestee).exists():
+            print('Following relationship already exists')
+            return Response({'Error': 'Already following that user'}, status=400)
+        # If requester sends a request to an requestee already following them
+        # Delete friend request if it exists and add FollowingRelationship
+        if FollowingRelationship.objects.filter(user=requestee, follows=requester).exists():
+            if FriendRequest.objects.filter(requestee=requester, requester=requestee).exists():
+                # Transform friend request into follow
+                FriendRequest.objects.get(requestee=requester, requester=requestee).delete()
+        
+            FollowingRelationship.objects.create(user=requester, follows=requestee)
+            return Response({'Success': 'Users are now friends'}, status=201)
+        
+        # If requester sends friend request to requestee and the requestee is not following them
+        # Create follow relationship and friend request
+        FollowingRelationship.objects.create(user=requester, follows=requestee)
+        FriendRequest.objects.create(requestee=requestee, requester=requester)
+        return Response({'Success': 'Created following relationship and friend request'}, status=201)
+
+
+    def _handle_friend_request_from_remote_node(self, author_data, friend_data):
+        our_user = get_object_or_404(Author, url=friend_data['url'])
+
+        serializer = CreateAuthorSerializer(data=author_data)
+        if serializer.is_valid():
+            remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
+            return self._handle_friend_request(requester=remote_user, requestee=our_user)
+
+        return Response({"error": "Data we received is invalid", "data": request.data}, status=400)
+    
+    def _handle_friend_request_both_authors_local(self, author_data, friend_data):
+        requester = get_object_or_404(Author, pk=author_data['id'])
+        requestee = get_object_or_404(Author, pk=friend_data['id'])
+
+        return self._handle_friend_request(requester=requester, requestee=requestee)
+    
+    def _handle_friend_request_from_local_other_author_remote(self, author_data, friend_data):
+        print('attempting to send friend request to remote node')
+        node = Node.objects.get(url=friend_data['host'])
+        url = node.url + 'friendrequest/'
+        try:
+            req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
+            req.raise_for_status()
+        except Exception as e:
+            print("Exception occurred in friendrequest")
+            print(str(e))
+
+        author = get_object_or_404(Author, pk=author_data['id'])
+
+        serializer = CreateAuthorSerializer(data=friend_data)
+        if serializer.is_valid():
+            friend = Author.objects.get_or_create(**serializer.validated_data)[0]
+            return self._handle_friend_request(requester=author, requestee=friend)
+        
+        print('Could not create remote author', str(friend_data))
+        return Response({'error': 'Could not create author', 'data': request.data}, status=500)
+
     def post(self, request, format=None):
+        author_data = transform_author_id_to_uuid(request.data['author'])
+        friend_data = transform_author_id_to_uuid(request.data['friend'])
+
         if is_request_from_remote_node(request):
-            our_user_data = request.data['friend']
-            remote_user_data = request.data['author']
+            return self._handle_friend_request_from_remote_node(author_data, request_data)
 
-            our_user = get_object_or_404(Author, pk=get_author_id_from_url_string(our_user_data['id']))
-
-            remote_user_data['id'] = get_author_id_from_url_string(remote_user_data['id'])
-            serializer = CreateAuthorSerializer(data=remote_user_data)
-            if serializer.is_valid():
-                remote_user = Author.objects.get_or_create(**serializer.validated_data)[0]
-                FollowingRelationship.objects.create(user=remote_user, follows=our_user)
-                return Response(status=201)
-            else:
-                return Response({"error": "Bad data"}, status=400)
+        elif author_data['host'] == friend_data['host']:
+            return self._handle_friend_request_both_authors_local(author_data, friend_data)
+        # We are getting a request from our front end and the other user is a remote user
+        # Need to forward the request to the other server
         else:
-            author_data = request.data['author']
-            friend_data = request.data['friend']
-
-            # Both our users
-            if (author_data['host'] == friend_data['host']):
-                author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
-                friend = get_object_or_404(Author, pk=get_author_id_from_url_string(friend_data['id']))
-                FollowingRelationship.objects.create(user=author, follows=friend)
-                return Response(status=201)
-            # Other user remote
-            else:
-                print('attempting to send friend request')
-                node = Node.objects.get(url=friend_data['host'])
-                url = node.url + 'friendrequest/'
-                try:
-                    req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
-                    req.raise_for_status()
-                except Exception as e:
-                    print("Exception occurred in friendrequest")
-                    print(str(e))
-
-                author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
-
-                friend_data['id'] = get_author_id_from_url_string(friend_data['id'])
-                serializer = CreateAuthorSerializer(data=friend_data)
-                if serializer.is_valid():
-                    if not Author.objects.filter(pk=friend_data['id']).exists():
-                        friend = Author.objects.create(**serializer.validated_data)
-                    else:
-                        friend = Author.objects.get(pk=friend_data['id'])
-                    FollowingRelationship.objects.create(user=author, follows=friend)
-                    return Response(status=201)
-                else:
-                    return Response({'error': 'Could not create author'}, status=500)
+            return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
             return Response(status=403)
 
-        author_data = request.data['author']
-        friend_data = request.data['friend']
+        author_data = transform_author_id_to_uuid(author_data)
+        friend_data = transform_author_id_to_uuid(friend_data)
 
-        author = get_object_or_404(Author, pk=get_author_id_from_url_string(author_data['id']))
-        friend = get_object_or_404(Author, pk=get_author_id_from_url_string(friend_data['id']))
+        author = get_object_or_404(Author, pk=author_data['id'])
+        friend = get_object_or_404(Author, pk=friend_data['id'])
 
         followingRelationship = get_object_or_404(FollowingRelationship, user=author, follows=friend)
         followingRelationship.delete()
         
         return Response(status=200)
+
+class FriendRequestView(APIView):
+    def post(self, request, requester_id, format=None):
+        requester = get_object_or_404(Author, pk=requester_id)
+        requestee = get_object_or_404(Author, user=request.user)
+        friendRequest = get_object_or_404(FriendRequest, requestee=requestee, requester=requester)
+        FollowingRelationship.objects.get_or_create(user=user, follows=requester)
+        friendRequest.delete()
+
+        return Response(status=200)
+    
+    def delete(self, request, requester_id, format=None):
+        requester = get_object_or_404(Author, pk=requester_id)
+        requestee = get_object_or_404(Author, user=request.user)
+        friendRequest = get_object_or_404(FriendRequest, requestee=requestee, requester=requester)
+        friendRequest.delete()
+
+        return Response(status=200)
+
 
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
