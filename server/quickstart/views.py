@@ -151,43 +151,35 @@ class CommentList(APIView, PaginationMixin):
         comments = Comment.objects.filter(post=post_id)
         
         return self.paginated_response(comments)
-    
+
     def post(self, request, post_id, format=None):
         # Is it one of our posts?
         if Post.objects.filter(pk=post_id).exists():
             commentData = request.data['comment']
             post = get_object_or_404(Post, pk=post_id)
 
-            if is_request_from_remote_node(request):
-                author_data = commentData['author']
-                author_data['id'] = get_author_id_from_url_string(author_data['id'])
-                if Author.objects.filter(pk=author_data['id']).exists():
-                    author = get_object_or_404(Author, pk=author_data['id'])
-                else:
-                    serializer = CreateAuthorSerializer(data=author_data)
-                    if serializer.is_valid():
-                        author = Author.objects.create(**serializer.validated_data)
-                        return Response(status=201)
-                    else:
-                        return Response({"error": "Bad data"}, status=400)
+            author_data = transform_author_id_to_uuid(commentData['author'])
+            serializer = CreateAuthorSerializer(data=author_data)
+            if serializer.is_valid():
+                author = Author.objects.get_or_create(**serializer.validated_data)[0]
             else:
-                author = get_object_or_404(Author, pk=get_author_id_from_url_string(commentData['author']['id']))
+                return Response({'Error': 'Could not add comment, bad author data', 'Message': serializer.errors}, status=400)
 
             comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
         # It is one of there posts
         else:
             # Get the host associated with this post
-            hostInfo = urlparse(request.data['post'])
-            host = str(hostInfo.scheme) + "://" + str(hostInfo.netloc) + '/'
-            url = host + 'posts/' + str(post_id) + '/comments/'
+            host = request.data['post'].split('posts')[0]
             node = get_object_or_404(Node, url=host)
 
             try:
+                url = request.data['post'] + 'comments/'
                 req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
                 req.raise_for_status()
             except Exception as e:
                 print("Other server is down or maybe we don't have the right node")
                 print(str(e))
+                return Response({'Error': 'Could not create comment on remote data', 'message': str(e), 'success': False}, status=400)
 
         #TODO: Check if they have permission to add comment (i.e. they can see the post)
         return Response({
