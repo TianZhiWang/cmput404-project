@@ -398,7 +398,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
             friends = [friend.url for friend in get_friends_of_authorPK(author.id)]
-
+            print('friends of author ', friends)
             # Get all posts from remote authors
             for node in Node.objects.all():
                 url = node.url + 'author/posts/'
@@ -410,7 +410,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                     for post in unfilteredForeignPosts:
                         if post['visibility'] == 'PUBLIC':
                             serializedPosts.append(post)
-                        elif post['visibility'] == 'FRIENDS' and (post['author'] in friends):
+                        elif post['visibility'] == 'FRIENDS' and (post['author']['id'] in friends):
                             serializedPosts.append(post)
                 except Exception as e:
                     print("Exception occurred in author/posts")
