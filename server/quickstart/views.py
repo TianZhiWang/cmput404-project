@@ -395,6 +395,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
             author = get_object_or_404(Author, user=request.user)
             posts = self.get_all_posts(author)
             serializedPosts = PostSerializer(posts, many=True).data
+            friends = [friend.url for friend in get_friends_of_authorPK(author.id)]
 
             # Get all posts from remote authors
             for node in Node.objects.all():
