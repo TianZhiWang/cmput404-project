@@ -287,40 +287,21 @@ class FriendRequestList(APIView):
         friend_requests = FriendRequest.objects.filter(requestee=author).values_list('requester', flat=True)
         authors = Author.objects.filter(pk__in=friend_requests)
         return Response(AuthorSerializer(authors, many=True).data, status=200)
-    
-    def _handle_friend_request(self, requestee, requester):
-        # If requester sends duplicate request, ignore it
-        if FriendRequest.objects.filter(requestee=requestee, requester=requester).exists():
-            print('Friend request already exists')
-            return Response({'Error': 'friend request already exists'}, status=400)
-        # If requester sends a request to an requestee they are already following, don't do anything
-        if FollowingRelationship.objects.filter(user=requester, follows=requestee).exists():
-            print('Following relationship already exists')
-            return Response({'Error': 'Already following that user'}, status=400)
-        # If requester sends a request to an requestee already following them
-        # Delete friend request if it exists and add FollowingRelationship
-        if FollowingRelationship.objects.filter(user=requestee, follows=requester).exists():
-            if FriendRequest.objects.filter(requestee=requester, requester=requestee).exists():
-                # Transform friend request into follow
-                FriendRequest.objects.get(requestee=requester, requester=requestee).delete()
-        
-            FollowingRelationship.objects.create(user=requester, follows=requestee)
-            return Response({'Success': 'Users are now friends'}, status=201)
-        
-        # If requester sends friend request to requestee and the requestee is not following them
-        # Create follow relationship and friend request
-        FollowingRelationship.objects.create(user=requester, follows=requestee)
-        FriendRequest.objects.create(requestee=requestee, requester=requester)
-        return Response({'Success': 'Created following relationship and friend request'}, status=201)
 
 
-    def _handle_friend_request_from_remote_node(self, author_data, friend_data):
+    def _handle_friend_request_from_remote_node(self, author_data, friend_data, request):
         our_user = get_object_or_404(Author, url=friend_data['url'])
 
         serializer = CreateAuthorSerializer(data=author_data)
         if serializer.is_valid():
             remote_user = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
-            return self._handle_friend_request(requester=remote_user, requestee=our_user)
+
+            # If our user already following them then return success
+            if FollowingRelationship.objects.filter(user=our_user, follows=remote_user).exists():
+                return Response({'Success': 'Users are now friends'}, status=201)
+            
+            FriendRequest.objects.get_or_create(requester=remote_user, requestee=our_user)
+            return Response({'Success': 'Friend request created'}, status=201)
 
         return Response({"error": "Data we received is invalid", "data": request.data}, status=400)
     
@@ -328,9 +309,15 @@ class FriendRequestList(APIView):
         requester = get_object_or_404(Author, pk=author_data['id'])
         requestee = get_object_or_404(Author, pk=friend_data['id'])
 
-        return self._handle_friend_request(requester=requester, requestee=requestee)
+        if FollowingRelationship.objects.filter(user=requestee, follows=requester).exists():
+            FollowingRelationship.objects.create(user=requester, follows=requestee)
+            return Response({'Success': 'Users are now friends'}, status=201)
+        
+        FriendRequest.objects.get_or_create(requester=requester, requestee=requestee)
+
+        return Response({'Success': 'Friend request created'}, status=201)
     
-    def _handle_friend_request_from_local_other_author_remote(self, author_data, friend_data):
+    def _handle_friend_request_from_local_other_author_remote(self, author_data, friend_data, request):
         print('attempting to send friend request to remote node')
         node = Node.objects.get(url=friend_data['host'])
         url = node.url + 'friendrequest/'
@@ -340,13 +327,17 @@ class FriendRequestList(APIView):
         except Exception as e:
             print("Exception occurred in friendrequest")
             print(str(e))
+            return Response({'Error': 'Friend request not created, issue in remote sever', 'Message': str(e)}, status=201)
 
         author = get_object_or_404(Author, pk=author_data['id'])
 
         serializer = CreateAuthorSerializer(data=friend_data)
         if serializer.is_valid():
             friend = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
-            return self._handle_friend_request(requester=author, requestee=friend)
+            FollowingRelationship.objects.get_or_create(user=author, follows=friend)
+            if FriendRequest.objects.filter(requester=friend, requestee=author).exists():
+                FriendRequest.objects.get(requester=friend, requestee=author).delete()
+            return Response({'Success': 'Friend request created'}, status=201)
         
         print('Could not create remote author', str(friend_data))
         return Response({'error': 'Could not create author', 'data': request.data}, status=500)
@@ -356,14 +347,14 @@ class FriendRequestList(APIView):
         friend_data = validate_and_transform_author(request.data['friend'])
 
         if is_request_from_remote_node(request):
-            return self._handle_friend_request_from_remote_node(author_data, request_data)
+            return self._handle_friend_request_from_remote_node(author_data, friend_data, request)
 
         elif author_data['host'] == friend_data['host']:
             return self._handle_friend_request_both_authors_local(author_data, friend_data)
         # We are getting a request from our front end and the other user is a remote user
         # Need to forward the request to the other server
         else:
-            return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data)
+            return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data, request)
 
     def delete(self, request, format=None):
         if is_request_from_remote_node(request):
