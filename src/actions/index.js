@@ -363,7 +363,7 @@ export function toggleFollowStatus(currentUser, otherUser, isFriend) {
 */
 export function deletePost(post, user){
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(user.id)}/posts/${post.id}/`, {
+    fetch(`${URL_PREFIX}/posts/${post.id}/`, {
       method: 'DELETE',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
