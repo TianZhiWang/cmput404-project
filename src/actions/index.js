@@ -4,7 +4,7 @@ import uuidv4 from 'uuid/v4';
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
 if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'https://' + window.location.hostname;
+  URL_PREFIX = 'http://' + window.location.hostname;
 }
 
 function getUUIDFromId(id) {
