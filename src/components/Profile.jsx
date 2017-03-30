@@ -38,7 +38,7 @@ class Profile extends Component {
     .then(res => res.json())
     .then(res => {
       this.setState({
-        isFriends: res.friends.filter(friend => friend.url === this.props.currentuser.id).length !== 0
+        isFriends: res.friends.filter(friend => friend.url === this.props.user.id).length !== 0
       });
     })
     .catch(err => {
