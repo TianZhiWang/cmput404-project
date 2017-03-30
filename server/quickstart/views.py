@@ -226,7 +226,8 @@ class FriendsList(APIView):
         
         # No circular requests, just send who this author is following
         if is_request_from_remote_node(request):
-            authors = FollowingRelationship.objects.filter(user__id=author_id).select_related('user')
+            follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('user', flat=True)
+            authors = Author.objects.filter(id__in=follows)
         else:
             authors = Author.objects.filter(id__in=get_friend_ids_of_author(author_id))
 
@@ -241,7 +242,8 @@ class FriendsList(APIView):
 
         authors = request.data['authors']
         if is_request_from_remote_node(request):
-            following = FollowingRelationship.objects.filter(user__id=author_id).select_related('user').values_list('url', flat=True)
+            following = FollowingRelationship.objects.filter(user__id=author_id).values_list('id', flat=True)
+            following = Author.objects.filter(id__in=following).values_list('url', flat=True)
             urls = following & authors
         else:
             friends_pks = get_friend_ids_of_author(author_id)
