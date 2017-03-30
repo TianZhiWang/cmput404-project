@@ -75,8 +75,10 @@ class PostIdCommentsTest(APITestCase):
             "comment": {
                 "comment": commentText,
                 "author": {
-                    "id": "http://testurl.com/author/" + str(userid),
-                    "displayName": us
+                    "id": "http://testurl.com/author/" + str(userid) + "/",
+                    "displayName": us,
+                    "url": "http://testurl.com/author/" + str(userid) + "/",
+                    "host": "http://testurl.com/"
                 }
             }
         }

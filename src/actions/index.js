@@ -4,7 +4,7 @@ import uuidv4 from 'uuid/v4';
 let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
 /*eslint-disable */
 if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'https://' + window.location.hostname;
+  URL_PREFIX = 'http://' + window.location.hostname;
 }
 
 function getUUIDFromId(id) {
@@ -342,7 +342,7 @@ function followUser(currentUser, otherUser) {
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friendrequest/`, {
+  return fetch(`${URL_PREFIX}/author/${getUUIDFromId(currentUser.id)}/friends/${getUUIDFromId(otherUser.id)}/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
