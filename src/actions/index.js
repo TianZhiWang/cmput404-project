@@ -342,7 +342,7 @@ function followUser(currentUser, otherUser) {
 }
 
 function unfollowUser(currentUser, otherUser) {
-  return fetch(`${URL_PREFIX}/friendrequest/`, {
+  return fetch(`${URL_PREFIX}/author/${getUUIDFromId(currentUser.id)}/friends/${getUUIDFromId(otherUser.id)}/`, {
     method: 'DELETE',
     headers: {
       // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)

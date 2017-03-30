@@ -358,21 +358,6 @@ class FriendRequestList(APIView):
         else:
             return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data, request)
 
-    def delete(self, request, format=None):
-        if is_request_from_remote_node(request):
-            return Response(status=403)
-
-        author_data = validate_and_transform_author(author_data)
-        friend_data = validate_and_transform_author(friend_data)
-
-        author = get_object_or_404(Author, pk=author_data['id'])
-        friend = get_object_or_404(Author, pk=friend_data['id'])
-
-        followingRelationship = get_object_or_404(FollowingRelationship, user=author, follows=friend)
-        followingRelationship.delete()
-        
-        return Response(status=200)
-
 class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     """
     Returns a list of all posts that is visiable to current author
