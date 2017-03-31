@@ -114,6 +114,6 @@ Libraries are listed in package.json and requirements.txt
 - https://developer.mozilla.org/en/docs/Web/JavaScript/Guide/Regular_Expressions
 - https://regex101.com/
 - image tutorial: https://www.youtube.com/watch?v=HSgyPfibrqQ&t=1s
-
+- http://stackoverflow.com/a/43025574 BKC (https://stackoverflow.com/users/1932097/bkc) MIT
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).

@@ -49,7 +49,9 @@ class Post(models.Model):
 
     contentTypeChoices = (
         ('text/markdown', 'text/markdown'),
-        ('text/plain', 'text/plain')
+        ('text/plain', 'text/plain'),
+        ('image/png;base64', 'image/png;base64'),
+        ('image/jpeg;base64', 'image/jpeg;base64')
     )
 
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
@@ -58,7 +60,7 @@ class Post(models.Model):
     origin = models.URLField()
     published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
-    content = models.CharField(max_length=140)
+    content = models.TextField()
     description = models.CharField(max_length=140)
     contentType = models.CharField(max_length=32, choices=contentTypeChoices)
     author = models.ForeignKey(Author)
@@ -68,7 +70,7 @@ class Post(models.Model):
     visibleTo = models.ManyToManyField(Author, related_name="visibleTo", blank=True)
     #save image to strftime formmating date
     # image = models.ImageField(upload_to='images', blank=True, null=True)
-    image = models.CharField(max_length=140)
+    # image = models.CharField(max_length=140)
     unlisted = models.BooleanField(default=False)
 
     def __unicode__(self):
@@ -97,8 +99,18 @@ class FollowingRelationship(models.Model):
     user = models.ForeignKey(Author)
     follows = models.ForeignKey(Author, related_name='follows')
 
+    class Meta:
+        unique_together = ('user', 'follows')
+
     def __unicode__(self):
         return str(self.user) + '_follows_' + str(self.follows)
+
+class FriendRequest(models.Model):
+    requestee = models.ForeignKey(Author)
+    requester = models.ForeignKey(Author, related_name='requester')
+
+    class Meta:
+        unique_together = ('requestee', 'requester')
 
 #This model is used for connecting with other groups
 class Node(models.Model):

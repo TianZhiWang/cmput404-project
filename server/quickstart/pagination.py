@@ -82,3 +82,11 @@ class PaginationMixin(object):
         """
         assert self.paginator is not None
         return self.paginator.get_paginated_response(data)
+
+    def paginated_response(self, data):
+        page = self.paginate_queryset(data)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        return Response(serializer_class(posts, many=True).data)
