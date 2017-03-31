@@ -68,49 +68,8 @@ export function addComment(comment, postId, postOrigin, user) {
 export function addPost(post, user) {
 
   return function(dispatch) {
-    if (post.image){
-      const formData = new FormData();
-      formData.append('type', 'file');
-      formData.append('image', post.image);
-      fetch(`${URL_PREFIX}/uploadimage/images/`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
-        }
-      })
-      .then(res => res.json())
-      .then(res => {
-        if (res) {
-          fetch(`${URL_PREFIX}/posts/`, {
-            method: 'POST',
-            headers: {
-              // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-              'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`, 
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify({
-              title: post.title,
-              content: post.content,
-              description: post.description,
-              contentType: post.contentType,
-              author: user.id,
-              comments: post.comments,
-              visibility:post.permission,
-              image: res.image,
-              visibleTo: post.user_with_permission
-            }),
-          })
-          .then(res => res.json())
-          .then((res) => {
-            dispatch({type:types.ADD_POST,post: res});            
-          })
-          .catch((err) => { });
-        }
-      });
 
-    }else{
+    const sendPost = function(post, user) {
       fetch(`${URL_PREFIX}/posts/`, {
         method: 'POST',
         headers: {
@@ -127,7 +86,7 @@ export function addPost(post, user) {
           author: user.id,
           comments: post.comments,
           visibility:post.permission,
-          image: "NO_IMAGE",
+          image: post.image,
           visibleTo: post.user_with_permission
         }),
       })
@@ -136,6 +95,18 @@ export function addPost(post, user) {
         dispatch({type:types.ADD_POST,post: res});
       })
       .catch((err) => { });
+    };
+
+    if (post.image){
+      const FR= new FileReader();
+      FR.addEventListener("load", function(e) {
+        post.content = e.target.result;
+        post.contentType = `${post.image.type};base64`;
+        sendPost(post,user);
+      }); 
+      FR.readAsDataURL( post.image );
+    }else{
+      sendPost(post,user);
     }
   };
 }
@@ -392,7 +363,7 @@ export function toggleFollowStatus(currentUser, otherUser, isFriend) {
 */
 export function deletePost(post, user){
   return function(dispatch) {
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(user.id)}/posts/${post.id}/`, {
+    fetch(`${URL_PREFIX}/posts/${post.id}/`, {
       method: 'DELETE',
       headers: {
         // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)

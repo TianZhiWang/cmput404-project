@@ -49,7 +49,9 @@ class Post(models.Model):
 
     contentTypeChoices = (
         ('text/markdown', 'text/markdown'),
-        ('text/plain', 'text/plain')
+        ('text/plain', 'text/plain'),
+        ('image/png;base64', 'image/png;base64'),
+        ('image/jpeg;base64', 'image/jpeg;base64')
     )
 
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
@@ -58,7 +60,7 @@ class Post(models.Model):
     origin = models.URLField()
     published = models.DateTimeField(default=timezone.now)
     title = models.CharField(max_length=140)
-    content = models.CharField(max_length=140)
+    content = models.TextField()
     description = models.CharField(max_length=140)
     contentType = models.CharField(max_length=32, choices=contentTypeChoices)
     author = models.ForeignKey(Author)
