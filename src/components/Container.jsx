@@ -29,6 +29,7 @@ class Container extends Component {
             loadPosts={this.props.loadPosts}
             user = {this.props.user}
             deletePost = {this.props.deletePost}
+            getPost = {this.props.getPost}
           />
         </Col>
       );
@@ -90,7 +91,8 @@ Container.propTypes = {
   switchTabs: PropTypes.func.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired
+  users: PropTypes.array.isRequired,
+  getPost: PropTypes.func.isRequired,
 };
 
 export default Container;

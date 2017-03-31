@@ -25,5 +25,9 @@ export const PERMISSIONS = Object.freeze({
   SERVERONLY: Object.freeze({
     value: 'SERVERONLY',
     label: 'Server Only'
-  })
+  }),
+  PRIVATE: Object.freeze({
+    value: 'PRIVATE',
+    label: 'Private'
+  }),
 });
