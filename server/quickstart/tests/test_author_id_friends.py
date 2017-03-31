@@ -4,7 +4,7 @@ from server.quickstart.models import Post, Author, FollowingRelationship
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
-from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader, createNode
 
 class AuthorIdFriendsTest(APITestCase):
     """ This is the home of all of our tests relating to the author/:id/friends url """
@@ -31,6 +31,11 @@ class AuthorIdFriendsTest(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
+    NODE_USER_NAME = 'aNode'
+    NODE_USER_MAIL = 'nodeuser@example.com'
+    NODE_USER_PASS = 'password127'
+    NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
     def setUp(self):
         """ Set up is run before each test """
         self.not_active_author = createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
@@ -38,6 +43,7 @@ class AuthorIdFriendsTest(APITestCase):
         self.author = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
         self.friend_author = createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, self.author)
         self.foaf_author = createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, self.friend_author)
+        self.node_user = createNode(self.NODE_USER_NAME, self.NODE_USER_MAIL, self.NODE_USER_PASS, self.NODE_USER_URL)
 
     def test_authoridfriends_get_unauth_401(self):
         """ GETing the author friends w/o any auth will result in a 401, even if the author id doesn't exist yet """
@@ -128,3 +134,10 @@ class AuthorIdFriendsTest(APITestCase):
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data["query"] == "friends")
         self.assertTrue(len(response.data["authors"]) >= 0)  # should be an array with at least one element
+
+    def test_author_is_friends_with_friend_from_node(self):
+        """ The current author should be friends with friend_author when the node asks """
+        url = reverse("authorIdFriend", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))

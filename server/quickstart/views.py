@@ -231,7 +231,7 @@ class FriendsList(APIView):
         else:
             authors = Author.objects.filter(id__in=get_friend_ids_of_author(author_id))
 
-            author_urls = [each.url for each in authors]
+        author_urls = [each.url for each in authors]
         return Response({ "query": "friends","authors":author_urls})
 
     def post(self, request, author_id, format=None):

@@ -1,8 +1,17 @@
 import base64
 from django.contrib.auth.models import User
-from server.quickstart.models import Author, FollowingRelationship, User
+from server.quickstart.models import Author, FollowingRelationship, User, Node
 
 URL = 'http://127.0.0.1:8000/'
+
+def createNode(us, em, pw, url):
+    nodeUser = User.objects.create_user(us, em, pw)
+    nodeUser.is_active = True
+    nodeUser.save()
+    node = Node.objects.create(url=url, user=nodeUser, username=us, password=pw)
+    node.save()
+    return node
+
 
 def createAuthor(us, em, pw, isActive=True):
     authorUser = User.objects.create_user(us, em, pw)
