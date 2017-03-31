@@ -28,6 +28,7 @@ class App extends Component {
           users={this.props.users}
           user = {this.props.user}
           deletePost = {this.props.deletePost}
+          getPost = {this.props.getPost}
         />
       );
     } else {
@@ -57,7 +58,8 @@ App.propTypes = {
   switchTabs: PropTypes.func.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object,
-  users: PropTypes.array.isRequired
+  users: PropTypes.array.isRequired,
+  getPost: PropTypes.func.isRequired,
 };
 
 /*
@@ -110,6 +112,10 @@ export default connect(
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
 
-      }
+      },
+      getPost: function(id) {
+        dispatch(actions.getPost(id,user));
+
+      },
     };
   })(App);
