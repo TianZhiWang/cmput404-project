@@ -61,41 +61,6 @@ export function posts(state=[], action) {
 }
 
 /**
- * Users Reducer
- * @param [] state 
- * @param {} action 
- */
-export function users(state=[], action){
-  switch (action.type) {
-    /**
-     * Load Users to state
-     * @param [] state 
-     * @param { type: Enum, users: List } action
-     */
-  case types.LOADED_USERS:
-    return [
-      ...action.users
-    ];
-  case types.TOGGLE_FOLLOWER:
-    return state.map(user => {
-      if (user.id === action.otherUser.id) {
-        return {
-          ...user,
-          isFollowing: !user.isFollowing
-        };
-      }
-      return user;
-    });
-  case types.FINISH_LOADING_POSTS:
-    return [
-      ...action.authors
-    ];
-  default:
-    return state;
-  }
-}
-
-/**
  * App Reducer
  * @param [] state 
  * @param {} action 
@@ -143,4 +108,4 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
 /**
  * Combine reducers to a a single reducer
  */
-export default combineReducers({posts, users, app});
+export default combineReducers({posts, app});

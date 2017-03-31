@@ -1,7 +1,6 @@
 import React, {Component, PropTypes} from 'react';
 import {Grid, Row, Col} from 'react-bootstrap';
 import CreatePost from './CreatePost';
-import FriendList from './FriendList';
 import PostList from './PostList';
 import Profile from './Profile';
 import Sidebar from './Sidebar';
@@ -19,28 +18,17 @@ class Container extends Component {
         <Col md={9}>
           <CreatePost
             addPost={this.props.addPost}
-            users={this.props.users}
-            getUsers={this.props.getUsers}
           />
            <PostList
             toggleFollowStatus={this.props.toggleFollowStatus}
             posts={this.props.posts}
             addComment={this.props.addComment}
             loadPosts={this.props.loadPosts}
-            user = {this.props.user}
-            deletePost = {this.props.deletePost}
+            user={this.props.user}
+            deletePost={this.props.deletePost}
           />
         </Col>
       );
-    const contentFriends = () => (
-        <Col md={9}>
-          <FriendList
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            user={this.props.user}
-            users={this.props.users}
-          />
-        </Col>
-    );
     const contentProfile = () => (
         <Col md={9}>
           <Profile
@@ -54,8 +42,6 @@ class Container extends Component {
       switch(this.props.activeTab) {
       case 'stream':
         return contentPosts();
-      case 'friends':
-        return contentFriends();
       case 'profile':
         return contentProfile();
       default:
@@ -84,13 +70,11 @@ Container.propTypes = {
   addComment: PropTypes.func.isRequired,
   addPost: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,
-  getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired
+  user: PropTypes.object.isRequired
 };
 
 export default Container;
