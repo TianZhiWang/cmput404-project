@@ -118,7 +118,6 @@ Post.propTypes = {
   id: PropTypes.string.isRequired,
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
 

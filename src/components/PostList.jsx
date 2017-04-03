@@ -15,7 +15,6 @@ class PostList extends Component {
       <div className='post-list'>
         {this.props.posts.map(post => (
           <Post key={post.id}
-            toggleFollowStatus={this.props.toggleFollowStatus}
             addComment={this.props.addComment}
             author={post.author}
             contentType={post.contentType}
@@ -35,8 +34,7 @@ PostList.propTypes = {
   deletePost: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
+  user: PropTypes.object.isRequired
 };
 
 export default connect(
