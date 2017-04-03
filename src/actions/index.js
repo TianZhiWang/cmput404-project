@@ -117,7 +117,8 @@ export function addPost(post, user) {
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result || []
+    posts: result || [],
+    authors: []
   };
 }
 
@@ -234,6 +235,44 @@ export function switchTabs(tab) {
   return {
     type: types.SWITCH_TABS,
     tab
+  };
+}
+
+/*
+* Returns an action to update the user with all current users
+*/
+export function finishedGettingUsers(users) {
+  return {
+    type: types.LOADED_USERS,
+    users
+  };
+}
+
+/*
+* Gets all of the current users, friends, and following and joins them into one with an isFriend and isFollowing
+*/
+export function getUsers(user) {
+  return function(dispatch) {
+    fetch(`${URL_PREFIX}/authors/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      return dispatch(finishedGettingUsers(res));
+    })
+    .catch(err => {
+      console.log(err, 'Could not get friends');
+    });
   };
 }
 

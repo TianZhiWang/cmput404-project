@@ -21,11 +21,13 @@ class App extends Component {
           addComment={this.props.addComment}
           addPost={this.props.addPost}
           toggleFollowStatus={this.props.toggleFollowStatus}
+          getUsers={this.props.getUsers}
           loadPosts={this.props.loadPosts}
           posts={this.props.posts}
           switchTabs={this.props.switchTabs}
-          user={this.props.user}
-          deletePost={this.props.deletePost}
+          users={this.props.users}
+          user = {this.props.user}
+          deletePost = {this.props.deletePost}
         />
       );
     } else {
@@ -46,14 +48,16 @@ App.propTypes = {
   addPost: PropTypes.func.isRequired,
   attempLogin: PropTypes.func.isRequired,
   attemptRegister: PropTypes.func.isRequired,
-  deletePost: PropTypes.func.isRequired,
+  deletePost: PropTypes.func.isRequired,  
+  getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   loggedIn: PropTypes.bool.isRequired,
   loggedInFail: PropTypes.bool,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object
+  user: PropTypes.object,
+  users: PropTypes.array.isRequired
 };
 
 /*
@@ -63,6 +67,7 @@ export default connect(
   function(stateProps, ownProps) {
     return {
       posts: stateProps.posts,
+      users: stateProps.users,
       loggedIn: stateProps.app.loggedIn,
       loggedInFail: stateProps.app.loggedInFail,
       user: stateProps.app.user,
@@ -71,6 +76,7 @@ export default connect(
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
+    const {users} = stateProps;
     const {user} = stateProps;
 
     const {dispatch} = dispatchProps;
@@ -94,6 +100,9 @@ export default connect(
       },
       switchTabs: function(tab) {
         dispatch(actions.switchTabs(tab));
+      },
+      getUsers: function() {
+        dispatch(actions.getUsers(user));
       },
       toggleFollowStatus: function(otherUser, isFriend) {
         dispatch(actions.toggleFollowStatus(user, otherUser, isFriend));
