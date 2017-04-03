@@ -229,16 +229,6 @@ export function attemptRegister(username, password, displayName) {
 }
 
 /*
-* Switch tabs to the input tab
-*/
-export function switchTabs(tab) {
-  return {
-    type: types.SWITCH_TABS,
-    tab
-  };
-}
-
-/*
 * Returns an action to update the user with all current users
 */
 export function finishedGettingUsers(users) {
