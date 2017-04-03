@@ -20,7 +20,6 @@ class Container extends Component {
           <CreatePost
             addPost={this.props.addPost}
             users={this.props.users}
-            getUsers={this.props.getUsers}
           />
            <PostList
             toggleFollowStatus={this.props.toggleFollowStatus}
@@ -84,7 +83,6 @@ Container.propTypes = {
   addComment: PropTypes.func.isRequired,
   addPost: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,
-  getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
   switchTabs: PropTypes.func.isRequired,

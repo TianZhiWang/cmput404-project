@@ -21,7 +21,6 @@ class App extends Component {
           addComment={this.props.addComment}
           addPost={this.props.addPost}
           toggleFollowStatus={this.props.toggleFollowStatus}
-          getUsers={this.props.getUsers}
           loadPosts={this.props.loadPosts}
           posts={this.props.posts}
           switchTabs={this.props.switchTabs}
@@ -49,7 +48,6 @@ App.propTypes = {
   attempLogin: PropTypes.func.isRequired,
   attemptRegister: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,  
-  getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   loggedIn: PropTypes.bool.isRequired,
   loggedInFail: PropTypes.bool,
@@ -101,15 +99,11 @@ export default connect(
       switchTabs: function(tab) {
         dispatch(actions.switchTabs(tab));
       },
-      getUsers: function() {
-        dispatch(actions.getUsers(user));
-      },
       toggleFollowStatus: function(otherUser, isFriend) {
         dispatch(actions.toggleFollowStatus(user, otherUser, isFriend));
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
-
       }
     };
   })(App);
