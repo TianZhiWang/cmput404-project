@@ -4,6 +4,8 @@ import {PERMISSIONS} from '../constants';
 import Select from 'react-select';
 import Markdown from 'react-markdown';
 import 'react-select/dist/react-select.css';
+import * as actions from '../actions';
+import {connect} from 'react-redux';
 
 /*
 * Component for creating a new post, has multiple input fields to specify options
@@ -178,8 +180,23 @@ class CreatePost extends Component {
 }
 
 CreatePost.propTypes = {
-  addPost: PropTypes.func.isRequired,
-  users: PropTypes.array.isRequired,
+  addPost: PropTypes.func.isRequired
 };
 
-export default CreatePost;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      user: stateProps.app.user,
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {user} = stateProps;
+    const {dispatch} = dispatchProps;
+
+    return {
+      addPost: function(post) {
+        dispatch(actions.addPost(post, user));
+      }
+    };
+  })(CreatePost);

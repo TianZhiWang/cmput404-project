@@ -14,48 +14,12 @@ class App extends Component {
   }
 
   render() {
-    if (this.props.loggedIn){
-      return (
-        <Container
-          activeTab={this.props.activeTab}
-          addComment={this.props.addComment}
-          addPost={this.props.addPost}
-          toggleFollowStatus={this.props.toggleFollowStatus}
-          loadPosts={this.props.loadPosts}
-          posts={this.props.posts}
-          switchTabs={this.props.switchTabs}
-          users={this.props.users}
-          user = {this.props.user}
-          deletePost = {this.props.deletePost}
-        />
-      );
-    } else {
-      return (
-        <UserAccount
-          attemptLogin={this.props.attempLogin}
-          attemptRegister={this.props.attemptRegister}
-          loggedInFail={this.props.loggedInFail}
-        />
-      );
-    }
+    return this.props.loggedIn ? <Container/> : <UserAccount/>;
   }
 }
 
 App.propTypes = {
-  activeTab: PropTypes.string.isRequired,
-  addComment: PropTypes.func.isRequired,
-  addPost: PropTypes.func.isRequired,
-  attempLogin: PropTypes.func.isRequired,
-  attemptRegister: PropTypes.func.isRequired,
-  deletePost: PropTypes.func.isRequired,  
-  loadPosts: PropTypes.func.isRequired,
-  loggedIn: PropTypes.bool.isRequired,
-  loggedInFail: PropTypes.bool,
-  posts: PropTypes.array.isRequired,
-  switchTabs: PropTypes.func.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object,
-  users: PropTypes.array.isRequired
+  loggedIn: PropTypes.bool.isRequired
 };
 
 /*
@@ -64,46 +28,7 @@ App.propTypes = {
 export default connect(
   function(stateProps, ownProps) {
     return {
-      posts: stateProps.posts,
-      users: stateProps.users,
-      loggedIn: stateProps.app.loggedIn,
-      loggedInFail: stateProps.app.loggedInFail,
-      user: stateProps.app.user,
-      activeTab: stateProps.app.activeTab
+      loggedIn: stateProps.app.loggedIn
     };
   },
-  null,
-  function(stateProps, dispatchProps, ownProps) {
-    const {users} = stateProps;
-    const {user} = stateProps;
-
-    const {dispatch} = dispatchProps;
-    return {
-      ...stateProps,
-      ...ownProps,
-      addComment: function(text, postId, postOrigin) {
-        dispatch(actions.addComment(text, postId, postOrigin, user));
-      },
-      addPost: function(post) {
-        dispatch(actions.addPost(post, user));
-      },
-      loadPosts: function() {
-        dispatch(actions.loadPosts(user));
-      },
-      attempLogin: function(username, password) {
-        dispatch(actions.attempLogin(username, password));
-      },
-      attemptRegister: function(username, password, displayName) {
-        dispatch(actions.attemptRegister(username, password, displayName));
-      },
-      switchTabs: function(tab) {
-        dispatch(actions.switchTabs(tab));
-      },
-      toggleFollowStatus: function(otherUser, isFriend) {
-        dispatch(actions.toggleFollowStatus(user, otherUser, isFriend));
-      },
-      deletePost: function(post) {
-        dispatch(actions.deletePost(post,user));
-      }
-    };
-  })(App);
+  null)(App);
