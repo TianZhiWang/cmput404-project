@@ -32,6 +32,7 @@ class Author(models.Model):
     displayName = models.CharField(max_length=150)
     host = models.URLField()
     url = models.URLField()
+    github = models.CharField(max_length=150, null=True, blank=True)
 
     def __unicode__(self):
         return str(self.displayName)

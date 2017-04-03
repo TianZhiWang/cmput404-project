@@ -39,6 +39,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', TemplateView.as_view(template_name="react.html"), name="root"),
     url(r'^docs/', include('rest_framework_docs.urls')),
+    url(r'^github/$', views.GitEvent.as_view())
     # url(r'^uploadimage/', include('imageupload_rest.urls',namespace = "uploadImage ")),
 ]
 

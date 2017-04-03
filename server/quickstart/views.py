@@ -194,6 +194,15 @@ class CommentList(APIView, PaginationMixin):
             },
         status=200)
 
+class GitEvent(APIView):
+    def get(self, request, format=None):
+        author = get_object_or_404(Author, user=request.user)
+        serialized_author = AuthorSerializer(author).data
+        req = requests.get('https://api.github.com/users/' + serialized_author['github'] + '/events')
+        return Response(json.loads(req.content), status=200)
+
+        
+
 class AuthorDetail(APIView):
 
     def get(self, request, author_id, format=None):
