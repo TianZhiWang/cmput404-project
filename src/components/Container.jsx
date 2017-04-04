@@ -5,6 +5,8 @@ import FriendList from './FriendList';
 import PostList from './PostList';
 import Profile from './Profile';
 import Sidebar from './Sidebar';
+import {connect} from 'react-redux';
+import * as actions from '../actions';
 
 /*
 * Container renders a siderbar and one of two components: the PostList or the FriendList
@@ -18,6 +20,10 @@ class Container extends Component {
     };
 
     this.switchTabs = this.switchTabs.bind(this);
+  }
+
+  componentDidMount() {
+    this.props.loadAuthors();
   }
 
   switchTabs(tab) {
@@ -59,4 +65,24 @@ class Container extends Component {
   }
 }
 
-export default Container;
+Container.propTypes = {
+  loadAuthors: PropTypes.func.isRequired
+};
+
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      user: stateProps.app.user,
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {user} = stateProps;
+    const {dispatch} = dispatchProps;
+
+    return {
+      loadAuthors: function() {
+        dispatch(actions.getUsers(user));
+      }
+    };
+  })(Container);

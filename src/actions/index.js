@@ -1,15 +1,8 @@
 import * as types from '../types';
 import uuidv4 from 'uuid/v4';
 
-let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
-/*eslint-disable */
-if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'http://' + window.location.hostname;
-}
-
-function getUUIDFromId(id) {
-  return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
-}
+import {URL_PREFIX} from '../constants';
+import {getUUIDFromId} from '../utils';
 /*eslint-enable */
 /*
 * Adds a comment, to a post specified by postId
@@ -266,16 +259,6 @@ export function getUsers(user) {
   };
 }
 
-/*
-* Specifies the current user is following 'user to follow'
-*/
-function toggleFollower(otherUser) {
-  return {
-    type: types.TOGGLE_FOLLOWER,
-    otherUser
-  };
-}
-
 function followUser(currentUser, otherUser) {
   return fetch(`${URL_PREFIX}/friendrequest/`, {
     method: 'POST',
@@ -338,9 +321,6 @@ export function toggleFollowStatus(currentUser, otherUser, isFriend) {
         return Promise.reject();
       }
       return res;
-    })
-    .then(res => {
-      dispatch(toggleFollower(otherUser));
     })
     .catch(err => {
       console.log('Could not toggle follow status');
