@@ -38,6 +38,7 @@ class AuthorSerializer(serializers.Serializer):
         instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.url = validated_data.get('url', instance.url)
         instance.host = validated_data.get('host', instance.host)
+        instance.save()
         return instance
 
 class CreateAuthorSerializer(serializers.Serializer):

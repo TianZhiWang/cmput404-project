@@ -126,3 +126,22 @@ class AuthorIdTest(APITestCase):
         }
         response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+
+    def test_authorid_put_author_displayName(self):
+        """ The author should be able to put their displayName to be 'chicken' and get that new name back """
+        url = reverse("authorId", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        data = {
+            "displayName": "chicken",
+            "url":"http://127.0.0.1:8000/author/author/",
+            "host":"http://127.0.0.1:8000/"
+        }
+        response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["displayName"] == "chicken")
+        # attempting a GET too
+        url = reverse("authorId", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponse = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(getResponse.status_code))
+        self.assertTrue(getResponse.data["displayName"] == "chicken")
