@@ -311,10 +311,18 @@ class FriendRequestList(APIView):
         requester = get_object_or_404(Author, pk=author_data['id'])
         requestee = get_object_or_404(Author, pk=friend_data['id'])
 
+        #If requestee has already friend requested requester
+        if FriendRequest.objects.filter(requester=requestee, requestee=requester).exists():
+            FriendRequest.objects.filter(requester=requestee, requestee=requester).delete()
+            FollowingRelationship.objects.create(user=requester, follows=requestee)
+            return Response({'Success': 'Users are now friends'}, status=201)
+        
+        #If requestee is already following requester
         if FollowingRelationship.objects.filter(user=requestee, follows=requester).exists():
             FollowingRelationship.objects.create(user=requester, follows=requestee)
             return Response({'Success': 'Users are now friends'}, status=201)
         
+        FollowingRelationship.objects.get_or_create(user=requester, follows=requestee)
         FriendRequest.objects.get_or_create(requester=requester, requestee=requestee)
 
         return Response({'Success': 'Friend request created'}, status=201)
