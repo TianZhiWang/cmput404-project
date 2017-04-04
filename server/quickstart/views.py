@@ -243,11 +243,7 @@ class FriendsList(APIView):
         authors = request.data['authors']
         normalizedAuthors = []
         for a in authors:
-            lastChar = a[-1:]
-            if lastChar != '/':
-                normalizedAuthors.append(a + '/')
-            else:
-                normalizedAuthors.append(a)
+            normalizedAuthors.append(append_trailing_slash(a))
         authors = normalizedAuthors
         friends_pks = get_friend_ids_of_author(author_id)
         if is_request_from_remote_node(request):
