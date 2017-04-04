@@ -1,9 +1,10 @@
 import React, {Component, PropTypes} from 'react';
 import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
-import {PERMISSIONS} from '../constants';
 import Select from 'react-select';
 import Markdown from 'react-markdown';
 import 'react-select/dist/react-select.css';
+import * as actions from '../actions';
+import {connect} from 'react-redux';
 
 /*
 * Component for creating a new post, has multiple input fields to specify options
@@ -25,7 +26,7 @@ class CreatePost extends Component {
 
   getInitialState() {
     return {
-      permission: PERMISSIONS.PUBLIC.value,
+      permission: 'PUBLIC',
       title: '',
       description: '',
       content: '',
@@ -110,21 +111,22 @@ class CreatePost extends Component {
   }
 
   render() {
-    const staticOptions = [
+    const options = [
       {
-        value: PERMISSIONS.FRIENDS.value,
-        label: PERMISSIONS.FRIENDS.label
+        value: 'PUBLIC',
+        label: 'Public'
       }, {
-        value: PERMISSIONS.PUBLIC.value,
-        label: PERMISSIONS.PUBLIC.label,
+        value: 'FRIENDS',
+        label: 'Friends'
       }, {
-        value: PERMISSIONS.SERVERONLY.value,
-        label: PERMISSIONS.SERVERONLY.label
+        value: 'PRIVATE',
+        label: 'Self'
+      }, {
+        value: 'SERVERONLY',
+        label: 'Server Only'
       }
     ];
-    const options = [
-      ...staticOptions
-    ];
+
     return (
       <div className='create-post'>
         <FormControl
@@ -181,4 +183,20 @@ CreatePost.propTypes = {
   addPost: PropTypes.func.isRequired
 };
 
-export default CreatePost;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      user: stateProps.app.user,
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {user} = stateProps;
+    const {dispatch} = dispatchProps;
+
+    return {
+      addPost: function(post) {
+        dispatch(actions.addPost(post, user));
+      }
+    };
+  })(CreatePost);

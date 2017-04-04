@@ -194,6 +194,14 @@ class CommentList(APIView, PaginationMixin):
             },
         status=200)
 
+class AuthorList(APIView):
+    def get(self, request, format=None):
+        # Internal endpoint
+        if is_request_from_remote_node(request):
+            return Response(status=403)
+
+        return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
+
 class AuthorDetail(APIView):
     def put(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
@@ -414,6 +422,12 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                     unfilteredForeignPosts = req.json()['posts']
                     
                     for post in unfilteredForeignPosts:
+                        # Add all authors of foreign posts to our author database
+                        author_data = validate_and_transform_author(post['author'])
+                        serializer = CreateAuthorSerializer(data=author_data)
+                        if serializer.is_valid():
+                            Author.objects.update_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)
+
                         if post['visibility'] == 'PUBLIC':
                             serializedPosts.append(post)
                         elif post['visibility'] == 'FRIENDS' and (post['author']['id'] in friends):
