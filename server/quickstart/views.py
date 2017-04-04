@@ -415,14 +415,13 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-
-
         # Request originating from remote node
         if is_request_from_remote_node(request):
-            node = Node.objects.get(user=request.user)
-            # Return everything not serverOnly
-            posts = Post.objects.exclude(visibility="SERVERONLY")
-
+            if is_node_allowed_to_see_posts(request):
+                # Return everything not serverOnly
+                posts = Post.objects.exclude(visibility="SERVERONLY")
+            else:  # if a node is not allowed to see posts we should return nothing to them
+                posts = []
             return self.paginated_response(posts)
 
         # Request originating from an author
@@ -439,7 +438,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                     req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
                     req.raise_for_status()
                     unfilteredForeignPosts = req.json()['posts']
-                    
+
                     for post in unfilteredForeignPosts:
                         if post['visibility'] == 'PUBLIC':
                             serializedPosts.append(post)
@@ -448,7 +447,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-            
+
             return Response(serializedPosts)
 
     def get_all_posts(self, currentUser):

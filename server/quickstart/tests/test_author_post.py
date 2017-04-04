@@ -4,7 +4,7 @@ from server.quickstart.models import Post, Author, FollowingRelationship
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
-from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader, createNode
 
 class AuthorPostTest(APITestCase):
     """ This is the home of all of our tests relating to the author/post url """
@@ -31,6 +31,16 @@ class AuthorPostTest(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
+    NODE_USER_NAME = 'aNode'
+    NODE_USER_MAIL = 'nodeuser@example.com'
+    NODE_USER_PASS = 'password127'
+    NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
+    BLIND_NODE_USER_NAME = 'bNode'
+    BLIND_NODE_USER_MAIL = 'blindNodeUser@example.com'
+    BLIND_NODE_USER_PASS = 'password128'
+    BLIND_NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
     def setUp(self):
         """ Set up is run before each test """
         createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
@@ -38,6 +48,8 @@ class AuthorPostTest(APITestCase):
         a = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
         b = createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, a)
         createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, b)
+        self.node_user = createNode(self.NODE_USER_NAME, self.NODE_USER_MAIL, self.NODE_USER_PASS, self.NODE_USER_URL)
+        self.blind_node_user = createNode(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_MAIL, self.BLIND_NODE_USER_PASS, self.BLIND_NODE_USER_URL, seePost=False, seeImages=False)  # Note a blind node can't see posts or images
 
     def test_authorposturl_get_unauth_401(self):
         """ GETing the posts available to an author w/o any auth will result in a 401 """
@@ -60,7 +72,7 @@ class AuthorPostTest(APITestCase):
         self.assertTrue(status.is_success(response.status_code))
 
     def test_authorposturl_delete_405(self):
-        """ DELETE should throw a client error as it shouldn't be allowed to delete everyting """
+        """ DELETE should throw a client error as it shouldn't be allowed to delete everything """
         url = reverse("authorPost")
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
@@ -175,3 +187,25 @@ class AuthorPostTest(APITestCase):
             self.assertTrue(response.data[0]["junk"] == postResponse.data["junk"])
         except KeyError as e:
             self.assertTrue(True)  # A non-existant field on both will throw a key error
+
+    def test_authorposturl_authors_posts_as_node(self):
+        """ Should be able to get all the posts as a node except SERVERONLY """
+        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        url = reverse("authorPost")
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 3)  # should return paginated results for everything except SERVERONLY
+
+    def test_authorposturl_authors_posts_as_blind_node(self):
+        """ Should be get no posts as a blind node """
+        vis = ["PUBLIC", "PRIVATE", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        url = reverse("authorPost")
+        basicAuth = getBasicAuthHeader(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 0)  # should return paginated results containing nothing
