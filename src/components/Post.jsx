@@ -21,6 +21,7 @@ class Post extends Component {
     this.handleDeletePost = this.handleDeletePost.bind(this);
     this.showModal = this.showModal.bind(this);
     this.hideModal = this.hideModal.bind(this);
+    this.shareableURLHandler = this.shareableURLHandler.bind(this);
   }
 
   handleAddComment() {
@@ -32,6 +33,9 @@ class Post extends Component {
     }
   }
 
+  componentWillMount(){
+    new Clipboard('.copyBtn');
+  }
   handleChangeComment(event) {
     this.setState({
       newCommentText: event.target.value
@@ -73,6 +77,29 @@ class Post extends Component {
     }
   }
 
+  shareableURLHandler(){
+    // console.log(!!!)
+    const textFieldId = `url${this.props.id}`;
+    const textFieldHash = `#${textFieldId}`;
+ 
+
+    if (this.props.unlisted==true){
+      return (
+             <div>
+                  <input id={textFieldId}
+                  readOnly 
+                  value={`${this.props.author.host.replace("8000","8080")}?id=${this.props.id}`}/>
+
+
+                  <button className="copyBtn" 
+                   data-clipboard-target={textFieldHash}>
+                      copy
+                  </button>
+            </div>);
+    }
+
+  }
+
   showModal() {
     this.setState({show:true});
   }
@@ -95,6 +122,7 @@ class Post extends Component {
             <div className='post-body'>
               {this.props.description}
             </div>
+            {this.shareableURLHandler()}
             {this.deleteButtonHandler()}
           </div>
           <div className='post-footer'>
@@ -139,7 +167,9 @@ Post.propTypes = {
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired
+  unlisted:PropTypes.bool.isRequired,
+  user: PropTypes.object.isRequired,
+
 };
 
 export default Post;

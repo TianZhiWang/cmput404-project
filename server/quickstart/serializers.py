@@ -69,7 +69,6 @@ class PostSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Post
-
         fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published', 'unlisted')
 
     def paginated_comments(self, obj):

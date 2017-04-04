@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react';
-import {FormControl, ButtonToolbar, ButtonGroup, Button, Glyphicon, Radio} from 'react-bootstrap';
+import {FormControl, ButtonToolbar, ButtonGroup,Checkbox, Button, Glyphicon, Radio} from 'react-bootstrap';
 import {PERMISSIONS} from '../constants';
 import Select from 'react-select';
 import Markdown from 'react-markdown';
@@ -21,6 +21,7 @@ class CreatePost extends Component {
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
     this.contentText = this.contentText.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
+    this.handleUnlisted = this.handleUnlisted.bind(this);
   }
 
   getInitialState() {
@@ -31,6 +32,7 @@ class CreatePost extends Component {
       content: '',
       contentType: 'text/plain',
       image: null,
+      unlisted: false,
       user_with_permission:[],
     };
   }
@@ -65,9 +67,16 @@ class CreatePost extends Component {
       contentType: event.target.value
     });
   }
+  handleUnlisted(event){
+    this.setState({
+      unlisted: event.target.checked,
+      permission: PERMISSIONS.PUBLIC.value
+    });
+    // console.log(this.state.unlisted)
+  }
 
   handlePost() {
-    // console.log(this.state.image)
+    // console.log(this.state.unlisted)
     if (this.state.content) {
       this.props.addPost({
         content: this.state.content,
@@ -78,7 +87,9 @@ class CreatePost extends Component {
 
         image: this.state.image,
         user_with_permission: [],
-        "comments": []
+        unlisted:this.state.unlisted,
+        "comments": [],
+
       });
       this.setState(this.getInitialState());
     }
@@ -89,6 +100,7 @@ class CreatePost extends Component {
       permission: obj.value
     });
   }
+
   contentText (){
     if (this.state.contentType == "text/plain"){
       return(
@@ -120,6 +132,10 @@ class CreatePost extends Component {
       }, {
         value: PERMISSIONS.SERVERONLY.value,
         label: PERMISSIONS.SERVERONLY.label
+      },
+      {
+        value: PERMISSIONS.PRIVATE.value,
+        label: PERMISSIONS.PRIVATE.label
       }
     ];
     const options = [
@@ -158,6 +174,9 @@ class CreatePost extends Component {
               value='text/markdown'>
               Markdown
             </Radio>
+            <Checkbox onChange = {this.handleUnlisted} >
+              Unlisted
+            </Checkbox>
           </ButtonGroup>
           <div className='buttons'>
             <Select
