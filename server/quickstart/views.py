@@ -88,15 +88,18 @@ def get_remote_node_from_request(request):
     except Node.DoesNotExist as e:
         node = None
     return node
+def is_node_allowed_to_see_posts(request):
+    """ If we couldn't get the node we assume they can't see the posts otherwise we check the node.canSeePosts property """
+    node = get_remote_node_from_request(request)
+    if node is not None:
+        return node.canSeePosts
+    else:  # if node = None then something went very wrong :/
+        return False  # it's just safer to return false here!
 
 def is_node_allowed_to_see_posts_or_is_user(request):
     """ Will return true if not a node, otherwise will return node.canSeePosts """
     if(is_request_from_remote_node(request)):
-        node = get_remote_node_from_request(request)
-        if node is not None:
-            return node.canSeePosts
-        else:  # if node = None then something went very wrong :/
-            return False  # it's just safer to return false here!
+        is_node_allowed_to_see_posts(request)
     else:  # this is a request from an author
         return True
 
@@ -151,12 +154,27 @@ class PostList(APIView, PaginationMixin):
 
 class PostDetail(APIView):
     def get(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
-        serializedPost = PostSerializer(post)        
+        if is_request_from_remote_node(request):
+            if is_node_allowed_to_see_posts(request):
+                try:
+                    post = get_object_or_404(Post, pk=post_id)
+                except ValueError as e:
+                    return Response("Malformed post id.", status=400)
+            else:
+                return Response("Sorry, your posts access has been revoked", status=400)
+        else:
+            try:
+                post = get_object_or_404(Post, pk=post_id)
+            except ValueError as e:
+                return Response("Malformed post id.", status=400)
+        serializedPost = PostSerializer(post)
         return Response(serializedPost.data)
 
     def delete(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
+        try:
+            post = get_object_or_404(Post, pk=post_id)
+        except ValueError as e:
+            return Response("Malformed post id.", status=400)
         post.delete()
         return Response(status=200)
 
