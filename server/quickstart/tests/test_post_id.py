@@ -4,7 +4,7 @@ from server.quickstart.models import Post, Author, FollowingRelationship
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
-from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader, createNode
 
 class PostIdTest(APITestCase):
     """ This is the home of all of our tests relating to the post/:id url """
@@ -31,7 +31,15 @@ class PostIdTest(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
+    NODE_USER_NAME = 'aNode'
+    NODE_USER_MAIL = 'nodeuser@example.com'
+    NODE_USER_PASS = 'password127'
+    NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
 
+    BLIND_NODE_USER_NAME = 'bNode'
+    BLIND_NODE_USER_MAIL = 'blindNodeUser@example.com'
+    BLIND_NODE_USER_PASS = 'password128'
+    BLIND_NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
 
     def setUp(self):
         """ Set up is run before each test """
@@ -40,6 +48,8 @@ class PostIdTest(APITestCase):
         self.author = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
         self.friend_author = createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, self.author)
         self.foaf_author = createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, self.friend_author)
+        self.node_user = createNode(self.NODE_USER_NAME, self.NODE_USER_MAIL, self.NODE_USER_PASS, self.NODE_USER_URL)
+        self.blind_node_user = createNode(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_MAIL, self.BLIND_NODE_USER_PASS, self.BLIND_NODE_USER_URL, seePost=False, seeImages=False)  # Note a blind node can't see posts or images
 
     def test_postidurl_get_unauth_401(self):
         """ GETing the posts with :id w/o any auth will result in a 401, even if the post doesn't exist yet """
@@ -78,3 +88,28 @@ class PostIdTest(APITestCase):
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+
+    def test_postidurl_get_basic_auth_bad_post_id(self):
+        """ GETing a bad post :id while loggedin w/ Basic Auth as author should return a 4XX """
+        url = reverse("postId", args=["bad"])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_client_error(response.status_code))
+
+    def test_postidurl_get_basic_auth_from_node(self):
+        """ GETing the post by :id while loggedin w/ Basic Auth as a node should return a 2XX """
+        postResponse = self.post_a_post_obj("test post", "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+
+    def test_postidurl_get_basic_auth_from_blind_node(self):
+        """ GETing the post by :id while loggedin w/ Basic Auth as a blind node should return 4XX """
+        postResponse = self.post_a_post_obj("test post", "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_client_error(response.status_code))

@@ -80,6 +80,29 @@ def get_friend_ids_of_author(authorPK):
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).exists()
 
+def get_remote_node_from_request(request):
+    """ Will return a node object or None """
+    node = None
+    try:
+        node = Node.objects.get(user=request.user)
+    except Node.DoesNotExist as e:
+        node = None
+    return node
+def is_node_allowed_to_see_posts(request):
+    """ If we couldn't get the node we assume they can't see the posts otherwise we check the node.canSeePosts property """
+    node = get_remote_node_from_request(request)
+    if node is not None:
+        return node.canSeePosts
+    else:  # if node = None then something went very wrong :/
+        return False  # it's just safer to return false here!
+
+def is_node_allowed_to_see_posts_or_is_user(request):
+    """ Will return true if not a node, otherwise will return node.canSeePosts """
+    if(is_request_from_remote_node(request)):
+        return is_node_allowed_to_see_posts(request)
+    else:  # this is a request from an author
+        return True
+
 def does_author_exist(author_id):
     return Author.objects.filter(id=author_id).exists()
 
@@ -112,10 +135,12 @@ class PostList(APIView, PaginationMixin):
     """
     pagination_class = PostsPagination
     serializer_class = PostSerializer
-    
-    def get(self, request, format=None):
-        publicPosts = Post.objects.filter(visibility="PUBLIC")
 
+    def get(self, request, format=None):
+        if is_node_allowed_to_see_posts_or_is_user(request):
+            publicPosts = Post.objects.filter(visibility="PUBLIC")
+        else:
+            publicPosts = []
         return self.paginated_response(publicPosts)
 
     def post(self, request, format=None):
@@ -129,12 +154,27 @@ class PostList(APIView, PaginationMixin):
 
 class PostDetail(APIView):
     def get(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
-        serializedPost = PostSerializer(post)        
+        if is_request_from_remote_node(request):
+            if is_node_allowed_to_see_posts(request):
+                try:
+                    post = get_object_or_404(Post, pk=post_id)
+                except ValueError as e:
+                    return Response("Malformed post id.", status=400)
+            else:
+                return Response("Sorry, your posts access has been revoked", status=400)
+        else:
+            try:
+                post = get_object_or_404(Post, pk=post_id)
+            except ValueError as e:
+                return Response("Malformed post id.", status=400)
+        serializedPost = PostSerializer(post)
         return Response(serializedPost.data)
 
     def delete(self, request, post_id, format=None):
-        post = get_object_or_404(Post, pk=post_id)
+        try:
+            post = get_object_or_404(Post, pk=post_id)
+        except ValueError as e:
+            return Response("Malformed post id.", status=400)
         post.delete()
         return Response(status=200)
 
@@ -388,14 +428,13 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-
-
         # Request originating from remote node
         if is_request_from_remote_node(request):
-            node = Node.objects.get(user=request.user)
-            # Return everything not serverOnly
-            posts = Post.objects.exclude(visibility="SERVERONLY")
-
+            if is_node_allowed_to_see_posts(request):
+                # Return everything not serverOnly
+                posts = Post.objects.exclude(visibility="SERVERONLY")
+            else:  # if a node is not allowed to see posts we should return nothing to them
+                posts = []
             return self.paginated_response(posts)
 
         # Request originating from an author
@@ -412,7 +451,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                     req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
                     req.raise_for_status()
                     unfilteredForeignPosts = req.json()['posts']
-                    
+
                     for post in unfilteredForeignPosts:
                         if post['visibility'] == 'PUBLIC':
                             serializedPosts.append(post)
@@ -421,7 +460,7 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-            
+
             return Response(serializedPosts)
 
     def get_all_posts(self, currentUser):
@@ -454,18 +493,18 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
-            posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
-        
+            if is_node_allowed_to_see_posts(request):
+                posts = Post.objects.filter(author__id=author_id).exclude(visibility="SERVERONLY")
+            else:
+                posts = []  # we don't want to return any posts to the node when they aren't allowed to see them
         elif (author_id == request.user.author.id):
             posts = Post.objects.filter(author__id=author_id)
-
         else:
             posts = Post.objects.filter(author__id=author_id)
             # If authenticated user is self should return all posts by user
             is_friend = is_friends(author_id, request.user.author.id)
             if (not (is_friend) or author_id == request.user.author.id):
                 posts = posts.exclude(visibility="FRIENDS")
-
         return self.paginated_response(posts)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme

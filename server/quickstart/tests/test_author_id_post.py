@@ -4,7 +4,7 @@ from server.quickstart.models import Post, Author, FollowingRelationship
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
-from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader, createNode
 
 class AuthorPostTest(APITestCase):
     """ This is the home of all of our tests relating to the author/:id/posts url """
@@ -31,6 +31,16 @@ class AuthorPostTest(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
+    NODE_USER_NAME = 'aNode'
+    NODE_USER_MAIL = 'nodeuser@example.com'
+    NODE_USER_PASS = 'password127'
+    NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
+    BLIND_NODE_USER_NAME = 'bNode'
+    BLIND_NODE_USER_MAIL = 'blindNodeUser@example.com'
+    BLIND_NODE_USER_PASS = 'password128'
+    BLIND_NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
     def setUp(self):
         """ Set up is run before each test """
         self.not_active_author = createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
@@ -38,6 +48,8 @@ class AuthorPostTest(APITestCase):
         self.author = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
         self.friend_author = createAuthorFriend(self.FRIEND_USER_NAME, self.FRIEND_USER_MAIL, self.FRIEND_USER_PASS, self.author)
         self.foaf_author = createAuthorFriend(self.FOAF_USER_NAME, self.FOAF_USER_MAIL, self.FOAF_USER_PASS, self.friend_author)
+        self.node_user = createNode(self.NODE_USER_NAME, self.NODE_USER_MAIL, self.NODE_USER_PASS, self.NODE_USER_URL)
+        self.blind_node_user = createNode(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_MAIL, self.BLIND_NODE_USER_PASS, self.BLIND_NODE_USER_URL, seePost=False, seeImages=False)  # Note a blind node can't see posts or images
 
     def test_authoridposturl_get_unauth_401(self):
         """ GETing the posts available to an author w/ my author id w/o any auth will result in a 401 """
@@ -162,3 +174,25 @@ class AuthorPostTest(APITestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(len(response.data["posts"]) == 2)  # should get PUBLIC, SERVERONLY
+
+    def test_authoridposturl_get_friend_posts_as_node(self):
+        """ GETing posts of author as node made by friend should return everything """
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.friend_author.pk])
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 2)  # should get PUBLIC, FRIENDS, shouldn't be able to get SERVERONLY
+
+    def test_authoridposturl_get_friend_posts_as_blind_node(self):
+        """ GETing posts of author as blind node made by friend should return nothing """
+        vis = ["PUBLIC", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("%s post" % v, v, self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
+        url = reverse("authorIdPosts", args=[self.friend_author.pk])
+        basicAuth = getBasicAuthHeader(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 0)  # should get nothing

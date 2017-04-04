@@ -5,7 +5,7 @@ from server.quickstart.models import Post, Author
 from rest_framework import status
 from rest_framework.test import APITestCase
 from requests.auth import HTTPBasicAuth
-from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader
+from testutils import createAuthor, createAuthorFriend, getBasicAuthHeader, createNode
 
 class PostTests(APITestCase):
     """ This is the home of all of our tests relating to the post url """
@@ -20,10 +20,22 @@ class PostTests(APITestCase):
 
     URL = 'http://127.0.0.1:8000/'
 
+    NODE_USER_NAME = 'aNode'
+    NODE_USER_MAIL = 'nodeuser@example.com'
+    NODE_USER_PASS = 'password127'
+    NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
+    BLIND_NODE_USER_NAME = 'bNode'
+    BLIND_NODE_USER_MAIL = 'blindNodeUser@example.com'
+    BLIND_NODE_USER_PASS = 'password128'
+    BLIND_NODE_USER_URL = 'http://127.0.0.1:9999'  # just randomly choosing a port, no server actually running here
+
     def setUp(self):
         """ Set up is run before each test """
         self.not_active_author = createAuthor(self.NOT_ACTIVE_USER_NAME, self.NOT_ACTIVE_USER_MAIL, self.NOT_ACTIVE_USER_PASS, isActive=False)
         self.author = createAuthor(self.AUTHOR_USER_NAME, self.AUTHOR_USER_MAIL, self.AUTHOR_USER_PASS)
+        self.node_user = createNode(self.NODE_USER_NAME, self.NODE_USER_MAIL, self.NODE_USER_PASS, self.NODE_USER_URL)
+        self.blind_node_user = createNode(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_MAIL, self.BLIND_NODE_USER_PASS, self.BLIND_NODE_USER_URL, seePost=False, seeImages=False)  # Note a blind node can't see posts or images
 
     def test_posturl_get_unauth_401(self):
         """ GETing the public posts w/o any auth will result in a 401 """
@@ -107,3 +119,25 @@ class PostTests(APITestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(response.data["count"] == 1)  # only the PUBLIC post should be returned
+
+    def test_posturl_get_only_returns_public_for_node(self):
+        """ GET should only return posts that are public according to spec, even if a node asks for them """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("testing a %s post" % v, v)
+        url = reverse("post")
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 1)  # only the PUBLIC post should be returned
+
+    def test_posturl_get_only_returns_nothing_for_blind_node(self):
+        """ GET should return nothing for a blind node (node cannot see posts) """
+        vis = ["PUBLIC", "PRIVATE", "FOAF", "FRIENDS", "SERVERONLY"]
+        for v in vis:
+            self.post_a_post_obj("testing a %s post" % v, v)
+        url = reverse("post")
+        basicAuth = getBasicAuthHeader(self.BLIND_NODE_USER_NAME, self.BLIND_NODE_USER_PASS)
+        response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["count"] == 0)  # a blind node should recieve no posts
