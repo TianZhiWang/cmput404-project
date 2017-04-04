@@ -17,3 +17,4 @@ requests==2.13.0
 requests-oauthlib==0.8.0
 six==1.10.0
 whitenoise==3.3.0
+wsgiref==0.1.2
