@@ -86,8 +86,8 @@ class AuthorIdFriendsTest(APITestCase):
                 "query": "friends",
                 "author": self.author.pk,
                 "authors": [
-                    self.stranger_author.host + "/author/" + str(self.stranger_author.id),
-                    self.friend_author.host + "/author/" + str(self.friend_author.id)
+                    self.stranger_author.host + "author/" + str(self.stranger_author.id),
+                    self.friend_author.host + "author/" + str(self.friend_author.id)
                 ]
         }
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
@@ -141,3 +141,19 @@ class AuthorIdFriendsTest(APITestCase):
         basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+
+    def test_authoridfriends_post_has_correnct_num_of_friends_from_node(self):
+        """ The current author should have 1 friend, even when a node asks """
+        url = reverse("authorIdFriend", args=[self.author.pk])
+        obj = {
+                "query": "friends",
+                "author": self.author.pk,
+                "authors": [
+                    self.stranger_author.host + "author/" + str(self.stranger_author.id) + "/",
+                    self.friend_author.host + "author/" + str(self.friend_author.id)  # the code should be able to handle a missing trailing slash
+                ]
+        }
+        basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
+        response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(len(response.data["authors"]) == 1)
