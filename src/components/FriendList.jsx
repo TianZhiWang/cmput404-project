@@ -15,7 +15,9 @@ class FriendList extends Component {
 
     this.state = {
       friendRequests: [],
-      friends: []
+      friends: [],
+      loadingFriends: true,
+      loadingFriendRequests: true
     };
   }
   componentDidMount() {
@@ -23,6 +25,9 @@ class FriendList extends Component {
   }
 
   getFriendRequests() {
+    this.setState({
+      loadingFriendRequests: true
+    });
     fetch(`${URL_PREFIX}/friendrequest/`, {
       method: 'GET',
       headers: {
@@ -39,7 +44,8 @@ class FriendList extends Component {
     .then(res => res.json())
     .then(res => {
       this.setState({
-        friendRequests: res
+        friendRequests: res,
+        loadingFriendRequests: false
       });
     })
     .catch(err => {
@@ -48,6 +54,9 @@ class FriendList extends Component {
   }
 
   getFriends() {
+    this.setState({
+      loadingFriendRequests: true
+    });
     fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.user.id)}/`, {
       method: 'GET',
       headers: {
@@ -63,9 +72,9 @@ class FriendList extends Component {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
       this.setState({
-        friends: res.friends
+        friends: res.friends,
+        loadingFriends: false
       });
     })
     .catch(err => {
@@ -83,7 +92,7 @@ class FriendList extends Component {
     const friendIds = this.state.friends.map(friend => friend.id);
     const friendRequestIds = this.state.friendRequests.map(friend => friend.id);
     for (const author of this.props.authors) {
-      if (friendIds.indexOf(author.id) < 0 && friendRequestIds.indexOf(author.id) < 0) {
+      if (friendIds.indexOf(author.id) < 0 && friendRequestIds.indexOf(author.id) < 0 && author.id != this.props.user.id) {
         everyoneElse.push(author);
       }
     }
@@ -91,6 +100,9 @@ class FriendList extends Component {
   }
 
   render() {
+    if (this.state.loadingFriendRequests || this.state.loadingFriends) {
+      return <span>Loading...</span>;
+    }
     return (
       <div className='friend-page'>
         <h2>Friend Requests</h2>
