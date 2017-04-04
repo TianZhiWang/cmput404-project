@@ -4,11 +4,11 @@ from server.quickstart.models import Author, FollowingRelationship, User, Node
 
 URL = 'http://127.0.0.1:8000/'
 
-def createNode(us, em, pw, url):
+def createNode(us, em, pw, url, seePost=True, seeImages=True):
     nodeUser = User.objects.create_user(us, em, pw)
     nodeUser.is_active = True
     nodeUser.save()
-    node = Node.objects.create(url=url, user=nodeUser, username=us, password=pw)
+    node = Node.objects.create(url=url, user=nodeUser, username=us, password=pw, canSeePosts=seePost, canSeeImages=seeImages)
     node.save()
     return node
 

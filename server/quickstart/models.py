@@ -111,7 +111,7 @@ class FriendRequest(models.Model):
 
     class Meta:
         unique_together = ('requestee', 'requester')
-    
+
     def __unicode__(self):
         return str(self.requester) + '_wants_to_be_friends_with_' + str(self.requestee)
 
@@ -121,6 +121,8 @@ class Node(models.Model):
     user = models.OneToOneField(User)
     username = models.CharField(max_length=140)
     password = models.CharField(max_length=140)
+    canSeePosts = models.BooleanField(default=True)
+    canSeeImages = models.BooleanField(default=True)
 
     def __unicode__(self):
         return str(self.url)

@@ -80,6 +80,26 @@ def get_friend_ids_of_author(authorPK):
 def is_request_from_remote_node(request):
     return Node.objects.filter(user=request.user).exists()
 
+def get_remote_node_from_request(request):
+    """ Will return a node object or None """
+    node = None
+    try:
+        node = Node.objects.get(user=request.user)
+    except Node.DoesNotExist as e:
+        node = None
+    return node
+
+def is_node_allowed_to_see_posts_or_is_user(request):
+    """ Will return true if not a node, otherwise will return node.canSeePosts """
+    if(is_request_from_remote_node(request)):
+        node = get_remote_node_from_request(request)
+        if node is not None:
+            return node.canSeePosts
+        else:  # if node = None then something went very wrong :/
+            return False  # it's just safer to return false here!
+    else:  # this is a request from an author
+        return True
+
 def does_author_exist(author_id):
     return Author.objects.filter(id=author_id).exists()
 
@@ -112,10 +132,12 @@ class PostList(APIView, PaginationMixin):
     """
     pagination_class = PostsPagination
     serializer_class = PostSerializer
-    
-    def get(self, request, format=None):
-        publicPosts = Post.objects.filter(visibility="PUBLIC")
 
+    def get(self, request, format=None):
+        if is_node_allowed_to_see_posts_or_is_user(request):
+            publicPosts = Post.objects.filter(visibility="PUBLIC")
+        else:
+            publicPosts = []
         return self.paginated_response(publicPosts)
 
     def post(self, request, format=None):
