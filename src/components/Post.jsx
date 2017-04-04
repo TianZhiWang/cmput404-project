@@ -79,8 +79,8 @@ class Post extends Component {
 
   shareableURLHandler(){
     // console.log(!!!)
-    let textFieldId = "url"+this.props.id;
-    let textFieldHash = "#"+textFieldId;
+    const textFieldId = `url${this.props.id}`;
+    const textFieldHash = `#${textFieldId}`;
  
 
     if (this.props.unlisted==true){

@@ -30,15 +30,6 @@ class Container extends Component {
           />
         </Col>
       );
-    const contentFriends = () => (
-        <Col md={9}>
-          <FriendList
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            user={this.props.user}
-            deletePost={this.props.deletePost}
-          />
-        </Col>
-      );
     const contentProfile = () => (
         <Col md={9}>
           <Profile
