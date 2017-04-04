@@ -40,6 +40,8 @@ import json
 from urlparse import urlparse
 import uuid
 from copy import copy
+import base64
+from django.http import HttpResponse
 
 def get_author_id_from_url_string(string):
     if 'http' not in string:
@@ -130,14 +132,32 @@ class PostList(APIView, PaginationMixin):
 class PostDetail(APIView):
     def get(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        serializedPost = PostSerializer(post)        
+        serializedPost = PostSerializer(post)
         return Response(serializedPost.data)
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
         post.delete()
         return Response(status=200)
+            
+class ImageView(APIView):
+    authentication_classes = []
+    permission_classes = []
 
+    def get(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+
+        if not post.contentType.startswith("image"):
+            return Response({"Error":"Not image"},status=404)
+
+        if not post.unlisted:
+            return Response({"Error":"Not authorized"},status=403)
+    
+        serializedPost = PostSerializer(post)
+        imageb64 = post.content.split('base64,')[1]
+        image = base64.b64decode(imageb64)
+        contentType = post.contentType.replace(";base64","")
+        return HttpResponse(image, content_type=contentType)
 
 class CommentList(APIView, PaginationMixin):
     """

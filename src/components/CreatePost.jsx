@@ -70,7 +70,7 @@ class CreatePost extends Component {
   handleUnlisted(event){
     this.setState({
       unlisted: event.target.checked,
-      permission: PERMISSIONS.PRIVATE.value
+      permission: PERMISSIONS.PUBLIC.value
     });
     // console.log(this.state.unlisted)
   }
@@ -100,6 +100,7 @@ class CreatePost extends Component {
       permission: obj.value
     });
   }
+
   contentText (){
     if (this.state.contentType == "text/plain"){
       return(
