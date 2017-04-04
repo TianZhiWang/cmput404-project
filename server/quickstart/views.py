@@ -195,6 +195,15 @@ class CommentList(APIView, PaginationMixin):
         status=200)
 
 class AuthorDetail(APIView):
+    def put(self, request, author_id, format=None):
+        author = get_object_or_404(Author, pk=author_id)
+
+        serializer = AuthorSerializer(author, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(data=serializer.data, status=200)
+        return Response(serializer.errors, status=400)
+
 
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
@@ -205,7 +214,7 @@ class AuthorDetail(APIView):
 
         serialized_data = AuthorSerializer(author).data
         serialized_data["friends"] = formatedUsers
-        
+
         return Response(data=serialized_data, status=200)
 
 class FriendsList(APIView):
