@@ -99,7 +99,7 @@ def is_node_allowed_to_see_posts(request):
 def is_node_allowed_to_see_posts_or_is_user(request):
     """ Will return true if not a node, otherwise will return node.canSeePosts """
     if(is_request_from_remote_node(request)):
-        is_node_allowed_to_see_posts(request)
+        return is_node_allowed_to_see_posts(request)
     else:  # this is a request from an author
         return True
 
@@ -481,18 +481,18 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
-            posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
-        
+            if is_node_allowed_to_see_posts(request):
+                posts = Post.objects.filter(author__id=author_id).exclude(visibility="SERVERONLY")
+            else:
+                posts = []  # we don't want to return any posts to the node when they aren't allowed to see them
         elif (author_id == request.user.author.id):
             posts = Post.objects.filter(author__id=author_id)
-
         else:
             posts = Post.objects.filter(author__id=author_id)
             # If authenticated user is self should return all posts by user
             is_friend = is_friends(author_id, request.user.author.id)
             if (not (is_friend) or author_id == request.user.author.id):
                 posts = posts.exclude(visibility="FRIENDS")
-
         return self.paginated_response(posts)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
