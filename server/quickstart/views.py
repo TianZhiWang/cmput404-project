@@ -130,13 +130,18 @@ class PostList(APIView, PaginationMixin):
 class PostDetail(APIView):
     def get(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        serializedPost = PostSerializer(post)        
+        serializedPost = PostSerializer(post)
         return Response(serializedPost.data)
 
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
-        post.delete()
-        return Response(status=200)
+        author = get_object_or_404(Author, user=request.user)
+        if post.author == author:
+            post.delete()
+            return Response(status=200)
+        else:
+            return Response("You likely don't have access to delete this post", status=400)
+
 
 
 class CommentList(APIView, PaginationMixin):
