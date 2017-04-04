@@ -87,7 +87,8 @@ export function addPost(post, user) {
           comments: post.comments,
           visibility:post.permission,
           image: post.image,
-          visibleTo: post.user_with_permission
+          visibleTo: post.user_with_permission,
+          unlisted:post.unlisted,
         }),
       })
       .then(res => res.json())
@@ -384,4 +385,26 @@ export function deletePost(post, user){
     });
   };
 }
+
+
+/*
+* Get a post specified by post
+*/
+export function getPost(id, user){
+  return function(dispatch) {
+    fetch(`${URL_PREFIX}/posts/${id}/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`
+      },
+    })
+    .then(res => res.json())
+      .then(res => {
+        // console.log(res)
+        dispatch(finishLoadingPosts([res]));
+      });
+  };
+}
+
 

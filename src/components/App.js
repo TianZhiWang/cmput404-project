@@ -28,6 +28,7 @@ class App extends Component {
           users={this.props.users}
           user = {this.props.user}
           deletePost = {this.props.deletePost}
+          getPost = {this.props.getPost}
         />
       );
     } else {
@@ -49,6 +50,7 @@ App.propTypes = {
   attempLogin: PropTypes.func.isRequired,
   attemptRegister: PropTypes.func.isRequired,
   deletePost: PropTypes.func.isRequired,  
+  getPost: PropTypes.func.isRequired,
   getUsers: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   loggedIn: PropTypes.bool.isRequired,
@@ -57,7 +59,8 @@ App.propTypes = {
   switchTabs: PropTypes.func.isRequired,
   toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object,
-  users: PropTypes.array.isRequired
+  users: PropTypes.array.isRequired,
+  
 };
 
 /*
@@ -110,6 +113,10 @@ export default connect(
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
 
-      }
+      },
+      getPost: function(id) {
+        dispatch(actions.getPost(id,user));
+
+      },
     };
   })(App);
