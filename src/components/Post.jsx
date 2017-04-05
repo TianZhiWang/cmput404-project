@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react';
-import {Panel, Button, FormControl, Modal} from 'react-bootstrap';
+import {Panel, Button, FormControl} from 'react-bootstrap';
 import CommentList from './CommentList';
 import Markdown from 'react-markdown';
 import Profile from './Profile';
@@ -19,9 +19,6 @@ class Post extends Component {
     this.textTypehandler = this.textTypehandler.bind(this);
     this.deleteButtonHandler = this.deleteButtonHandler.bind(this);
     this.handleDeletePost = this.handleDeletePost.bind(this);
-    this.showModal = this.showModal.bind(this);
-    this.hideModal = this.hideModal.bind(this);
-    this.imageHandler = this.imageHandler.bind(this);
   }
 
   handleAddComment() {
@@ -40,18 +37,22 @@ class Post extends Component {
   }
 
   textTypehandler(){
-    if (this.props.contentType == "text/plain"){
+    if (this.props.contentType === "text/plain"){
       return(
         <div className='post-body'>
           {this.props.content}
         </div>
       );
-    }else{
+    } else if (this.props.contentType === "text/markdown"){
       return(
         <Markdown
           source={this.props.content}
           escapeHtml
         />
+      );
+    } else {
+      return(
+        <img src={this.props.content}/>
       );
     }
   }
@@ -70,20 +71,6 @@ class Post extends Component {
     }
   }
 
-  imageHandler(){
-    if (this.props.image!="NO_IMAGE"){
-      return <div><img src={this.props.image}/></div>;
-    }
-  }
-
-  showModal() {
-    this.setState({show:true});
-  }
-
-  hideModal() {
-    this.setState({show:false});
-  }
-
   render() {
     return (
       <div className='post'>
@@ -98,9 +85,7 @@ class Post extends Component {
             <div className='post-body'>
               {this.props.description}
             </div>
-            {this.imageHandler()}
-            {this.deleteButtonHandler()}   
-
+            {this.deleteButtonHandler()}
           </div>
           <div className='post-footer'>
               <CommentList comments={this.props.comments}/>
@@ -117,16 +102,6 @@ class Post extends Component {
                 </Button>
               </div>
           </div>
-          <Modal
-            show={this.state.show}
-            onHide={this.hideModal}
-            container={this}
-            aria-labelledby="contained-modal-title"
-          >
-            <Profile toggleFollowStatus={this.props.toggleFollowStatus}
-              currentuser={this.props.user} 
-              user={this.props.author}/>
-          </Modal>
       </div>
     );
   }
@@ -143,9 +118,7 @@ Post.propTypes = {
   id: PropTypes.string.isRequired,
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  image: PropTypes.string.isRequired
+  user: PropTypes.object.isRequired
 };
 
 export default Post;

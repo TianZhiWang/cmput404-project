@@ -86,10 +86,6 @@ export function users(state=[], action){
       }
       return user;
     });
-  case types.FINISH_LOADING_POSTS:
-    return [
-      ...action.authors
-    ];
   default:
     return state;
   }
@@ -130,11 +126,6 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
      * @param [] state 
      * @param { type: Enum, tab: Object } action
      */
-  case types.SWITCH_TABS:
-    return {
-      ...state,
-      activeTab: action.tab
-    };
   default:
     return state;
   }
