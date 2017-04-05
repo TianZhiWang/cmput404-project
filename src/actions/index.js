@@ -221,6 +221,45 @@ export function attemptRegister(username, password, displayName) {
   };
 }
 
+
+/*
+* Action that updates the state to say the log in has failed
+*/
+function updateUser(user) {
+  return {
+    type: types.UPDATE_USER,
+    user
+  };
+}
+
+export function attemptUpdateProfile(user) {
+  return function(dispatch) {
+    return fetch(user.url, {
+      method: 'PUT',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user),
+    }).then(res => {
+      if (!res.ok) {
+        return Promise.reject(res);
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      dispatch(updateUser({
+        ...res,
+      }));
+    })
+    .catch(err => {
+      //TODO Something on fail
+    });
+  };
+}
+
 /*
 * Returns an action to update the user with all current users
 */

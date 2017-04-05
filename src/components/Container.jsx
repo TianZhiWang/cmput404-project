@@ -45,7 +45,7 @@ class Container extends Component {
       case 'friends':
         return <FriendList/>;
       case 'profile':
-        return <Profile/>;
+        return <Profile user={this.props.user}/>;
       }
     };
     return (
@@ -66,7 +66,8 @@ class Container extends Component {
 }
 
 Container.propTypes = {
-  loadAuthors: PropTypes.func.isRequired
+  loadAuthors: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
 };
 
 export default connect(
@@ -81,6 +82,7 @@ export default connect(
     const {dispatch} = dispatchProps;
 
     return {
+      user: user,
       loadAuthors: function() {
         dispatch(actions.getUsers(user));
       }
