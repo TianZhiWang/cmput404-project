@@ -34,7 +34,7 @@ class Post extends Component {
   }
 
   componentWillMount(){
-    new Clipboard('.copyBtn');
+    new Clipboard('.copyBtn');// eslint-disable-line
   }
   handleChangeComment(event) {
     this.setState({
@@ -58,7 +58,8 @@ class Post extends Component {
       );
     } else {
       return(
-        <img style={{width:"100%",height: "auto"}} src={this.props.content}/>
+        <img style={{width:"100%",height: "auto"}} 
+        src={this.props.content}/>
       );
     }
   }
@@ -79,8 +80,8 @@ class Post extends Component {
 
   shareableURLHandler(){
     // console.log(!!!)
-    let textFieldId = "url"+this.props.id;
-    let textFieldHash = "#"+textFieldId;
+    const textFieldId = "url"+this.props.id; //eslint-disable-line
+    const textFieldHash = "#"+textFieldId; //eslint-disable-line
  
 
     if (this.props.unlisted==true){

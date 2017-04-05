@@ -122,7 +122,7 @@ class CreatePost extends Component {
           type='file'
           onChange={this.handleImageUpload}
         /></div>
-      )
+      );
     }
   }
 
