@@ -51,7 +51,8 @@ class Post(models.Model):
         ('text/markdown', 'text/markdown'),
         ('text/plain', 'text/plain'),
         ('image/png;base64', 'image/png;base64'),
-        ('image/jpeg;base64', 'image/jpeg;base64')
+        ('image/jpeg;base64', 'image/jpeg;base64'),
+        
     )
 
     # https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield

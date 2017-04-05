@@ -58,7 +58,7 @@ class Post extends Component {
       );
     } else {
       return(
-        <img src={this.props.content}/>
+        <img style={{width:"100%",height: "auto"}} src={this.props.content}/>
       );
     }
   }
