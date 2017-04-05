@@ -31,7 +31,6 @@ class CreatePost extends Component {
       description: '',
       content: '',
       contentType: 'text/plain',
-      image: null,
       unlisted: false,
       user_with_permission:[],
     };
@@ -58,7 +57,7 @@ class CreatePost extends Component {
   handleImageUpload(event) {
     // console.log( event.target.files[0])
     this.setState({
-      image: event.target.files[0]
+      content: event.target.files[0]
     });
   }
 
@@ -85,7 +84,6 @@ class CreatePost extends Component {
         contentType: this.state.contentType,
         permission: this.state.permission,
 
-        image: this.state.image,
         user_with_permission: [],
         unlisted:this.state.unlisted,
         "comments": [],
@@ -109,13 +107,21 @@ class CreatePost extends Component {
             placeholder='Whats on your mind?'
             onChange={this.handleContentChange}/>
       );
-    }else{
+    }else if(this.state.contentType == "text/markdown"){
       return(
           <FormControl
             value={this.state.content}
             placeholder='Whats on your mind?'
             onChange={this.handleContentChange}
           />
+      );
+    }else{
+      return(
+        <div style={{height:"34px"}}>
+        <input 
+          type='file'
+          onChange={this.handleImageUpload}
+        /></div>
       );
     }
   }
@@ -153,10 +159,7 @@ class CreatePost extends Component {
           value={this.state.description}
           placeholder='description?'
           onChange={this.handleDescriptionChange}/>
-        <input 
-          type='file'
-          onChange={this.handleImageUpload}
-          />
+        
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio
@@ -173,6 +176,14 @@ class CreatePost extends Component {
               value='text/markdown'>
               Markdown
             </Radio>
+            <Radio
+              checked={this.state.contentType === 'image'}
+              inline={true}
+              onChange={this.handleContentTypeChange}
+              value='image'>
+              Image
+            </Radio>
+
             <Checkbox onChange = {this.handleUnlisted} >
               Unlisted
             </Checkbox>

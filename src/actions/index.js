@@ -86,7 +86,6 @@ export function addPost(post, user) {
           author: user.id,
           comments: post.comments,
           visibility:post.permission,
-          image: post.image,
           visibleTo: post.user_with_permission,
           unlisted:post.unlisted,
         }),
@@ -96,17 +95,21 @@ export function addPost(post, user) {
         dispatch({type:types.ADD_POST,post: res});
       })
       .catch((err) => { });
+      // console.log(post)
     };
 
-    if (post.image){
+    if (post.contentType=="image"){
       const FR= new FileReader();
       FR.addEventListener("load", function(e) {
-        post.content = e.target.result;
-        post.contentType = `${post.image.type};base64`;
-        sendPost(post,user);
+        post.contentType = `${post.content.type};base64`;
+        post.content = e.target.result; 
+        if (post.contentType =='image/png;base64' || post.contentType =='image/jpeg;base64'){
+          sendPost(post,user);
+        }
       }); 
-      FR.readAsDataURL( post.image );
+      FR.readAsDataURL( post.content );
     }else{
+
       sendPost(post,user);
     }
   };
