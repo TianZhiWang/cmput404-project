@@ -78,3 +78,59 @@ class PostIdTest(APITestCase):
         basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+
+    def test_postidurl_delete_basic_auth(self):
+        """ Deleting the post by :id while loggedin w/ Basic Auth as author should actually delete the post """
+        # create post
+        title = "test post title :)"
+        postResponse = self.post_a_post_obj(title, "PUBLIC", self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        # get post
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponse = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(getResponse.status_code))
+        self.assertTrue(getResponse.data["id"] == postId)
+        self.assertTrue(getResponse.data["title"] == title)
+        # delete post
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        deleteResponse = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(deleteResponse.status_code))
+        # get post again
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponseAgain = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_client_error(getResponseAgain.status_code))
+        self.assertTrue(getResponseAgain.status_code == status.HTTP_404_NOT_FOUND)
+        self.assertTrue(getResponseAgain.data["detail"])  # should have a detail saying the post is missing
+
+    def test_postidurl_author_attempt_to_delete_friend_post(self):
+        """ When trying to delete the post of frind as author, author shouldn't be able to do it """
+        # create post
+        title = "test post title :)"
+        postResponse = self.post_a_post_obj(title, "PUBLIC", self.FRIEND_USER_NAME, self.FRIEND_USER_PASS)
+        # get post
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponse = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(getResponse.status_code))
+        self.assertTrue(getResponse.data["id"] == postId)
+        self.assertTrue(getResponse.data["title"] == title)
+        # delete post
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        deleteResponse = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_client_error(deleteResponse.status_code))
+        # get post again
+        postId = postResponse.data["id"]
+        url = reverse("postId", args=[postId])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponseAgain = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(getResponseAgain.status_code))
+        self.assertTrue(getResponseAgain.data["id"] == postId)
+        self.assertTrue(getResponseAgain.data["title"] == title)

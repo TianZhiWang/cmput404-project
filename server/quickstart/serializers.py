@@ -35,6 +35,13 @@ class AuthorSerializer(serializers.Serializer):
     def get_id(self, obj):
         return obj.url
 
+    def update(self, instance, validated_data):
+        instance.displayName = validated_data.get('displayName', instance.displayName)
+        instance.url = validated_data.get('url', instance.url)
+        instance.host = validated_data.get('host', instance.host)
+        instance.save()
+        return instance
+
 class CreateAuthorSerializer(serializers.Serializer):
     id = serializers.CharField(max_length=64)
     displayName = serializers.CharField(max_length=150)
@@ -65,7 +72,7 @@ class PostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Post
 
-        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published')
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published', 'unlisted')
 
     def paginated_comments(self, obj):
         comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]

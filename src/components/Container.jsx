@@ -5,6 +5,8 @@ import FriendList from './FriendList';
 import PostList from './PostList';
 import Profile from './Profile';
 import Sidebar from './Sidebar';
+import {connect} from 'react-redux';
+import * as actions from '../actions';
 
 /*
 * Container renders a siderbar and one of two components: the PostList or the FriendList
@@ -12,54 +14,38 @@ import Sidebar from './Sidebar';
 class Container extends Component {
   constructor(props) {
     super(props);
+
+    this.state = {
+      activeTab: 'stream'
+    };
+
+    this.switchTabs = this.switchTabs.bind(this);
+  }
+
+  componentDidMount() {
+    this.props.loadAuthors();
+  }
+
+  switchTabs(tab) {
+    this.setState({
+      activeTab: tab
+    });
   }
 
   render() {
-    const contentPosts = () => (
-        <Col md={9}>
-          <CreatePost
-            addPost={this.props.addPost}
-            users={this.props.users}
-            getUsers={this.props.getUsers}
-          />
-           <PostList
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            posts={this.props.posts}
-            addComment={this.props.addComment}
-            loadPosts={this.props.loadPosts}
-            user = {this.props.user}
-            deletePost = {this.props.deletePost}
-          />
-        </Col>
-      );
-    const contentFriends = () => (
-        <Col md={9}>
-          <FriendList
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            user={this.props.user}
-            users={this.props.users}
-          />
-        </Col>
-    );
-    const contentProfile = () => (
-        <Col md={9}>
-          <Profile
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            currentuser={this.props.user}
-            user={this.props.user}
-          />
-        </Col>
-    );
     const pickTab = () => {
-      switch(this.props.activeTab) {
+      switch(this.state.activeTab) {
       case 'stream':
-        return contentPosts();
+        return (
+          <div>
+            <CreatePost />
+            <PostList />
+          </div>
+        );
       case 'friends':
-        return contentFriends();
+        return <FriendList/>;
       case 'profile':
-        return contentProfile();
-      default:
-        return contentPosts();
+        return <Profile/>;
       }
     };
     return (
@@ -68,10 +54,10 @@ class Container extends Component {
         <Row>
             <Col md={3}>
             <Sidebar
-                activeTab={this.props.activeTab}
-                switchTabs={this.props.switchTabs} />
+                activeTab={this.state.activeTab}
+                switchTabs={this.switchTabs} />
             </Col>
-            {pickTab()}
+            <Col md={9}>{pickTab()}</Col>
         </Row>
       </Grid>
     </div>
@@ -80,17 +66,23 @@ class Container extends Component {
 }
 
 Container.propTypes = {
-  activeTab: PropTypes.string.isRequired,
-  addComment: PropTypes.func.isRequired,
-  addPost: PropTypes.func.isRequired,
-  deletePost: PropTypes.func.isRequired,
-  getUsers: PropTypes.func.isRequired,
-  loadPosts: PropTypes.func.isRequired,
-  posts: PropTypes.array.isRequired,
-  switchTabs: PropTypes.func.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired
+  loadAuthors: PropTypes.func.isRequired
 };
 
-export default Container;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      user: stateProps.app.user,
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {user} = stateProps;
+    const {dispatch} = dispatchProps;
+
+    return {
+      loadAuthors: function() {
+        dispatch(actions.getUsers(user));
+      }
+    };
+  })(Container);

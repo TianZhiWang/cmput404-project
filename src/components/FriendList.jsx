@@ -1,42 +1,193 @@
 import React, {Component, PropTypes} from 'react';
 import FriendListItem from './FriendListItem';
-import {ListGroup} from 'react-bootstrap';
+import {ListGroup, ListGroupItem, Button, Glyphicon} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import {URL_PREFIX} from '../constants';
+import * as actions from '../actions';
+import {getUUIDFromId} from '../utils';
 
 /*
 * Renders a list of friends in three sections: Friends, Following, and Everyone Else
 */
 class FriendList extends Component {
-  createUserList(people) {
-    return (
-      <ListGroup className='friend-list'>
-        {people.filter(friend => friend.id != this.props.user.id).map(friend => (
-          <FriendListItem
-            key={friend.id}
-            toggleFollowStatus={this.props.toggleFollowStatus}
-            user={friend}
-          />
-        ))}
-      </ListGroup>
-    );
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      friendRequests: [],
+      friends: [],
+      loadingFriends: true,
+      loadingFriendRequests: true
+    };
   }
+  componentDidMount() {
+    this.getFriendsAndFriendRequests();
+  }
+
+  getFriendRequests() {
+    this.setState({
+      loadingFriendRequests: true
+    });
+    fetch(`${URL_PREFIX}/friendrequest/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${this.props.user.username}:${this.props.user.password}`)}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      this.setState({
+        friendRequests: res,
+        loadingFriendRequests: false
+      });
+    })
+    .catch(err => {
+      console.log(err, 'Could not get friend requests');
+    });
+  }
+
+  getFriends() {
+    this.setState({
+      loadingFriendRequests: true
+    });
+    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.user.id)}/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${this.props.user.username}:${this.props.user.password}`)}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      this.setState({
+        friends: res.friends,
+        loadingFriends: false
+      });
+    })
+    .catch(err => {
+      console.log(err, 'Could not get friends');
+    });
+  }
+
+  getFriendsAndFriendRequests() {
+    this.getFriendRequests();
+    this.getFriends();
+  }
+
+  getEveryoneElse() {
+    const everyoneElse = [];
+    const friendIds = this.state.friends.map(friend => friend.id);
+    const friendRequestIds = this.state.friendRequests.map(friend => friend.id);
+    for (const author of this.props.authors) {
+      if (friendIds.indexOf(author.id) < 0 && friendRequestIds.indexOf(author.id) < 0 && author.id != this.props.user.id) {
+        everyoneElse.push(author);
+      }
+    }
+    return everyoneElse;
+  }
+
   render() {
+    if (this.state.loadingFriendRequests || this.state.loadingFriends) {
+      return <span>Loading...</span>;
+    }
     return (
       <div className='friend-page'>
+        <h2>Friend Requests</h2>
+        <ListGroup className='friend-list'>
+          {this.state.friendRequests.map(friend => {
+            const followUser = () => {
+              this.props.followUser(friend)
+                .then(() => this.getFriendsAndFriendRequests());
+            };
+            return (
+              <ListGroupItem>
+                {friend.displayName}
+                <Button onClick={followUser}>
+                  <Glyphicon glyph='ok'/>
+                </Button>
+              </ListGroupItem>
+            );
+          })}
+        </ListGroup>
         <h2>Friends</h2>
-        {this.createUserList(this.props.users.filter(user => (user.isFollowed && user.isFollowing)))}
-        <h2>Following</h2>
-        {this.createUserList(this.props.users.filter(user => (user.isFollowing & !user.isFollowed)))}
-        <h2>Everyone Else</h2>
-        {this.createUserList(this.props.users.filter(user => !user.isFollowing))}
+        <ListGroup className='friend-list'>
+          {this.state.friends.map(friend => {
+            const unfollowUser = () => {
+              this.props.unfollowUser(friend)
+                .then(() => this.getFriendsAndFriendRequests());
+            };
+            return (
+              <ListGroupItem>
+                {friend.displayName}
+                <Button onClick={unfollowUser}>
+                  <Glyphicon glyph='remove'/>
+                </Button>
+              </ListGroupItem>
+            );
+          })}
+        </ListGroup>
+        <h2>Authors</h2>
+        <ListGroup className='friend-list'>
+          {this.getEveryoneElse().map(author => {
+            const followUser = () => {
+              this.props.followUser(author)
+                .then(() => this.getFriendsAndFriendRequests());
+            };
+            return (
+              <ListGroupItem>
+                {author.displayName}
+                <Button onClick={followUser}>
+                  <Glyphicon glyph='ok'/>
+                </Button>
+              </ListGroupItem>
+            );
+          })}
+        </ListGroup>
       </div>
     );
   }
 }
 
 FriendList.propTypes = {
-  toggleFollowStatus: PropTypes.func.isRequired,
-  user: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired
+  authors: PropTypes.array.isRequired,
+  followUser: PropTypes.func.isRequired,
+  unfollowUser: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
 };
 
-export default FriendList;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      user: stateProps.app.user,
+      authors: stateProps.users
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {user, authors} = stateProps;
+    const {dispatch} = dispatchProps;
+
+    return {
+      authors: authors,
+      user: user,
+      followUser: function(otherUser) {
+        return dispatch(actions.toggleFollowStatus(user, otherUser, false));
+      },
+      unfollowUser: function(otherUser) {
+        return dispatch(actions.toggleFollowStatus(user, otherUser, true));
+      }
+    };
+  })(FriendList);
