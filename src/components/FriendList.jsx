@@ -15,6 +15,7 @@ class FriendList extends Component {
     this.state = {
       friendRequests: [],
       friends: [],
+      authors: [],
       loading: true
     };
   }
@@ -28,13 +29,15 @@ class FriendList extends Component {
     });
     Promise.all([
       basicAuthFetch('GET', '/friendrequest/', this.props.user),
-      basicAuthFetch('GET', `/author/${getUUIDFromId(this.props.user.id)}/`, this.props.user)
+      basicAuthFetch('GET', `/author/${getUUIDFromId(this.props.user.id)}/`, this.props.user),
+      basicAuthFetch('GET', '/authors/', this.props.user)
     ])
     .then(results => {
       this.setState({
         loading: false,
         friendRequests: results[0],
-        friends: results[1].friends
+        friends: results[1].friends,
+        authors: results[2]
       });
     });
   }
@@ -123,17 +126,15 @@ FriendList.propTypes = {
 export default connect(
   function(stateProps, ownProps) {
     return {
-      user: stateProps.app.user,
-      authors: stateProps.users
+      user: stateProps.app.user
     };
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
-    const {user, authors} = stateProps;
+    const {user} = stateProps;
     const {dispatch} = dispatchProps;
 
     return {
-      authors: authors,
       user: user,
       followUser: function(otherUser) {
         return dispatch(actions.toggleFollowStatus(user, otherUser, false));

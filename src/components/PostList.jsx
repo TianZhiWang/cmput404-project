@@ -43,14 +43,12 @@ export default connect(
   function(stateProps, ownProps) {
     return {
       posts: stateProps.posts,
-      users: stateProps.users,
       user: stateProps.app.user,
       ...ownProps
     };
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
-    const {users} = stateProps;
     const {user} = stateProps;
     const {dispatch} = dispatchProps;
     return {

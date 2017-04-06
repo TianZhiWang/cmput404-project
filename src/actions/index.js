@@ -191,21 +191,6 @@ export function attemptUpdateProfile(user) {
   };
 }
 
-/*
-* Gets all of the current users, friends, and following and joins them into one with an isFriend and isFollowing
-*/
-export function getUsers(user) {
-  return function(dispatch) {
-    basicAuthFetch('GET', '/authors/', user)
-    .then(users => {
-      return dispatch({
-        type: types.LOADED_USERS,
-        users
-      });
-    });
-  };
-}
-
 function followUser(currentUser, otherUser) {
   return basicAuthFetch('POST', '/friendrequest/', currentUser, {
     query: 'friendrequest',

@@ -16,10 +16,6 @@ class Container extends Component {
     super(props);
   }
 
-  componentDidMount() {
-    this.props.loadAuthors();
-  }
-
   render() {
     const pickTab = () => {
       switch(this.props.activeTab) {
@@ -55,7 +51,6 @@ class Container extends Component {
 
 Container.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  loadAuthors: PropTypes.func.isRequired,
   switchTabs: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
@@ -76,9 +71,6 @@ export default connect(
     return {
       activeTab: activeTab,
       user: user,
-      loadAuthors: function() {
-        dispatch(actions.getUsers(user));
-      },
       switchTabs: function(tab) {
         dispatch(actions.switchTabs(tab));
       },
