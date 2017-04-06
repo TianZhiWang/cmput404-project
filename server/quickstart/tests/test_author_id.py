@@ -66,13 +66,6 @@ class AuthorIdTest(APITestCase):
         response = self.client.delete(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def test_authorid_put_405(self):
-        """ PUT should throw a client error as it doesn't make sense to put a to the author details """
-        url = reverse("authorId", args=[self.author.pk])
-        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
-        response = self.client.put(url, HTTP_AUTHORIZATION=basicAuth)
-        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
     def test_authorid_post_405(self):
         """ POST should throw a client error 405 as it doesn't make sense to post to author details """
         url = reverse("authorId", args=[self.author.pk])
@@ -121,3 +114,34 @@ class AuthorIdTest(APITestCase):
         response = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
         self.assertTrue(len(response.data["friends"]) == 2)  # friend is friends with author and foaf
+
+    def test_authorid_put_author_2XX(self):
+        """ The author should be able to put their displayName to be 'chicken' and get a 2XX for it """
+        url = reverse("authorId", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        data = {
+            "displayName": "chicken",
+            "url":"http://127.0.0.1:8000/author/author/",
+            "host":"http://127.0.0.1:8000/"
+        }
+        response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+
+    def test_authorid_put_author_displayName(self):
+        """ The author should be able to put their displayName to be 'chicken' and get that new name back """
+        url = reverse("authorId", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        data = {
+            "displayName": "chicken",
+            "url":"http://127.0.0.1:8000/author/author/",
+            "host":"http://127.0.0.1:8000/"
+        }
+        response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(response.status_code))
+        self.assertTrue(response.data["displayName"] == "chicken")
+        # attempting a GET too
+        url = reverse("authorId", args=[self.author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        getResponse = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_success(getResponse.status_code))
+        self.assertTrue(getResponse.data["displayName"] == "chicken")

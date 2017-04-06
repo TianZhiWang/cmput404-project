@@ -1,5 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Panel, Button, FormControl} from 'react-bootstrap';
+import {connect} from 'react-redux';
+import * as actions from '../actions';
 
 class UserAccount extends Component {
   
@@ -115,5 +117,22 @@ UserAccount.propTypes = {
   loggedInFail: PropTypes.bool
 };
 
-
-export default UserAccount;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      loggedInFail: stateProps.app.loggedInFail,
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {dispatch} = dispatchProps;
+    return {
+      ...stateProps,
+      attemptLogin: function(username, password) {
+        dispatch(actions.attempLogin(username, password));
+      },
+      attemptRegister: function(username, password, displayName) {
+        dispatch(actions.attemptRegister(username, password, displayName));
+      }
+    };
+  })(UserAccount);

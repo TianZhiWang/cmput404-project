@@ -19,6 +19,7 @@ class Sidebar extends Component {
           activeKey={this.props.activeTab}
           onSelect={this.props.switchTabs}>
           <NavItem eventKey={'stream'}>Stream</NavItem>
+          <NavItem eventKey={'friends'}>Following</NavItem>
           <NavItem eventKey={'profile'}>Profile</NavItem>
         </Nav>
       </div>

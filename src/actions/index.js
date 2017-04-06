@@ -1,15 +1,8 @@
 import * as types from '../types';
 import uuidv4 from 'uuid/v4';
 
-let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
-/*eslint-disable */
-if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'http://' + window.location.hostname;
-}
-
-function getUUIDFromId(id) {
-  return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
-}
+import {URL_PREFIX} from '../constants';
+import {getUUIDFromId} from '../utils';
 /*eslint-enable */
 /*
 * Adds a comment, to a post specified by postId
@@ -118,7 +111,8 @@ export function addPost(post, user) {
 function finishLoadingPosts(result) {
   return {
     type: types.FINISH_LOADING_POSTS,
-    posts: result || []
+    posts: result || [],
+    authors: []
   };
 }
 
@@ -228,23 +222,80 @@ export function attemptRegister(username, password, displayName) {
   };
 }
 
+
 /*
-* Switch tabs to the input tab
+* Action that updates the state to say the log in has failed
 */
-export function switchTabs(tab) {
+function updateUser(user) {
   return {
-    type: types.SWITCH_TABS,
-    tab
+    type: types.UPDATE_USER,
+    user
+  };
+}
+
+export function attemptUpdateProfile(user) {
+  return function(dispatch) {
+    return fetch(user.url, {
+      method: 'PUT',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(user),
+    }).then(res => {
+      if (!res.ok) {
+        return Promise.reject(res);
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      dispatch(updateUser({
+        ...res,
+      }));
+    })
+    .catch(err => {
+      //TODO Something on fail
+    });
   };
 }
 
 /*
-* Specifies the current user is following 'user to follow'
+* Returns an action to update the user with all current users
 */
-function toggleFollower(otherUser) {
+export function finishedGettingUsers(users) {
   return {
-    type: types.TOGGLE_FOLLOWER,
-    otherUser
+    type: types.LOADED_USERS,
+    users
+  };
+}
+
+/*
+* Gets all of the current users, friends, and following and joins them into one with an isFriend and isFollowing
+*/
+export function getUsers(user) {
+  return function(dispatch) {
+    fetch(`${URL_PREFIX}/authors/`, {
+      method: 'GET',
+      headers: {
+        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
+        'Authorization': `Basic ${btoa(`${user.username  }:${  user.password}`)}`
+      }
+    })
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject();
+      }
+      return res;
+    })
+    .then(res => res.json())
+    .then(res => {
+      return dispatch(finishedGettingUsers(res));
+    })
+    .catch(err => {
+      console.log(err, 'Could not get friends');
+    });
   };
 }
 
@@ -310,9 +361,6 @@ export function toggleFollowStatus(currentUser, otherUser, isFriend) {
         return Promise.reject();
       }
       return res;
-    })
-    .then(res => {
-      dispatch(toggleFollower(otherUser));
     })
     .catch(err => {
       console.log('Could not toggle follow status');

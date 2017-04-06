@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react';
-import {Panel, Button, FormControl, Modal} from 'react-bootstrap';
+import {Panel, Button, FormControl} from 'react-bootstrap';
 import CommentList from './CommentList';
 import Markdown from 'react-markdown';
 import Profile from './Profile';
@@ -19,8 +19,6 @@ class Post extends Component {
     this.textTypehandler = this.textTypehandler.bind(this);
     this.deleteButtonHandler = this.deleteButtonHandler.bind(this);
     this.handleDeletePost = this.handleDeletePost.bind(this);
-    this.showModal = this.showModal.bind(this);
-    this.hideModal = this.hideModal.bind(this);
     this.shareableURLHandler = this.shareableURLHandler.bind(this);
   }
 
@@ -89,23 +87,12 @@ class Post extends Component {
                   <input id={textFieldId}
                   readOnly 
                   value={`${this.props.author.host.replace("8000","8080")}?id=${this.props.id}`}/>
-
-
                   <button className="copyBtn" 
                    data-clipboard-target={textFieldHash}>
                       copy
                   </button>
             </div>);
     }
-
-  }
-
-  showModal() {
-    this.setState({show:true});
-  }
-
-  hideModal() {
-    this.setState({show:false});
   }
 
   render() {
@@ -140,16 +127,6 @@ class Post extends Component {
                 </Button>
               </div>
           </div>
-          <Modal
-            show={this.state.show}
-            onHide={this.hideModal}
-            container={this}
-            aria-labelledby="contained-modal-title"
-          >
-            <Profile toggleFollowStatus={this.props.toggleFollowStatus}
-              currentuser={this.props.user} 
-              user={this.props.author}/>
-          </Modal>
       </div>
     );
   }
@@ -166,10 +143,8 @@ Post.propTypes = {
   id: PropTypes.string.isRequired,
   origin: PropTypes.string.isRequired,
   title: PropTypes.string.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
   unlisted:PropTypes.bool.isRequired,
   user: PropTypes.object.isRequired,
-
 };
 
 export default Post;
