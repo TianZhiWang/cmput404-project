@@ -21,6 +21,7 @@ class PostList extends Component {
             user={this.props.user}
             deletePost={this.props.deletePost}
             image={post.image}
+            switchTabs={this.props.switchTabs}
             {...post}
           />
         ))}
@@ -34,6 +35,7 @@ PostList.propTypes = {
   deletePost: PropTypes.func.isRequired,
   loadPosts: PropTypes.func.isRequired,
   posts: PropTypes.array.isRequired,
+  switchTabs: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
 
@@ -42,14 +44,14 @@ export default connect(
     return {
       posts: stateProps.posts,
       users: stateProps.users,
-      user: stateProps.app.user
+      user: stateProps.app.user,
+      ...ownProps
     };
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
     const {users} = stateProps;
     const {user} = stateProps;
-
     const {dispatch} = dispatchProps;
     return {
       ...stateProps,
@@ -62,6 +64,9 @@ export default connect(
       },
       deletePost: function(post) {
         dispatch(actions.deletePost(post,user));
-      }
+      },
+      switchTabs: function(tab, user) {
+        dispatch(actions.switchTabs(tab, user));
+      },
     };
   })(PostList);

@@ -19,6 +19,7 @@ class Post extends Component {
     this.textTypehandler = this.textTypehandler.bind(this);
     this.deleteButtonHandler = this.deleteButtonHandler.bind(this);
     this.handleDeletePost = this.handleDeletePost.bind(this);
+    this.showProfile = this.showProfile.bind(this);
   }
 
   handleAddComment() {
@@ -71,11 +72,15 @@ class Post extends Component {
     }
   }
 
+  showProfile(){
+    this.props.switchTabs('profile', this.props.author);
+  }
+
   render() {
     return (
       <div className='post'>
           <div className='post-header'>
-            <h4 onClick={this.showModal}>
+            <h4 onClick={this.showProfile}>
               {this.props.author.displayName}
             </h4>
             <div className='post-body'>
@@ -117,6 +122,7 @@ Post.propTypes = {
   description: PropTypes.string,
   id: PropTypes.string.isRequired,
   origin: PropTypes.string.isRequired,
+  switchTabs: PropTypes.func.isRequired,
   title: PropTypes.string.isRequired,
   user: PropTypes.object.isRequired
 };
