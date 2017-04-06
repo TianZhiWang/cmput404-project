@@ -473,7 +473,7 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
 
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
-            posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
+            posts = Post.objects.filter(author__id=author_id).exclude(visibility="SERVERONLY")
         
         elif (author_id == request.user.author.id):
             posts = Post.objects.filter(author__id=author_id)
