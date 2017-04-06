@@ -127,12 +127,12 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
      * @param { type: Enum, user: Object } action
      */
   case types.UPDATE_USER:
+    console.log(action);
     return {
       ...state,
-      user: {
-        ...state.user,
-        ...action.user
-      }
+      user: {...state.user,
+        ...action.user},
+      viewUser: action.user
     };
   /**
      * Switch Tabs, sets the active tab in state [ app : {} ]

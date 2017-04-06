@@ -32,7 +32,7 @@ class Profile extends Component {
   }
 
   handleSubmitProfile() {
-    const update = this.props.user;
+    const update = Object.assign({},this.props.user);
     if(this.state.github) {
       update.github = this.state.github;
     }

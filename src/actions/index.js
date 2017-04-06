@@ -250,6 +250,7 @@ export function attemptUpdateProfile(user) {
     })
     .then(res => res.json())
     .then(res => {
+      console.log(res);
       dispatch(updateUser({
         ...res,
       }));
