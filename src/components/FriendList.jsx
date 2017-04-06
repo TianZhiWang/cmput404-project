@@ -2,9 +2,8 @@ import React, {Component, PropTypes} from 'react';
 import FriendListItem from './FriendListItem';
 import {ListGroup, ListGroupItem, Button, Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux';
-import {URL_PREFIX} from '../constants';
 import * as actions from '../actions';
-import {getUUIDFromId} from '../utils';
+import {getUUIDFromId, basicAuthFetch} from '../utils';
 
 /*
 * Renders a list of friends in three sections: Friends, Following, and Everyone Else
@@ -16,75 +15,28 @@ class FriendList extends Component {
     this.state = {
       friendRequests: [],
       friends: [],
-      loadingFriends: true,
-      loadingFriendRequests: true
+      loading: true
     };
   }
   componentDidMount() {
     this.getFriendsAndFriendRequests();
   }
 
-  getFriendRequests() {
-    this.setState({
-      loadingFriendRequests: true
-    });
-    fetch(`${URL_PREFIX}/friendrequest/`, {
-      method: 'GET',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${this.props.user.username}:${this.props.user.password}`)}`
-      }
-    })
-    .then(res => {
-      if (!res.ok) {
-        return Promise.reject();
-      }
-      return res;
-    })
-    .then(res => res.json())
-    .then(res => {
-      this.setState({
-        friendRequests: res,
-        loadingFriendRequests: false
-      });
-    })
-    .catch(err => {
-      console.log(err, 'Could not get friend requests');
-    });
-  }
-
-  getFriends() {
-    this.setState({
-      loadingFriendRequests: true
-    });
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.user.id)}/`, {
-      method: 'GET',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${this.props.user.username}:${this.props.user.password}`)}`
-      }
-    })
-    .then(res => {
-      if (!res.ok) {
-        return Promise.reject();
-      }
-      return res;
-    })
-    .then(res => res.json())
-    .then(res => {
-      this.setState({
-        friends: res.friends,
-        loadingFriends: false
-      });
-    })
-    .catch(err => {
-      console.log(err, 'Could not get friends');
-    });
-  }
-
   getFriendsAndFriendRequests() {
-    this.getFriendRequests();
-    this.getFriends();
+    this.setState({
+      loading: true
+    });
+    Promise.all([
+      basicAuthFetch('GET', '/friendrequest/', this.props.user),
+      basicAuthFetch('GET', `/author/${getUUIDFromId(this.props.user.id)}/`, this.props.user)
+    ])
+    .then(results => {
+      this.setState({
+        loading: false,
+        friendRequests: results[0],
+        friends: results[1].friends
+      });
+    });
   }
 
   getEveryoneElse() {
@@ -100,7 +52,7 @@ class FriendList extends Component {
   }
 
   render() {
-    if (this.state.loadingFriendRequests || this.state.loadingFriends) {
+    if (this.state.loading) {
       return <span>Loading...</span>;
     }
     return (
