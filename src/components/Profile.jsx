@@ -14,7 +14,7 @@ class Profile extends Component {
     this.state = {};
 
     this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
-    this.handleGithubChange = this.handleDisplayNameChange.bind(this);
+    this.handleGithubChange = this.handleGithubChange.bind(this);
     this.handleSubmitProfile = this.handleSubmitProfile.bind(this);
     this.filterPosts = this.filterPosts.bind(this);
   }
@@ -51,7 +51,7 @@ class Profile extends Component {
 
   render() {
     const updateForm = () => {
-      if(this.props.currentuser !== this.props.user) {
+      if(this.props.currentuser.id !== this.props.user.id) {
         return <noscript/>;
       }
 
@@ -70,7 +70,7 @@ class Profile extends Component {
           <Button
             onClick={this.handleSubmitProfile}>
             Submit
-            </Button>
+          </Button>
         </div>
       );
     };
@@ -99,12 +99,13 @@ export default connect(
     return {
       posts: stateProps.posts,
       currentuser: stateProps.app.user,
-      ...ownProps
+      user: stateProps.app.viewUser
     };
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
     const {dispatch} = dispatchProps;
+    
     return {
       ...stateProps,
       attemptUpdateProfile: function(update) {

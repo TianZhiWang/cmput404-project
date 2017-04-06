@@ -134,6 +134,17 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
         ...action.user
       }
     };
+  /**
+     * Switch Tabs, sets the active tab in state [ app : {} ]
+     * @param [] state 
+     * @param { type: Enum, tab: Object } action
+     */
+  case types.SWITCH_TABS:
+    return {
+      ...state,
+      activeTab: action.tab,
+      viewUser: action.user ? action.user : state.user
+    };
   default:
     return state;
   }

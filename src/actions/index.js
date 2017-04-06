@@ -394,3 +394,19 @@ export function deletePost(post, user){
   };
 }
 
+/*
+* Switch tabs to the input tab
+*/
+export function switchTabs(tab, user) {
+  if(user) {
+    return {
+      type: types.SWITCH_TABS,
+      tab,
+      user
+    };
+  }
+  return {
+    type: types.SWITCH_TABS,
+    tab
+  };
+}
