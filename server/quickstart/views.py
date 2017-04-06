@@ -100,6 +100,22 @@ def validate_and_transform_author(author):
     new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
 
+def create_git_post(githubEvent, author):
+    eventPayload = githubEvent['payload']
+    new_git_post = {}
+    new_git_post['title'] = '********This is a GitHub Event*********'
+    new_git_post['content'] = author['displayName'] + ' performed an action of: ' + githubEvent['type'] + ' at ' + githubEvent['repo']['url']
+    new_git_post['description'] = '*********This is a GitHub Event*********'
+    new_git_post['contentType'] = 'text/plain'
+    new_git_post['author'] = author
+    new_git_post['comments'] = []
+    new_git_post['visibility'] = 'PUBLIC'
+    new_git_post['visibleTo'] = []
+    new_git_post['published'] = githubEvent['created_at']
+    new_git_post['unlisted'] = False
+    return new_git_post
+
+
 class PostList(APIView, PaginationMixin):
     """
     List all Public posts, or create a new post.
@@ -199,16 +215,14 @@ class CommentList(APIView, PaginationMixin):
             },
         status=200)
 
-<<<<<<< HEAD
 class GitEvent(APIView):
     def get(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
         serialized_author = AuthorSerializer(author).data
         req = requests.get('https://api.github.com/users/' + serialized_author['github'] + '/events')
+        json_req = req.json()
         return Response(json.loads(req.content), status=200)
 
-        
-=======
 class AuthorList(APIView):
     def get(self, request, format=None):
         # Internal endpoint
@@ -216,7 +230,6 @@ class AuthorList(APIView):
             return Response(status=403)
 
         return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
->>>>>>> develop
 
 class AuthorDetail(APIView):
     def put(self, request, author_id, format=None):
@@ -451,7 +464,20 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-            
+
+            #get github streams - gets the first 5 git hub events (if able)
+            #convert into post format, and append to serializedPosts.
+            serialized_author = AuthorSerializer(author).data
+            if(serialized_author['github']):
+                req = requests.get('https://api.github.com/users/' + serialized_author['github'] + '/events')
+                shownEvent = 5
+                json_req = req.json()
+                displaySize = shownEvent if len(json_req) >= shownEvent else len(json_req)
+                for i in range(0,displaySize):
+                    githubEventObj = json_req[i]
+                    new_post = create_git_post(githubEventObj, serialized_author)
+                    serializedPosts.append(new_post)
+
             return Response(serializedPosts)
 
     def get_all_posts(self, currentUser):
