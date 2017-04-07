@@ -34,6 +34,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
 from .permissions import IsOwnerOrReadOnly
+from operator import itemgetter
 import re
 import requests
 from django.urls import reverse
@@ -478,8 +479,9 @@ class AllPostsAvailableToCurrentUser(APIView):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-            
-            return Response(serializedPosts)
+                    
+            sortedSerializedPosts = sorted(serializedPosts, key=itemgetter('published'), reverse=True) 
+            return Response(sortedSerializedPosts)
 
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.filter(visibility="PUBLIC")
