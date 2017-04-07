@@ -30,6 +30,7 @@ class AuthorSerializer(serializers.Serializer):
     displayName = serializers.CharField(max_length=150)
     url = serializers.URLField()
     host = serializers.URLField()
+    github = serializers.URLField()
 
     def get_id(self, obj):
         return obj.url
@@ -38,6 +39,7 @@ class AuthorSerializer(serializers.Serializer):
         instance.displayName = validated_data.get('displayName', instance.displayName)
         instance.url = validated_data.get('url', instance.url)
         instance.host = validated_data.get('host', instance.host)
+        instance.github = validated_data.get('github', instance.github)
         instance.save()
         return instance
 
