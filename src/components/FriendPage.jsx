@@ -8,7 +8,7 @@ import {getUUIDFromId, basicAuthFetch} from '../utils';
 /*
 * Renders a list of friends in three sections: Friends, Following, and Everyone Else
 */
-class FriendList extends Component {
+class FriendPage extends Component {
   constructor(props) {
     super(props);
 
@@ -60,7 +60,7 @@ class FriendList extends Component {
           {users.map(user => {
             const handleClick = () => {
               onClick(user)
-              .then(() => this.getFriendsdAndFriendRequests());
+              .then(() => this.getFriendsAndFriendRequests());
             };
             return (
               <ListGroupItem key={user.id}>
@@ -92,7 +92,7 @@ class FriendList extends Component {
   }
 }
 
-FriendList.propTypes = {
+FriendPage.propTypes = {
   followUser: PropTypes.func.isRequired,
   unfollowUser: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
@@ -118,4 +118,4 @@ export default connect(
         return dispatch(actions.toggleFollowStatus(user, otherUser, true));
       }
     };
-  })(FriendList);
+  })(FriendPage);
