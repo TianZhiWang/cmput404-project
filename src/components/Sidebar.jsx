@@ -1,5 +1,5 @@
 import React, { Component, PropTypes } from 'react';
-import {ListGroup, ListGroupItem, Nav, NavItem} from 'react-bootstrap';
+import {ListGroup, ListGroupItem, Nav, NavItem, Button} from 'react-bootstrap';
 
 /*
 * Renders a sidebar with a couple options: Stream and Following
@@ -7,6 +7,12 @@ import {ListGroup, ListGroupItem, Nav, NavItem} from 'react-bootstrap';
 class Sidebar extends Component {
   constructor(props) {
     super(props);
+    this.logout = this.logout.bind(this);
+  }
+
+  logout() {
+    sessionStorage.clear();
+    this.props.logout();
   }
 
   render() {
@@ -22,6 +28,7 @@ class Sidebar extends Component {
           <NavItem eventKey={'friends'}>Following</NavItem>
           <NavItem eventKey={'profile'}>Profile</NavItem>
         </Nav>
+        <Button onClick={this.logout}>Logout</Button>
       </div>
     );
   }
@@ -29,6 +36,7 @@ class Sidebar extends Component {
 
 Sidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
+  logout: PropTypes.string.isRequired,
   switchTabs: PropTypes.func.isRequired,
 };
 

@@ -1,68 +1,88 @@
 import React, { Component, PropTypes } from 'react';
-import { Button } from 'react-bootstrap';
+import { connect } from 'react-redux';
+import { Button, FormControl } from 'react-bootstrap';
+import * as actions from '../actions';
+import PostList from './PostList';
+import {basicAuthFetch, getUUIDFromId} from '../utils';
+
 /*
 * Renders a author profile page
 */
-
-let URL_PREFIX = `http://${  window.location.hostname  }:8000`;
-/*eslint-disable */
-if(process.env.NODE_ENV === 'production') {
-  URL_PREFIX = 'http://' + window.location.hostname;
-}
-function getUUIDFromId(id) {
-  return /author\/([a-zA-Z0-9-]+)\/?$/.exec(id, 'g')[1];
-}
-/*eslint-enable */
 class Profile extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {};
-    this.toggleFriend = this.toggleFriend.bind(this);
+    this.state = {
+      posts: []
+    };
+
+    this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
+    this.handleGithubChange = this.handleGithubChange.bind(this);
+    this.handleSubmitProfile = this.handleSubmitProfile.bind(this);
+    this.filterPosts = this.filterPosts.bind(this);
   }
 
   componentDidMount() {
-    fetch(`${URL_PREFIX}/author/${getUUIDFromId(this.props.currentuser.id)}/`, {
-      method: 'GET',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${this.props.currentuser.username  }:${ this.props.currentuser.password}`)}`
-      }
-    })
-    .then(res => {
-      if (!res.ok) {
-        return Promise.reject();
-      }
-      return res;
-    })
-    .then(res => res.json())
-    .then(res => {
-      this.setState({
-        isFriends: res.friends.filter(friend => friend.url === this.props.user.id).length !== 0
-      });
-    })
-    .catch(err => {
-      console.log(err, 'Could not get isfriends');
+    basicAuthFetch('GET', `/author/${getUUIDFromId(this.props.user.id)}/posts/`, this.props.currentuser)
+    .then(posts => {
+      this.setState({posts});
     });
   }
 
-  toggleFriend() {
-    this.props.toggleFollowStatus(this.props.user, this.state.isFriends);
+  handleDisplayNameChange(event) {
+    this.setState({
+      displayName: event.target.value
+    });
+  }
+
+  handleGithubChange(event) {
+    this.setState({
+      github: event.target.value
+    });
+  }
+
+  handleSubmitProfile() {
+    const update = Object.assign({},this.props.user);
+    if(this.state.github) {
+      update.github = this.state.github;
+    }
+    if(this.state.displayName) {
+      update.displayName = this.state.displayName;
+    }
+    this.props.attemptUpdateProfile(update);
+  }
+
+  filterPosts() {
+    const user = this.props.user.id;
+    return this.state.posts.filter(function(post) {
+      return post.author.id === user;
+    });
   }
 
   render() {
-    //TODO fix this
-    const button = () => {
-      if(this.props.user.id === this.props.currentuser.id) {
+    const updateForm = () => {
+      if(this.props.currentuser.id !== this.props.user.id) {
         return <noscript/>;
       }
-      if(this.state.isFriends === true) {
-        return <Button onClick={this.toggleFriend}>Remove Friend</Button>;
-      } else if (this.state.isFriends === false) {
-        return <Button onClick={this.toggleFriend}>Add Friend</Button>;
-      } else {
-        return <noscript/>;
-      }
+
+      return (
+        <div>
+          <FormControl
+            type="text"
+            name="displayname"
+            onChange={this.handleDisplayNameChange}
+            placeholder="DisplayName" />
+          <FormControl
+            type="text"
+            name="displayname"
+            onChange={this.handleGitHubChange}
+            placeholder="GitHubEmail" />
+          <Button
+            onClick={this.handleSubmitProfile}>
+            Submit
+          </Button>
+        </div>
+      );
     };
 
     return (
@@ -70,16 +90,34 @@ class Profile extends Component {
         <h1>{this.props.user.displayName}'s Profile</h1>
         <p>Display Name: {this.props.user.displayName}</p>        
         <p>Id: {this.props.user.id}</p>
-        {button()}
+        {updateForm()}
+        <PostList posts={this.filterPosts()}/>
       </div>
     );
   }
 }
 
 Profile.propTypes = {
+  attemptUpdateProfile: PropTypes.func.isRequired,
   currentuser: PropTypes.object.isRequired,
-  toggleFollowStatus: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
 
-export default Profile;
+export default connect(
+  function(stateProps, ownProps) {
+    return {
+      currentuser: stateProps.app.user,
+      user: stateProps.app.viewUser
+    };
+  },
+  null,
+  function(stateProps, dispatchProps, ownProps) {
+    const {dispatch} = dispatchProps;
+    
+    return {
+      ...stateProps,
+      attemptUpdateProfile: function(update) {
+        dispatch(actions.attemptUpdateProfile(update));
+      }
+    };
+  })(Profile);

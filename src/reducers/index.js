@@ -61,37 +61,6 @@ export function posts(state=[], action) {
 }
 
 /**
- * Users Reducer
- * @param [] state 
- * @param {} action 
- */
-export function users(state=[], action){
-  switch (action.type) {
-    /**
-     * Load Users to state
-     * @param [] state 
-     * @param { type: Enum, users: List } action
-     */
-  case types.LOADED_USERS:
-    return [
-      ...action.users
-    ];
-  case types.TOGGLE_FOLLOWER:
-    return state.map(user => {
-      if (user.id === action.otherUser.id) {
-        return {
-          ...user,
-          isFollowing: !user.isFollowing
-        };
-      }
-      return user;
-    });
-  default:
-    return state;
-  }
-}
-
-/**
  * App Reducer
  * @param [] state 
  * @param {} action 
@@ -110,6 +79,16 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
       user: action.user
     };
     /**
+   * Log Out, add  { loggedIn: true } to state [ app : {} ]
+   * @param [] state 
+   * @param { type: Enum} action
+   */
+  case types.LOGGED_OUT:
+    return {
+      ...state,
+      loggedIn: false
+    };
+    /**
      * Log In Failure, add { loggedInFail: true} { loggedIn: false } to state [ app : {} ]
      * @param [] state 
      * @param { type: Enum, user: Object } action
@@ -122,10 +101,28 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
       user: action.user
     };
     /**
+     * Update User
+     * @param [] state 
+     * @param { type: Enum, user: Object } action
+     */
+  case types.UPDATE_USER:
+    return {
+      ...state,
+      user: {...state.user,
+        ...action.user},
+      viewUser: action.user
+    };
+  /**
      * Switch Tabs, sets the active tab in state [ app : {} ]
      * @param [] state 
      * @param { type: Enum, tab: Object } action
      */
+  case types.SWITCH_TABS:
+    return {
+      ...state,
+      activeTab: action.tab,
+      viewUser: action.user ? action.user : state.user
+    };
   default:
     return state;
   }
@@ -134,4 +131,4 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
 /**
  * Combine reducers to a a single reducer
  */
-export default combineReducers({posts, users, app});
+export default combineReducers({posts, app});

@@ -27,8 +27,8 @@ from rest_framework.settings import api_settings
 class PostsPagination(PageNumberPagination):
     page_size_query_param = 'size'
 
-    def get_paginated_response(self, data):
-        page_size = self.request.query_params.get('size', api_settings.PAGE_SIZE)
+    def get_paginated_response(self, data, request):
+        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
 
         return Response({
             'size': page_size,
@@ -41,8 +41,8 @@ class PostsPagination(PageNumberPagination):
 class CommentsPagination(PageNumberPagination):
     page_size_query_param = 'size'
 
-    def get_paginated_response(self, data):
-        page_size = self.request.query_params.get('size', api_settings.PAGE_SIZE)
+    def get_paginated_response(self, data, request):
+        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
 
         return Response({
             'size': page_size,
@@ -51,42 +51,3 @@ class CommentsPagination(PageNumberPagination):
             'previous': self.get_previous_link(),
             'comments': data
         })
-
-class PaginationMixin(object):
-    # Written by http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg), (CC-BY-SA 3.0)
-    @property
-    def paginator(self):
-        """
-        The paginator instance associated with the view, or `None`.
-        """
-        if not hasattr(self, '_paginator'):
-            if self.pagination_class is None:
-                self._paginator = None
-            else:
-                self._paginator = self.pagination_class()
-        return self._paginator
-    
-    # Written by http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg), (CC-BY-SA 3.0)
-    def paginate_queryset(self, queryset):
-        """
-        Return a single page of results, or `None` if pagination is disabled.
-        """
-        if self.paginator is None:
-            return None
-        return self.paginator.paginate_queryset(queryset, self.request, view=self)
-    
-    # Written by http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg), (CC-BY-SA 3.0)
-    def get_paginated_response(self, data):
-        """
-        Return a paginated style `Response` object for the given output data.
-        """
-        assert self.paginator is not None
-        return self.paginator.get_paginated_response(data)
-
-    def paginated_response(self, data):
-        page = self.paginate_queryset(data)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        
-        return Response(serializer_class(posts, many=True).data)

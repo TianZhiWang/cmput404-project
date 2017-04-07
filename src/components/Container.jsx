@@ -14,27 +14,11 @@ import * as actions from '../actions';
 class Container extends Component {
   constructor(props) {
     super(props);
-
-    this.state = {
-      activeTab: 'stream'
-    };
-
-    this.switchTabs = this.switchTabs.bind(this);
-  }
-
-  componentDidMount() {
-    this.props.loadAuthors();
-  }
-
-  switchTabs(tab) {
-    this.setState({
-      activeTab: tab
-    });
   }
 
   render() {
     const pickTab = () => {
-      switch(this.state.activeTab) {
+      switch(this.props.activeTab) {
       case 'stream':
         return (
           <div>
@@ -54,8 +38,9 @@ class Container extends Component {
         <Row>
             <Col md={3}>
             <Sidebar
-                activeTab={this.state.activeTab}
-                switchTabs={this.switchTabs} />
+                activeTab={this.props.activeTab}
+                switchTabs={this.props.switchTabs}
+                logout={this.props.logout} />
             </Col>
             <Col md={9}>{pickTab()}</Col>
         </Row>
@@ -66,23 +51,33 @@ class Container extends Component {
 }
 
 Container.propTypes = {
-  loadAuthors: PropTypes.func.isRequired
+  activeTab: PropTypes.string.isRequired,
+  logout: PropTypes.func.isRequired,
+  switchTabs: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired
 };
 
 export default connect(
   function(stateProps, ownProps) {
     return {
       user: stateProps.app.user,
+      activeTab: stateProps.app.activeTab
     };
   },
   null,
   function(stateProps, dispatchProps, ownProps) {
     const {user} = stateProps;
+    const {activeTab} = stateProps;
     const {dispatch} = dispatchProps;
 
     return {
-      loadAuthors: function() {
-        dispatch(actions.getUsers(user));
+      activeTab: activeTab,
+      user: user,
+      switchTabs: function(tab) {
+        dispatch(actions.switchTabs(tab));
+      },
+      logout: function() {
+        dispatch(actions.logout());
       }
     };
   })(Container);
