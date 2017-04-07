@@ -40,6 +40,8 @@ import json
 from urlparse import urlparse
 import uuid
 from copy import copy
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.settings import api_settings
 
 def get_author_id_from_url_string(string):
     if 'http' not in string:
@@ -117,7 +119,34 @@ def validate_and_transform_author(author):
     new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
 
-class PostList(APIView, PaginationMixin):
+class PostsPagination(PageNumberPagination):
+    page_size_query_param = 'size'
+
+    def get_paginated_response(self, data, request):
+        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
+
+        return Response({
+            'size': page_size,
+            'count': self.page.paginator.count,            
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'posts': data
+        })
+
+def handle_posts_to_remote_node(queryset, request):
+    """
+    Takes in the queryset for remote node with any customization
+    and filters out server_only posts and paginates the response
+    """
+    # TODO: Add filtering of images and posts here
+    queryset = queryset.exclude(visibility='SERVERONLY')
+    paginator = PostsPagination()
+    page = paginator.paginate_queryset(queryset, request)
+    if page is not None:
+        serializer = PostSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data, request)
+
+class PostList(APIView):
     """
     List all Public posts, or create a new post.
 
@@ -127,13 +156,9 @@ class PostList(APIView, PaginationMixin):
     post: 
     create a new instance of post
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
     
     def get(self, request, format=None):
-        publicPosts = Post.objects.filter(visibility="PUBLIC")
-
-        return self.paginated_response(publicPosts)
+        return handle_posts_to_remote_node(Post.objects.all(), request)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
