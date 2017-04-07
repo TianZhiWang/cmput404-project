@@ -133,6 +133,20 @@ class PostsPagination(PageNumberPagination):
             'posts': data
         })
 
+class CommentsPagination(PageNumberPagination):
+    page_size_query_param = 'size'
+
+    def get_paginated_response(self, data, request):
+        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
+
+        return Response({
+            'size': page_size,
+            'count': self.page.paginator.count,            
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'comments': data
+        })
+
 def handle_posts_to_remote_node(queryset, request):
     """
     Takes in the queryset for remote node with any customization
@@ -188,7 +202,7 @@ class PostDetail(APIView):
 
 
 
-class CommentList(APIView, PaginationMixin):
+class CommentList(APIView):
     """
     List all comments of a post, or create a new comment.
 
@@ -198,12 +212,15 @@ class CommentList(APIView, PaginationMixin):
     post: 
     create a new instance of comment
     """
-    pagination_class = CommentsPagination
-    serializer_class = CommentSerializer
+    def paginated_response(self, comments):
+        paginator = CommentsPagination()
+        page = paginator.paginate_queryset(comments, self.request)
+        if page is not None:
+            serializer = CommentSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data, self.request)
 
     def get(self, request, post_id, format=None):
         comments = Comment.objects.filter(post=post_id)
-        
         return self.paginated_response(comments)
 
     def post(self, request, post_id, format=None):
