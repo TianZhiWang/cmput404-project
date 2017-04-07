@@ -496,11 +496,38 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
             posts = Post.objects.filter(author__id=author_id)
 
         else:
-            posts = Post.objects.filter(author__id=author_id)
-            # If authenticated user is self should return all posts by user
-            is_friend = is_friends(author_id, request.user.author.id)
-            if (not (is_friend) or author_id == request.user.author.id):
-                posts = posts.exclude(visibility="FRIENDS")
+            author = Author.objects.get(pk=author_id)
+            # Local author
+            if author.user:
+                print("local author")
+                posts = Post.objects.filter(author__id=author_id)
+                # If authenticated user is self should return all posts by user
+                is_friend = is_friends(author_id, request.user.author.id)
+                if not (is_friend or author_id == request.user.author.id):
+                    posts = posts.exclude(visibility="FRIENDS")
+            # Remote author
+            else:
+                print("remote author")
+                node = Node.objects.get(url=author.host)
+                url = author.host + 'author/' + author_id + '/posts/'
+                friends = [friend.url for friend in get_friends_of_authorPK(author.id)]
+                try:
+                    req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+                    req.raise_for_status()
+                    posts = req.json()['posts']
+                    serializedPosts = []
+                    for post in posts:
+                        if post['visibility'] == 'PUBLIC':
+                            serializedPosts.append(post)
+                        elif post['visibility'] == 'FRIENDS' and (post['author']['id'] in friends):
+                            serializedPosts.append(post)
+                        elif author.url in post['visibleTo']:
+                            serializedPosts.append(post)
+
+                    return Response(posts)
+                except Exception as e:
+                    print(str(e))
+                    return Response({'Error': 'Could not fetch foreign author posts', 'message': str(e), 'success': False}, status=400)
 
         return self.paginated_response(posts)
 
