@@ -491,13 +491,11 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
             posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
-        
-        elif (author_id == request.user.author.id):
-            posts = Post.objects.filter(author__id=author_id)
-
+            return self.paginated_response(posts)
         else:
             author = Author.objects.get(pk=author_id)
             # Local author
+            print(author.user)
             if author.user:
                 print("local author")
                 posts = Post.objects.filter(author__id=author_id)
@@ -505,9 +503,11 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
                 is_friend = is_friends(author_id, request.user.author.id)
                 if not (is_friend or author_id == request.user.author.id):
                     posts = posts.exclude(visibility="FRIENDS")
+                return Response(PostSerializer(posts, many=True).data)
             # Remote author
             else:
                 print("remote author")
+                print("author.host = ", author.host)
                 node = Node.objects.get(url=author.host)
                 url = author.host + 'author/' + author_id + '/posts/'
                 friends = [friend.url for friend in get_friends_of_authorPK(author.id)]
@@ -524,12 +524,10 @@ class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
                         elif author.url in post['visibleTo']:
                             serializedPosts.append(post)
 
-                    return Response(posts)
+                    return Response(serializedPosts)
                 except Exception as e:
                     print(str(e))
                     return Response({'Error': 'Could not fetch foreign author posts', 'message': str(e), 'success': False}, status=400)
-
-        return self.paginated_response(posts)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
