@@ -31,7 +31,7 @@ from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from pagination import PostsPagination, PaginationMixin, CommentsPagination
+from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
 import re
 import requests
@@ -40,8 +40,6 @@ import json
 from urlparse import urlparse
 import uuid
 from copy import copy
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.settings import api_settings
 
 def get_author_id_from_url_string(string):
     if 'http' not in string:
@@ -118,34 +116,6 @@ def validate_and_transform_author(author):
     new_author['url'] = append_trailing_slash(new_author['url'])
     new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
-
-class PostsPagination(PageNumberPagination):
-    page_size_query_param = 'size'
-
-    def get_paginated_response(self, data, request):
-        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
-
-        return Response({
-            'size': page_size,
-            'count': self.page.paginator.count,            
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'posts': data
-        })
-
-class CommentsPagination(PageNumberPagination):
-    page_size_query_param = 'size'
-
-    def get_paginated_response(self, data, request):
-        page_size = request.query_params.get('size', api_settings.PAGE_SIZE)
-
-        return Response({
-            'size': page_size,
-            'count': self.page.paginator.count,            
-            'next': self.get_next_link(),
-            'previous': self.get_previous_link(),
-            'comments': data
-        })
 
 def handle_posts_to_remote_node(queryset, request):
     """
