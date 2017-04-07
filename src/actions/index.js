@@ -96,6 +96,13 @@ export function loadPosts(user) {
   };
 }
 
+export function login(user) {
+  return {
+    type: types.LOGGED_IN,
+    user
+  };
+}
+
 /*
 * Attempts to log into the web service using the username and password, will return an action that specifies it failed or suceeded
 */
@@ -115,6 +122,11 @@ export function attempLogin(username, password) {
     })
       .then(res => res.json())
       .then(res => {
+        sessionStorage.setItem('user', JSON.stringify({
+          ...res,
+          username,
+          password
+        }));
         dispatch({
           type: types.LOGGED_IN,
           user: {
@@ -187,21 +199,6 @@ export function attemptUpdateProfile(user) {
     })
     .catch(err => {
       //TODO Something on fail
-    });
-  };
-}
-
-/*
-* Gets all of the current users, friends, and following and joins them into one with an isFriend and isFollowing
-*/
-export function getUsers(user) {
-  return function(dispatch) {
-    basicAuthFetch('GET', '/authors/', user)
-    .then(users => {
-      return dispatch({
-        type: types.LOADED_USERS,
-        users
-      });
     });
   };
 }

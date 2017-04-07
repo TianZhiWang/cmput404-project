@@ -31,7 +31,7 @@ from rest_framework import serializers
 from rest_framework.permissions import AllowAny
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from pagination import PostsPagination, PaginationMixin, CommentsPagination
+from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
 import re
 import requests
@@ -50,29 +50,46 @@ def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values_list('follows', flat=True) # everyone currentUser follows
     authors = Author.objects.filter(pk__in=following)
 
-    friends = []
+    nodes = {}
     for author in authors:
+        if not author.host in nodes:
+            nodes[author.host] = []
+        nodes[author.host].append(author.url)
+    
+    friends = []
+    user = Author.objects.get(pk=authorPK)
+    for host, follows in nodes.items():
         try:
-            url = author.host + 'author/' + author.id + '/friends/' + str(authorPK)
-            node = Node.objects.get(url=author.host)
-            req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+            url = host + 'author/' + author.id + '/friends/'
+            node = Node.objects.get(url=host)
+            req = requests.post(
+                url,
+                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
+                data=json.dumps({
+                    'query': 'friends',
+                    'author': user.url,
+                    'authors': follows
+                    }),
+                headers={'Content-Type': 'application/json'}
+            )
             req.raise_for_status()
 
-            if (req.json()['friends']):
-                friends.append(author)
+            authors = req.json()['authors']
+            if authors:
+                friends += authors
 
         except Node.DoesNotExist as e:
             # Get everyone following the current user, check if the author in this
             followed_by = FollowingRelationship.objects.filter(follows=authorPK).values_list('user', flat=True)
-            followed_by = Author.objects.filter(pk__in=followed_by)
-            if author in followed_by:
-                friends.append(author)
+            followed_by = Author.objects.filter(pk__in=followed_by).values_list('url', flat=True)
+            friends += list(set(follows).intersection(set(followed_by)))
 
         except Exception as e:
             print("Error in trying to get friends")
             print(str(e))
 
-    return friends
+    friend_objs = Author.objects.filter(url__in=friends)
+    return friend_objs
 
 def get_friend_ids_of_author(authorPK):
     return [author.id for author in get_friends_of_authorPK(authorPK)]
@@ -100,7 +117,22 @@ def validate_and_transform_author(author):
     new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
 
-class PostList(APIView, PaginationMixin):
+def handle_posts_to_remote_node(queryset, request):
+    """
+    Takes in the queryset for remote node with any customization
+    and filters out server_only posts and paginates the response
+
+    Input: queryset, request
+    """
+    # TODO: Add filtering of images and posts here, will need to pass the Node to filter
+    queryset = queryset.exclude(visibility='SERVERONLY')
+    paginator = PostsPagination()
+    page = paginator.paginate_queryset(queryset, request)
+    if page is not None:
+        serializer = PostSerializer(page, many=True)
+        return paginator.get_paginated_response(serializer.data, request)
+
+class PostList(APIView):
     """
     List all Public posts, or create a new post.
 
@@ -110,13 +142,9 @@ class PostList(APIView, PaginationMixin):
     post: 
     create a new instance of post
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
     
     def get(self, request, format=None):
-        publicPosts = Post.objects.filter(visibility="PUBLIC")
-
-        return self.paginated_response(publicPosts)
+        return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
@@ -144,7 +172,7 @@ class PostDetail(APIView):
 
 
 
-class CommentList(APIView, PaginationMixin):
+class CommentList(APIView):
     """
     List all comments of a post, or create a new comment.
 
@@ -154,12 +182,15 @@ class CommentList(APIView, PaginationMixin):
     post: 
     create a new instance of comment
     """
-    pagination_class = CommentsPagination
-    serializer_class = CommentSerializer
+    def paginated_response(self, comments):
+        paginator = CommentsPagination()
+        page = paginator.paginate_queryset(comments, self.request)
+        if page is not None:
+            serializer = CommentSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data, self.request)
 
     def get(self, request, post_id, format=None):
         comments = Comment.objects.filter(post=post_id)
-        
         return self.paginated_response(comments)
 
     def post(self, request, post_id, format=None):
@@ -172,10 +203,9 @@ class CommentList(APIView, PaginationMixin):
             serializer = CreateAuthorSerializer(data=author_data)
             if serializer.is_valid():
                 author = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
+                comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
             else:
                 return Response({'Error': 'Could not add comment, bad author data', 'Message': serializer.errors}, status=400)
-
-            comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
         # It is one of there posts
         else:
             # Get the host associated with this post
@@ -392,24 +422,16 @@ class FriendRequestList(APIView):
         else:
             return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data, request)
 
-class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
+class AllPostsAvailableToCurrentUser(APIView):
     """
     Returns a list of all posts that is visiable to current author
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-
-
         # Request originating from remote node
         if is_request_from_remote_node(request):
-            node = Node.objects.get(user=request.user)
-            # Return everything not serverOnly
-            posts = Post.objects.exclude(visibility="SERVERONLY")
-
-            return self.paginated_response(posts)
+            return handle_posts_to_remote_node(Post.objects.all(), request)
 
         # Request originating from an author
         else:
@@ -462,30 +484,51 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
 
         return Post.objects.filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
-class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
+class PostsByAuthorAvailableToCurrentUser(APIView):
     """
         This should return all posts made by 'author_id' that are visible to the requesting User
         If Remote Node asking, return all Post objects made by that user that are not 'SERVERONLY'
         If we are requesting, need to do filtering based off of friend relationships
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
-
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
-            posts = Post.objects.filter(author__id=author_id).exclude(visibility="SERVERONLY")
-        
-        elif (author_id == request.user.author.id):
-            posts = Post.objects.filter(author__id=author_id)
-
+            return handle_posts_to_remote_node(Post.objects.filter(author__id=author_id), request)
         else:
-            posts = Post.objects.filter(author__id=author_id)
-            # If authenticated user is self should return all posts by user
-            is_friend = is_friends(author_id, request.user.author.id)
-            if (not (is_friend) or author_id == request.user.author.id):
-                posts = posts.exclude(visibility="FRIENDS")
+            author = Author.objects.get(pk=author_id)
+            # Local author
+            print(author.user)
+            if author.user:
+                print("local author")
+                posts = Post.objects.filter(author__id=author_id)
+                # If authenticated user is self should return all posts by user
+                is_friend = is_friends(author_id, request.user.author.id)
+                if not (is_friend or author_id == request.user.author.id):
+                    posts = posts.exclude(visibility="FRIENDS")
+                return Response(PostSerializer(posts, many=True).data)
+            # Remote author
+            else:
+                print("remote author")
+                print("author.host = ", author.host)
+                node = Node.objects.get(url=author.host)
+                url = author.host + 'author/' + author_id + '/posts/'
+                friends = [friend.url for friend in get_friends_of_authorPK(author.id)]
+                try:
+                    req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+                    req.raise_for_status()
+                    posts = req.json()['posts']
+                    serializedPosts = []
+                    for post in posts:
+                        if post['visibility'] == 'PUBLIC':
+                            serializedPosts.append(post)
+                        elif post['visibility'] == 'FRIENDS' and (post['author']['id'] in friends):
+                            serializedPosts.append(post)
+                        elif author.url in post['visibleTo']:
+                            serializedPosts.append(post)
 
-        return self.paginated_response(posts)
+                    return Response(serializedPosts)
+                except Exception as e:
+                    print(str(e))
+                    return Response({'Error': 'Could not fetch foreign author posts', 'message': str(e), 'success': False}, status=400)
 
 # https://richardtier.com/2014/02/25/django-rest-framework-user-endpoint/ (Richard Tier), No code but put in readme
 class LoginView(APIView):
