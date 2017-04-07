@@ -426,6 +426,18 @@ class FriendRequestList(APIView):
         else:
             return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data, request)
 
+class CancelFriendRequest(APIView):
+    
+    def delete(self, request, author_id1, author_id2, format=None):
+        try:
+            FriendRequest.objects.get(requester__id=author_id1, requestee__id=author_id2).delete()
+        except Exception as e:
+            return Response({'Error': str(e)}, status=400)
+
+        return Response(status=200)
+
+
+
 class AllPostsAvailableToCurrentUser(APIView):
     """
     Returns a list of all posts that is visiable to current author
