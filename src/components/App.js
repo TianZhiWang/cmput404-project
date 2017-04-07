@@ -13,13 +13,21 @@ class App extends Component {
     super(props);
   }
 
+  componentDidMount() {
+    const user = sessionStorage.getItem('user');
+    if (user) {
+      this.props.login(JSON.parse(user));
+    }
+  }
+
   render() {
     return this.props.loggedIn ? <Container/> : <UserAccount/>;
   }
 }
 
 App.propTypes = {
-  loggedIn: PropTypes.bool.isRequired
+  loggedIn: PropTypes.bool.isRequired,
+  login: PropTypes.func.isRequired
 };
 
 /*
@@ -31,4 +39,11 @@ export default connect(
       loggedIn: stateProps.app.loggedIn
     };
   },
-  null)(App);
+  function(dispatch) {
+    return {
+      login: function(user) {
+        dispatch(actions.login(user));
+      }
+    };
+  }
+  )(App);
