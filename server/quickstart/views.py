@@ -144,7 +144,7 @@ class PostList(APIView):
     """
     
     def get(self, request, format=None):
-        return handle_posts_to_remote_node(Post.objects.all(), request)
+        return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
