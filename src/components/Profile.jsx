@@ -13,7 +13,11 @@ class Profile extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      posts: []
+      posts: [],
+      github:"123",
+      displayName:""
+
+  
     };
 
     this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
@@ -43,6 +47,7 @@ class Profile extends Component {
 
   handleSubmitProfile() {
     const update = Object.assign({},this.props.user);
+
     if(this.state.github) {
       update.github = this.state.github;
     }
@@ -74,8 +79,8 @@ class Profile extends Component {
             placeholder="DisplayName" />
           <FormControl
             type="text"
-            name="displayname"
-            onChange={this.handleGitHubChange}
+            name="github"
+            onChange={this.handleGithubChange}
             placeholder="GitHubEmail" />
           <Button
             onClick={this.handleSubmitProfile}>

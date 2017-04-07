@@ -182,6 +182,7 @@ function updateUser(user) {
 
 export function attemptUpdateProfile(user) {
   return function(dispatch) {
+    console.log(user)
     return fetch(user.url, {
       method: 'PUT',
       headers: {
@@ -198,7 +199,7 @@ export function attemptUpdateProfile(user) {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
+      // console.log(res);
       dispatch(updateUser({
         ...res,
       }));
