@@ -39,7 +39,8 @@ class Container extends Component {
             <Col md={3}>
             <Sidebar
                 activeTab={this.props.activeTab}
-                switchTabs={this.props.switchTabs} />
+                switchTabs={this.props.switchTabs}
+                logout={this.props.logout} />
             </Col>
             <Col md={9}>{pickTab()}</Col>
         </Row>
@@ -51,6 +52,7 @@ class Container extends Component {
 
 Container.propTypes = {
   activeTab: PropTypes.string.isRequired,
+  logout: PropTypes.func.isRequired,
   switchTabs: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
@@ -74,5 +76,8 @@ export default connect(
       switchTabs: function(tab) {
         dispatch(actions.switchTabs(tab));
       },
+      logout: function() {
+        dispatch(actions.logout());
+      }
     };
   })(Container);
