@@ -198,7 +198,6 @@ export function attemptUpdateProfile(user) {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
       dispatch(updateUser({
         ...res,
       }));
@@ -206,49 +205,6 @@ export function attemptUpdateProfile(user) {
     .catch(err => {
       //TODO Something on fail
     });
-  };
-}
-
-function followUser(currentUser, otherUser) {
-  return basicAuthFetch('POST', '/friendrequest/', currentUser, {
-    query: 'friendrequest',
-    author: {
-      id: currentUser.id,
-      host: currentUser.host,
-      url: currentUser.url,
-      displayName: currentUser.displayName
-    },
-    friend: {
-      id: otherUser.id,
-      host: otherUser.host,
-      url: otherUser.url,
-      displayName: otherUser.displayName
-    }
-  });
-}
-
-function unfollowUser(currentUser, otherUser) {
-  return basicAuthFetch('DELETE', `/author/${getUUIDFromId(currentUser.id)}/friends/${getUUIDFromId(otherUser.id)}/`, currentUser, {
-    query: 'friendrequest',
-    author: {
-      id: currentUser.id,
-      host: currentUser.host,
-      url: currentUser.url,
-      displayName: currentUser.displayName
-    },
-    friend: {
-      id: otherUser.id,
-      host: otherUser.host,
-      url: otherUser.url,
-      displayName: otherUser.displayName
-    }
-  });
-}
-
-export function toggleFollowStatus(currentUser, otherUser, isFriend) {
-  return function(dispatch) {
-    const toggleFollow = isFriend ? unfollowUser : followUser;
-    return toggleFollow(currentUser, otherUser);
   };
 }
 

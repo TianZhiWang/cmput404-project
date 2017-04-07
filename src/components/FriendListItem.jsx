@@ -9,27 +9,38 @@ class FriendListItem extends Component {
   constructor(props) {
     super(props);
 
-    this.handleFollowStatusChange = this.handleFollowStatusChange.bind(this);
+    this.handleOk = this.handleOk.bind(this);
+    this.handleRemove = this.handleRemove.bind(this);
   }
 
-  handleFollowStatusChange() {
-    this.props.toggleFollowStatus(this.props.user);
+  handleOk() {
+    if (this.props.handleOk) {
+      this.props.handleOk(this.props.user);
+    }
   }
 
-  createGlyphiconButton(glyph) {
-    return (
-      <Button onClick={this.handleFollowStatusChange}>
-        <Glyphicon glyph={glyph}/>
-      </Button>
-    );
+  handleRemove() {
+    if (this.props.handleRemove) {
+      this.props.handleRemove(this.props.user);
+    }
   }
+
   render() {
     return (
-      <ListGroupItem className='friend-list-item'>
+      <ListGroupItem
+        className='friend-list-item'>
           <span>{this.props.user.displayName}</span>
           <span className="friend-list-button-group">
-            {(!this.props.user.isFollowing) && this.createGlyphiconButton('ok')}
-            {this.props.user.isFollowing && this.createGlyphiconButton('remove')}
+            {this.props.handleOk && (
+              <Button onClick={this.handleOk}>
+                <Glyphicon glyph={'ok'}/>
+              </Button>
+            )}
+            {this.props.handleRemove && (
+              <Button onClick={this.handleRemove}>
+                <Glyphicon glyph={'remove'}/>
+              </Button>
+            )}
           </span>
       </ListGroupItem>
     );
@@ -37,7 +48,8 @@ class FriendListItem extends Component {
 }
 
 FriendListItem.propTypes = {
-  toggleFollowStatus: PropTypes.func.isRequired,
+  handleOk: PropTypes.func,
+  handleRemove: PropTypes.func,
   user: PropTypes.object.isRequired
 };
 
