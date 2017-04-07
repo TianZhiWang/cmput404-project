@@ -137,8 +137,10 @@ def handle_posts_to_remote_node(queryset, request):
     """
     Takes in the queryset for remote node with any customization
     and filters out server_only posts and paginates the response
+
+    Input: queryset, request
     """
-    # TODO: Add filtering of images and posts here
+    # TODO: Add filtering of images and posts here, will need to pass the Node to filter
     queryset = queryset.exclude(visibility='SERVERONLY')
     paginator = PostsPagination()
     page = paginator.paginate_queryset(queryset, request)
@@ -434,24 +436,16 @@ class FriendRequestList(APIView):
         else:
             return self._handle_friend_request_from_local_other_author_remote(author_data, friend_data, request)
 
-class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
+class AllPostsAvailableToCurrentUser(APIView):
     """
     Returns a list of all posts that is visiable to current author
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
     
     # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
-
-
         # Request originating from remote node
         if is_request_from_remote_node(request):
-            node = Node.objects.get(user=request.user)
-            # Return everything not serverOnly
-            posts = Post.objects.exclude(visibility="SERVERONLY")
-
-            return self.paginated_response(posts)
+            return handle_posts_to_remote_node(Post.objects.all(), request)
 
         # Request originating from an author
         else:
@@ -504,19 +498,15 @@ class AllPostsAvailableToCurrentUser(APIView,PaginationMixin):
 
         return Post.objects.filter(author__in=friendsOfCurrentUser).filter(visibility="FRIENDS")
 
-class PostsByAuthorAvailableToCurrentUser(APIView, PaginationMixin):
+class PostsByAuthorAvailableToCurrentUser(APIView):
     """
         This should return all posts made by 'author_id' that are visible to the requesting User
         If Remote Node asking, return all Post objects made by that user that are not 'SERVERONLY'
         If we are requesting, need to do filtering based off of friend relationships
     """
-    pagination_class = PostsPagination
-    serializer_class = PostSerializer
-
     def get(self, request, author_id, format=None):
         if is_request_from_remote_node(request):
-            posts = Post.objects.filter(author__id=author_id).exclude("SERVERONLY")
-            return self.paginated_response(posts)
+            return handle_posts_to_remote_node(Post.objects.filter(author__id=author_id), request)
         else:
             author = Author.objects.get(pk=author_id)
             # Local author
