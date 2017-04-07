@@ -1,9 +1,9 @@
 import React, {Component, PropTypes} from 'react';
-import FriendListItem from './FriendListItem';
 import {ListGroup, ListGroupItem, Button, Glyphicon} from 'react-bootstrap';
 import {connect} from 'react-redux';
 import * as actions from '../actions';
 import {getUUIDFromId, basicAuthFetch} from '../utils';
+import FriendList from './FriendList';
 
 /*
 * Renders a list of friends in three sections: Friends, Following, and Everyone Else
@@ -18,6 +18,10 @@ class FriendPage extends Component {
       authors: [],
       loading: true
     };
+
+    this.followUser = this.followUser.bind(this);
+    this.unfollowUser = this.unfollowUser.bind(this);
+    this.deleteFriendRequest = this.deleteFriendRequest.bind(this);
   }
   componentDidMount() {
     this.getFriendsAndFriendRequests();
@@ -54,25 +58,55 @@ class FriendPage extends Component {
     return everyoneElse;
   }
 
-  createUserList(className, users, onClick, glyph) {
-    return (
-      <ListGroup className={className}>
-          {users.map(user => {
-            const handleClick = () => {
-              onClick(user)
-              .then(() => this.getFriendsAndFriendRequests());
-            };
-            return (
-              <ListGroupItem key={user.id}>
-                {user.displayName}
-                <Button onClick={handleClick}>
-                  <Glyphicon glyph={glyph}/>
-                </Button>
-              </ListGroupItem>
-            );
-          })}
-        </ListGroup>
-    );
+  followUser(otherUser) {
+    const currentUser = this.props.user;
+    basicAuthFetch('POST', '/friendrequest/', currentUser, {
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      },
+      friend: {
+        id: otherUser.id,
+        host: otherUser.host,
+        url: otherUser.url,
+        displayName: otherUser.displayName
+      }
+    })
+    .then(() => {
+      this.getFriendsAndFriendRequests();
+    });
+  }
+
+  unfollowUser(otherUser) {
+    const currentUser = this.props.user;
+    basicAuthFetch('DELETE', `/author/${getUUIDFromId(currentUser.id)}/friends/${getUUIDFromId(otherUser.id)}/`, currentUser, {
+      query: 'friendrequest',
+      author: {
+        id: currentUser.id,
+        host: currentUser.host,
+        url: currentUser.url,
+        displayName: currentUser.displayName
+      },
+      friend: {
+        id: otherUser.id,
+        host: otherUser.host,
+        url: otherUser.url,
+        displayName: otherUser.displayName
+      }
+    })
+    .then(() => {
+      this.getFriendsAndFriendRequests();
+    });
+  }
+
+  deleteFriendRequest(otherUser) {
+    basicAuthFetch('DELETE', `/friendrequest/${getUUIDFromId(otherUser.id)}/cancelRequest/${getUUIDFromId(this.props.user.id)}/`, this.props.user)
+    .then(() => {
+      this.getFriendsAndFriendRequests();
+    });
   }
 
   render() {
@@ -82,19 +116,27 @@ class FriendPage extends Component {
     return (
       <div className='friend-page'>
         <h2>Friend Requests</h2>
-        {this.createUserList('request-list', this.state.friendRequests, this.props.followUser, 'ok')}
+        <FriendList
+          handleRemove={this.deleteFriendRequest}
+          handleOk={this.followUser}
+          users={this.state.friendRequests}
+        />
         <h2>Friends</h2>
-        {this.createUserList('friend-list', this.state.friends, this.props.unfollowUser, 'remove')}
+        <FriendList
+          handleRemove={this.unfollowUser}
+          users={this.state.friends}
+        />
         <h2>Authors</h2>
-        {this.createUserList('author-list', this.getEveryoneElse(), this.props.followUser, 'ok')}
+        <FriendList
+          handleOk={this.followUser}
+          users={this.getEveryoneElse()}
+        />
       </div>
     );
   }
 }
 
 FriendPage.propTypes = {
-  followUser: PropTypes.func.isRequired,
-  unfollowUser: PropTypes.func.isRequired,
   user: PropTypes.object.isRequired
 };
 
@@ -103,19 +145,5 @@ export default connect(
     return {
       user: stateProps.app.user
     };
-  },
-  null,
-  function(stateProps, dispatchProps, ownProps) {
-    const {user} = stateProps;
-    const {dispatch} = dispatchProps;
-
-    return {
-      user: user,
-      followUser: function(otherUser) {
-        return dispatch(actions.toggleFollowStatus(user, otherUser, false));
-      },
-      unfollowUser: function(otherUser) {
-        return dispatch(actions.toggleFollowStatus(user, otherUser, true));
-      }
-    };
-  })(FriendPage);
+  }
+  )(FriendPage);
