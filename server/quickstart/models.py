@@ -121,6 +121,8 @@ class Node(models.Model):
     user = models.OneToOneField(User)
     username = models.CharField(max_length=140)
     password = models.CharField(max_length=140)
+    canSeeImages = models.BooleanField(default=True)
+    canSeePosts = models.BooleanField(default=True)
 
     def __unicode__(self):
         return str(self.url)
