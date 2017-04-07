@@ -50,29 +50,46 @@ def get_friends_of_authorPK(authorPK):
     following = FollowingRelationship.objects.filter(user=authorPK).values_list('follows', flat=True) # everyone currentUser follows
     authors = Author.objects.filter(pk__in=following)
 
-    friends = []
+    nodes = {}
     for author in authors:
+        if not author.host in nodes:
+            nodes[author.host] = []
+        nodes[author.host].append(author.url)
+    
+    friends = []
+    user = Author.objects.get(pk=authorPK)
+    for host, follows in nodes.items():
         try:
-            url = author.host + 'author/' + author.id + '/friends/' + str(authorPK)
-            node = Node.objects.get(url=author.host)
-            req = requests.get(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password))
+            url = host + 'author/' + author.id + '/friends/'
+            node = Node.objects.get(url=host)
+            req = requests.post(
+                url,
+                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
+                data=json.dumps({
+                    'query': 'friends',
+                    'author': user.url,
+                    'authors': follows
+                    }),
+                headers={'Content-Type': 'application/json'}
+            )
             req.raise_for_status()
 
-            if (req.json()['friends']):
-                friends.append(author)
+            authors = req.json()['authors']
+            if authors:
+                friends += authors
 
         except Node.DoesNotExist as e:
             # Get everyone following the current user, check if the author in this
             followed_by = FollowingRelationship.objects.filter(follows=authorPK).values_list('user', flat=True)
-            followed_by = Author.objects.filter(pk__in=followed_by)
-            if author in followed_by:
-                friends.append(author)
+            followed_by = Author.objects.filter(pk__in=followed_by).values_list('url', flat=True)
+            friends += list(set(follows).intersection(set(followed_by)))
 
         except Exception as e:
             print("Error in trying to get friends")
             print(str(e))
 
-    return friends
+    friend_objs = Author.objects.filter(url__in=friends)
+    return friend_objs
 
 def get_friend_ids_of_author(authorPK):
     return [author.id for author in get_friends_of_authorPK(authorPK)]
