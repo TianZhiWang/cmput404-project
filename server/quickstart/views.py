@@ -33,6 +33,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
+from .permissions import IsOwnerOrReadOnly
 import re
 import requests
 from django.urls import reverse
@@ -238,8 +239,11 @@ class AuthorList(APIView):
         return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
 
 class AuthorDetail(APIView):
+    permission_classes = (IsOwnerOrReadOnly,)
+
     def put(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
+        self.check_object_permissions(request, author)
 
         serializer = AuthorSerializer(author, data=request.data)
         if serializer.is_valid():
