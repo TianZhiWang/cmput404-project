@@ -140,7 +140,8 @@ class CreatePost extends Component {
           value={this.state.description}
           placeholder='description?'
           onChange={this.handleDescriptionChange}/>
-        <input 
+        <input
+          accept='image/png,image/jpeg'
           type='file'
           onChange={this.handleImageUpload}
           />
