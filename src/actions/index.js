@@ -103,6 +103,12 @@ export function login(user) {
   };
 }
 
+export function logout() {
+  return {
+    type: types.LOGGED_OUT
+  };
+}
+
 /*
 * Attempts to log into the web service using the username and password, will return an action that specifies it failed or suceeded
 */

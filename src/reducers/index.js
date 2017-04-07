@@ -79,6 +79,16 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
       user: action.user
     };
     /**
+   * Log Out, add  { loggedIn: true } to state [ app : {} ]
+   * @param [] state 
+   * @param { type: Enum} action
+   */
+  case types.LOGGED_OUT:
+    return {
+      ...state,
+      loggedIn: false
+    };
+    /**
      * Log In Failure, add { loggedInFail: true} { loggedIn: false } to state [ app : {} ]
      * @param [] state 
      * @param { type: Enum, user: Object } action
