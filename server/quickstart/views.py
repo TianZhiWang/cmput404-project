@@ -203,10 +203,9 @@ class CommentList(APIView):
             serializer = CreateAuthorSerializer(data=author_data)
             if serializer.is_valid():
                 author = Author.objects.get_or_create(id=serializer.validated_data['id'], defaults=serializer.validated_data)[0]
+                comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
             else:
                 return Response({'Error': 'Could not add comment, bad author data', 'Message': serializer.errors}, status=400)
-
-            comment = Comment.objects.create(comment=commentData['comment'], post=post, author=author)
         # It is one of there posts
         else:
             # Get the host associated with this post
