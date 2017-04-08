@@ -278,7 +278,11 @@ class AuthorDetail(APIView):
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
 
-        friends = get_friend_ids_of_author(author_id)
+        if is_request_from_remote_node(request):
+            friends = FollowingRelationship.objects.filter(user__id=author_id)
+        else:
+            friends = get_friend_ids_of_author(author_id)
+
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
 
