@@ -182,28 +182,11 @@ function updateUser(user) {
 
 export function attemptUpdateProfile(user) {
   return function(dispatch) {
-    return fetch(user.url, {
-      method: 'PUT',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(user),
-    }).then(res => {
-      if (!res.ok) {
-        return Promise.reject(res);
-      }
-      return res;
-    })
-    .then(res => res.json())
+    return basicAuthFetch('PUT', `/author/${getUUIDFromId(user.url)}/`, user, user)
     .then(res => {
       dispatch(updateUser({
         ...res,
       }));
-    })
-    .catch(err => {
-      //TODO Something on fail
     });
   };
 }
