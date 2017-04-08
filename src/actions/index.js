@@ -185,6 +185,7 @@ export function attemptUpdateProfile(user) {
 
   // console.log(userCopy)
   return function(dispatch) {
+    console.log(user)
     return fetch(user.url, {
       method: 'PUT',
       headers: {
