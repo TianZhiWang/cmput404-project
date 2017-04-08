@@ -47,7 +47,26 @@ function basicAuthFetch(method, path, user, body) {
     });
 }
 
+function githubFetch(githubName){
+  return fetch ("https://api.github.com/users/"+githubName+"/events",{ method:'GET'})
+    .then(res => {
+      if (!res.ok) {
+        return Promise.reject(res);
+      }
+      return res;
+    })
+    .then(res => {
+      return res;
+    })
+    .catch(error => {
+      console.error('START ERROR MESSAGE >>>>>>>>>>>>>>');
+      console.error('Error: ', error);
+      console.error('<<<<<<<<<<<<<<<<<< END ERROR MESSAGE');
+    });
+}
+
 export {
   getUUIDFromId,
-  basicAuthFetch
+  basicAuthFetch,
+  githubFetch
 };

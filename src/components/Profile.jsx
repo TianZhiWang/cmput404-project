@@ -74,8 +74,8 @@ class Profile extends Component {
             placeholder="DisplayName" />
           <FormControl
             type="text"
-            name="displayname"
-            onChange={this.handleGitHubChange}
+            name="github"
+            onChange={this.handleGithubChange}
             placeholder="GitHubEmail" />
           <Button
             onClick={this.handleSubmitProfile}>

@@ -2,7 +2,7 @@ import * as types from '../types';
 import uuidv4 from 'uuid/v4';
 
 import {URL_PREFIX} from '../constants';
-import {getUUIDFromId, basicAuthFetch} from '../utils';
+import {getUUIDFromId, basicAuthFetch, githubFetch} from '../utils';
 /*eslint-enable */
 /*
 * Adds a comment, to a post specified by postId
@@ -181,6 +181,9 @@ function updateUser(user) {
 }
 
 export function attemptUpdateProfile(user) {
+
+
+  // console.log(userCopy)
   return function(dispatch) {
     return fetch(user.url, {
       method: 'PUT',
@@ -283,3 +286,21 @@ export function switchTabs(tab, user) {
     tab
   };
 }
+
+export function loadGithub(user) {
+  // console.log(user)
+  user = user.replace('https://github.com/', '');
+  return function(dispatch) {
+    githubFetch(user)
+    .then(res => res.json())
+    .then((res) => {
+      dispatch({
+        type: types.LOAD_GITHUB,
+        githubEvents:res
+      })
+      // console.log(res)
+    })
+  };
+}
+
+
