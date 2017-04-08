@@ -147,9 +147,14 @@ class PostList(APIView):
     post: 
     create a new instance of post
     """
-    
+
     def get(self, request, format=None):
-        return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
+        if is_request_from_remote_node(request):
+            return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
+        else:
+            # TODO: handle the GET from an author
+            serializedPost = PostSerializer(Post.objects.filter(visibility='PUBLIC'))
+            return Response(serializedPost.data, status=200)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
