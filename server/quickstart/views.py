@@ -237,7 +237,7 @@ class CommentList(APIView):
             node = get_object_or_404(Node, url=host)
 
             try:
-                url = request.data['post'] + 'comments/'
+                url = request.data['post']
                 req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
                 req.raise_for_status()
             except Exception as e:
