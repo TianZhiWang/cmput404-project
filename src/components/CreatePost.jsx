@@ -19,18 +19,20 @@ class CreatePost extends Component {
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this);
     this.handleContentTypeChange = this.handleContentTypeChange.bind(this);
     this.handlePost = this.handlePost.bind(this);
+    this.handleUpdate = this.handleUpdate.bind(this);
     this.handlePermissionChange = this.handlePermissionChange.bind(this);
     this.contentText = this.contentText.bind(this);
+    this.postEditButton = this.postEditButton.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
   }
 
   getInitialState() {
     return {
-      permission: 'PUBLIC',
-      title: '',
-      description: '',
-      content: '',
-      contentType: 'text/plain',
+      permission: this.props.permission ? this.props.permission : 'PUBLIC',
+      title: this.props.title ? this.props.title : "",
+      description: this.props.description ? this.props.description : "",
+      content: this.props.content ? this.props.content : "",
+      contentType: this.props.contentType ? this.props.contentType : 'text/plain' ,
       image: null,
       user_with_permission:[],
     };
@@ -55,7 +57,6 @@ class CreatePost extends Component {
   }
 
   handleImageUpload(event) {
-    // console.log( event.target.files[0])
     this.setState({
       image: event.target.files[0]
     });
@@ -68,7 +69,6 @@ class CreatePost extends Component {
   }
 
   handlePost() {
-    // console.log(this.state.image)
     if (this.state.content) {
       this.props.addPost({
         content: this.state.content,
@@ -76,10 +76,24 @@ class CreatePost extends Component {
         description: this.state.description,
         contentType: this.state.contentType,
         permission: this.state.permission,
-
         image: this.state.image,
         user_with_permission: [],
         "comments": []
+      });
+      this.setState(this.getInitialState());
+    }
+  }
+
+  handleUpdate() {
+    if (this.state.content) {
+      this.props.updatePost({
+        content: this.state.content,
+        title: this.state.title,
+        description: this.state.description,
+        contentType: this.state.contentType,
+        permission: this.state.permission,
+        image: this.state.image,
+        id: this.props.id
       });
       this.setState(this.getInitialState());
     }
@@ -108,6 +122,19 @@ class CreatePost extends Component {
           />
       );
     }
+  }
+
+  postEditButton () {
+    if(this.props.isEdit) {
+      return (<Button
+              onClick={this.handleUpdate}>
+              Edit
+            </Button>);
+    }
+    return (<Button
+              onClick={this.handlePost}>
+              Post
+            </Button>);
   }
 
   render() {
@@ -168,10 +195,7 @@ class CreatePost extends Component {
               options={options}
               value={this.state.permission}
             />
-            <Button
-              onClick={this.handlePost}>
-              Post
-            </Button>
+            {this.postEditButton()}
           </div>
         </ButtonToolbar>
       </div>
@@ -180,13 +204,21 @@ class CreatePost extends Component {
 }
 
 CreatePost.propTypes = {
-  addPost: PropTypes.func.isRequired
+  addPost: PropTypes.func.isRequired,
+  content: PropTypes.string,
+  contentType: PropTypes.string,
+  description: PropTypes.string,
+  id: PropTypes.string,
+  isEdit: PropTypes.bool.isRequired,
+  permission: PropTypes.string,
+  title: PropTypes.string,
+  updatePost: PropTypes.func.isRequired,
 };
 
 export default connect(
   function(stateProps, ownProps) {
     return {
-      user: stateProps.app.user,
+      user: stateProps.app.user
     };
   },
   null,
@@ -195,8 +227,12 @@ export default connect(
     const {dispatch} = dispatchProps;
 
     return {
+      ...ownProps,
       addPost: function(post) {
         dispatch(actions.addPost(post, user));
+      },
+      updatePost: function(post) {
+        dispatch(actions.updatePost(post, user));
       }
     };
   })(CreatePost);

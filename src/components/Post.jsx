@@ -1,8 +1,9 @@
 import React, {Component, PropTypes} from 'react';
-import {Panel, Button, FormControl} from 'react-bootstrap';
+import {Panel, Button, FormControl, Modal} from 'react-bootstrap';
 import CommentList from './CommentList';
 import Markdown from 'react-markdown';
 import Profile from './Profile';
+import CreatePost from './CreatePost';
 /*
 * Represents a post component with comments optionally
 */
@@ -18,7 +19,10 @@ class Post extends Component {
     this.handleChangeComment = this.handleChangeComment.bind(this);
     this.textTypehandler = this.textTypehandler.bind(this);
     this.deleteButtonHandler = this.deleteButtonHandler.bind(this);
+    this.editButtonHandler = this.editButtonHandler.bind(this);
     this.handleDeletePost = this.handleDeletePost.bind(this);
+    this.showModal = this.showModal.bind(this);
+    this.hideModal = this.hideModal.bind(this);
     this.showProfile = this.showProfile.bind(this);
   }
 
@@ -72,8 +76,23 @@ class Post extends Component {
     }
   }
 
+  editButtonHandler(){
+    if (this.props.user.id == this.props.author.id){
+      return <Button 
+      onClick = {this.showModal} >edit</Button>;
+    }
+  }
+
   showProfile(){
     this.props.switchTabs('profile', this.props.author);
+  }
+
+  showModal() {
+    this.setState({show:true});
+  }
+
+  hideModal() {
+    this.setState({show:false});
   }
 
   render() {
@@ -91,6 +110,7 @@ class Post extends Component {
               {this.props.description}
             </div>
             {this.deleteButtonHandler()}
+            {this.editButtonHandler()}
           </div>
           <div className='post-footer'>
               <CommentList comments={this.props.comments}/>
@@ -107,6 +127,18 @@ class Post extends Component {
                 </Button>
               </div>
           </div>
+          <Modal
+             show={this.state.show}
+             onHide={this.hideModal}
+             container={this}
+             aria-labelledby="contained-modal-title"
+          ><CreatePost isEdit={true} 
+            content={this.props.content}
+            contentType={this.props.contentType}
+            description={this.props.description}
+            title={this.props.title}
+            id={this.props.id}/>
+          </Modal>
       </div>
     );
   }

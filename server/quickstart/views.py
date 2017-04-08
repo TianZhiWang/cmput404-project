@@ -161,6 +161,18 @@ class PostDetail(APIView):
         serializedPost = PostSerializer(post)
         return Response(serializedPost.data)
 
+    def put(self, request, post_id, format=None):
+        post = get_object_or_404(Post, pk=post_id)
+        
+        author = get_object_or_404(Author, user=request.user)
+        if post.author != author:
+            return Response("You likely don't have access to delete this post", status=400)
+        serializedPost = PostSerializer(post, data=request.data)
+        if serializedPost.is_valid():
+            serializedPost.save()
+            return Response(serializedPost.data, status=201)
+        return Response(serializedPost.errors, status=400)
+
     def delete(self, request, post_id, format=None):
         post = get_object_or_404(Post, pk=post_id)
         author = get_object_or_404(Author, user=request.user)

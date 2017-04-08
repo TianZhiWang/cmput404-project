@@ -36,6 +36,19 @@ export function posts(state=[], action) {
       action.post,
       ...state
     ];
+      /**
+     * Update Post in state []
+     * @param [] state 
+     * @param { type: Enum, post: Object } action
+     */
+  case types.UPDATE_POST:
+    const filterself = state.filter(function rm(value){
+      return value.id != action.post.id;
+    });
+    return [
+      action.post,
+      ...filterself
+    ];
     /**
      * Finish Loading Post
      * @param [] state 
