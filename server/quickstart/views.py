@@ -314,25 +314,32 @@ class FriendsList(APIView):
         return Response({ "query": "friends","authors":author_urls})
 
     def post(self, request, author_id, format=None):
-        try:
-            author = Author.objects.get(pk=author_id)
-        except Author.DoesNotExist as e:
-            return Response({'Error': 'Author does not exist'}, status=404)
-
-        authors = request.data['authors']
-        normalizedAuthors = []
-        for a in authors:
-            normalizedAuthors.append(append_trailing_slash(a))
-        authors = normalizedAuthors
-        friends_pks = get_friend_ids_of_author(author_id)
+        if not Author.objects.exists(id=author_id):
+            return Response({
+                "query": "friends",
+                "author": request.data["author"],
+                "authors": []
+            })
+        
         if is_request_from_remote_node(request):
             following = FollowingRelationship.objects.filter(user__id=author_id).values_list('id', flat=True)
-            following = Author.objects.filter(id__in=friends_pks).values_list('url', flat=True)
+            following = Author.objects.filter(id__in=following).values_list('url', flat=True)
             urls = list(set(following).intersection(set(authors)))
+            return Response({
+                "query": "friends",
+                "author": request.data["author"],
+                "authors": urls
+            })
         else:
+            authors = request.data['authors']
+            normalizedAuthors = []
+            for a in authors:
+                normalizedAuthors.append(append_trailing_slash(a))
+            authors = normalizedAuthors
+            friends_pks = get_friend_ids_of_author(author_id)
             urls = Author.objects.filter(pk__in=friends_pks).values_list('url', flat=True)
-    
-        return Response({ "query":"friends", "author":author_id , "authors":urls})
+        
+            return Response({ "query":"friends", "author":author_id , "authors":urls})
 
 class CheckFriendship(APIView):
     """
