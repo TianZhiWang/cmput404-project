@@ -28,7 +28,7 @@ class Post extends Component {
 
   handleAddComment() {
     if (this.state.newCommentText) {
-      this.props.addComment(this.state.newCommentText, this.props.id, `${this.props.author}/posts/${this.props.id}/comments/`);
+      this.props.addComment(this.state.newCommentText, this.props.id, `${this.props.author.host}posts/${this.props.id}/comments/`);
       this.setState({
         newCommentText: ''
       });
