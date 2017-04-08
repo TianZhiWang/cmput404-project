@@ -82,6 +82,46 @@ export function addPost(post, user) {
 }
 
 /*
+* Updates a post by a user then returns an action to update the state
+*/
+export function updatePost(post, user) {
+  return function(dispatch) {
+
+    const sendPost = function(post) {
+      basicAuthFetch('PUT', `/posts/${post.id}/`, user, {
+        title: post.title,
+        content: post.content,
+        description: post.description,
+        contentType: post.contentType,
+        author: user.id,
+        comments: post.comments,
+        visibility: post.permission,
+        image: post.image,
+        visibleTo: post.user_with_permission
+      })
+      .then((res) => {
+        dispatch({
+          type:types.UPDATE_POST,
+          post: res
+        });
+      });
+    };
+
+    if (post.image) {
+      const FR= new FileReader();
+      FR.addEventListener("load", function(e) {
+        post.content = e.target.result;
+        post.contentType = `${post.image.type};base64`;
+        sendPost(post);
+      });
+      FR.readAsDataURL(post.image);
+    } else {
+      sendPost(post);
+    }
+  };
+}
+
+/*
 * Loads all posts visible to the current user
 */
 export function loadPosts(user) {
@@ -182,73 +222,12 @@ function updateUser(user) {
 
 export function attemptUpdateProfile(user) {
   return function(dispatch) {
-    return fetch(user.url, {
-      method: 'PUT',
-      headers: {
-        // Written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539 (MIT)
-        'Authorization': `Basic ${btoa(`${user.username}:${user.password}`)}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(user),
-    }).then(res => {
-      if (!res.ok) {
-        return Promise.reject(res);
-      }
-      return res;
-    })
-    .then(res => res.json())
+    return basicAuthFetch('PUT', `/author/${getUUIDFromId(user.url)}/`, user, user)
     .then(res => {
-      console.log(res);
       dispatch(updateUser({
         ...res,
       }));
-    })
-    .catch(err => {
-      //TODO Something on fail
     });
-  };
-}
-
-function followUser(currentUser, otherUser) {
-  return basicAuthFetch('POST', '/friendrequest/', currentUser, {
-    query: 'friendrequest',
-    author: {
-      id: currentUser.id,
-      host: currentUser.host,
-      url: currentUser.url,
-      displayName: currentUser.displayName
-    },
-    friend: {
-      id: otherUser.id,
-      host: otherUser.host,
-      url: otherUser.url,
-      displayName: otherUser.displayName
-    }
-  });
-}
-
-function unfollowUser(currentUser, otherUser) {
-  return basicAuthFetch('DELETE', `/author/${getUUIDFromId(currentUser.id)}/friends/${getUUIDFromId(otherUser.id)}/`, currentUser, {
-    query: 'friendrequest',
-    author: {
-      id: currentUser.id,
-      host: currentUser.host,
-      url: currentUser.url,
-      displayName: currentUser.displayName
-    },
-    friend: {
-      id: otherUser.id,
-      host: otherUser.host,
-      url: otherUser.url,
-      displayName: otherUser.displayName
-    }
-  });
-}
-
-export function toggleFollowStatus(currentUser, otherUser, isFriend) {
-  return function(dispatch) {
-    const toggleFollow = isFriend ? unfollowUser : followUser;
-    return toggleFollow(currentUser, otherUser);
   };
 }
 
