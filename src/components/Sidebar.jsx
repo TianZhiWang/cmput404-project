@@ -37,7 +37,7 @@ class Sidebar extends Component {
 
 Sidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  logout: PropTypes.string.isRequired,
+  logout: PropTypes.func.isRequired,
   switchTabs: PropTypes.func.isRequired,
 };
 

@@ -74,8 +74,17 @@ class PostSerializer(serializers.ModelSerializer):
 
         fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published', 'unlisted')
 
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.content = validated_data.get('content', instance.content)
+        instance.description = validated_data.get('description', instance.description)
+        instance.contentType = validated_data.get('contentType', instance.contentType)
+        instance.visibility = validated_data.get('visibility', instance.visibility)
+        instance.save()
+        return instance
+
     def paginated_comments(self, obj):
-        comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')[:5]
+        comments = Comment.objects.all().filter(post__id=obj.id).order_by('published')
         serializer = CommentSerializer(comments, many=True)
         return serializer.data
 
