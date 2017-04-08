@@ -65,14 +65,16 @@ def get_friends_of_authorPK(authorPK):
         try:
             url = host + 'author/' + user.id + '/friends/'
             node = Node.objects.get(url=host)
-            req = requests.post(
-                url,
-                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
-                data=json.dumps({
+            body = json.dumps({
                     'query': 'friends',
                     'author': user.url,
                     'authors': follows
-                    }),
+                    })
+            print("request body", body)
+            req = requests.post(
+                url,
+                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
+                data=body,
                 headers={'Content-Type': 'application/json'}
             )
             req.raise_for_status()
@@ -264,8 +266,6 @@ class AuthorList(APIView):
         return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
 
 class AuthorDetail(APIView):
-    permission_classes = (IsOwnerOrReadOnly,)
-
     def put(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
         self.check_object_permissions(request, author)
