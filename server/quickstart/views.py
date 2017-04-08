@@ -33,7 +33,6 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
-from .permissions import IsOwnerOrReadOnly
 from operator import itemgetter
 import re
 import requests
@@ -154,9 +153,14 @@ class PostList(APIView):
     post: 
     create a new instance of post
     """
-    
+
     def get(self, request, format=None):
-        return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
+        if is_request_from_remote_node(request):
+            return handle_posts_to_remote_node(Post.objects.filter(visibility='PUBLIC'), request)
+        else:
+            # TODO: handle the GET from an author
+            serializedPost = PostSerializer(Post.objects.filter(visibility='PUBLIC'))
+            return Response(serializedPost.data, status=200)
 
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
@@ -262,11 +266,12 @@ class AuthorList(APIView):
         return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
 
 class AuthorDetail(APIView):
-    permission_classes = (IsOwnerOrReadOnly,)
 
     def put(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
-        self.check_object_permissions(request, author)
+        request_author = get_object_or_404(Author, user=request.user)
+        if request_author != author:
+            return Response("You can't modify this without being the owner.", status=400)
 
         serializer = AuthorSerializer(author, data=request.data)
         if serializer.is_valid():
