@@ -61,8 +61,9 @@ def get_friends_of_authorPK(authorPK):
     friends = []
     user = Author.objects.get(pk=authorPK)
     for host, follows in nodes.items():
+        print("host", host, "follows", follows)
         try:
-            url = host + 'author/' + author.id + '/friends/'
+            url = host + 'author/' + user.id + '/friends/'
             node = Node.objects.get(url=host)
             req = requests.post(
                 url,
@@ -77,6 +78,7 @@ def get_friends_of_authorPK(authorPK):
             req.raise_for_status()
 
             authors = req.json()['authors']
+            print("host", host, "returned", authors)
             if authors:
                 friends += authors
 
@@ -279,7 +281,7 @@ class AuthorDetail(APIView):
         author = get_object_or_404(Author, pk=author_id)
 
         if is_request_from_remote_node(request):
-            friends = FollowingRelationship.objects.filter(user__id=author_id)
+            friends = FollowingRelationship.objects.filter(user__id=author_id).values_list('user', flat=True)
         else:
             friends = get_friend_ids_of_author(author_id)
 
