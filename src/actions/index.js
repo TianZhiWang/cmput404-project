@@ -201,7 +201,7 @@ export function attemptUpdateProfile(user) {
     })
     .then(res => res.json())
     .then(res => {
-      console.log(res);
+
       dispatch(updateUser({
         ...res,
       }));
@@ -297,9 +297,9 @@ export function loadGithub(user) {
       dispatch({
         type: types.LOAD_GITHUB,
         githubEvents:res
-      })
+      });
       // console.log(res)
-    })
+    });
   };
 }
 

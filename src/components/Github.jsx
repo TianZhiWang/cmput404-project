@@ -16,7 +16,8 @@ class GithubEventsList extends Component {
         <h1>Github Stream</h1>
         <ListGroup >
          {this.props.github.map(githubEvent => (
-            <ListGroupItem key={githubEvent.id} header={githubEvent.created_at.substr(0, 10)}>
+            <ListGroupItem key={githubEvent.id} 
+            header={githubEvent.created_at.substr(0, 10)}>
             {githubEvent.actor.login} profroms {githubEvent.type} at {githubEvent.repo.name} 
             </ListGroupItem>
           ))}
@@ -27,8 +28,11 @@ class GithubEventsList extends Component {
 }
 
 GithubEventsList.propTypes = {
-  user: PropTypes.object.isRequired,
   github: PropTypes.array.isRequired,
+  loadGithub: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
+  
+  
 };
 
 export default connect(
