@@ -128,6 +128,13 @@ def handle_posts_to_remote_node(queryset, request):
     """
     # TODO: Add filtering of images and posts here, will need to pass the Node to filter
     queryset = queryset.exclude(visibility='SERVERONLY').order_by('-published')
+
+    node = Node.objects.get(user=request.user)
+    if not node.canSeeImages:
+        queryset = queryset.exclude(contentType__in=['image/png;base64', 'image/jpeg;base64'])
+    if not node.canSeePosts:
+        queryset = queryset.exclude(contentType__in=['text/markdown', 'text/plain'])
+
     paginator = PostsPagination()
     page = paginator.paginate_queryset(queryset, request)
     if page is not None:

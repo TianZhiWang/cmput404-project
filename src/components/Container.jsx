@@ -1,7 +1,7 @@
 import React, {Component, PropTypes} from 'react';
 import {Grid, Row, Col} from 'react-bootstrap';
 import CreatePost from './CreatePost';
-import FriendList from './FriendList';
+import FriendPage from './FriendPage';
 import PostList from './PostList';
 import Profile from './Profile';
 import Sidebar from './Sidebar';
@@ -27,7 +27,7 @@ class Container extends Component {
           </div>
         );
       case 'friends':
-        return <FriendList/>;
+        return <FriendPage/>;
       case 'profile':
         return <Profile/>;
       }
