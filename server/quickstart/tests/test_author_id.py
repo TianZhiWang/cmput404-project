@@ -145,3 +145,15 @@ class AuthorIdTest(APITestCase):
         getResponse = self.client.get(url, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(getResponse.status_code))
         self.assertTrue(getResponse.data["displayName"] == "chicken")
+
+    def test_authorid_author_try_put_friend(self):
+        """ The author should be not be able to put to friend profile """
+        url = reverse("authorId", args=[self.friend_author.pk])
+        basicAuth = getBasicAuthHeader(self.AUTHOR_USER_NAME, self.AUTHOR_USER_PASS)
+        data = {
+            "displayName": "chicken",
+            "url":"http://127.0.0.1:8000/author/author/",
+            "host":"http://127.0.0.1:8000/"
+        }
+        response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
+        self.assertTrue(status.is_client_error(response.status_code))
