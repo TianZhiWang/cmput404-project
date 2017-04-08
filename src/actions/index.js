@@ -82,6 +82,46 @@ export function addPost(post, user) {
 }
 
 /*
+* Updates a post by a user then returns an action to update the state
+*/
+export function updatePost(post, user) {
+  return function(dispatch) {
+
+    const sendPost = function(post) {
+      basicAuthFetch('PUT', `/posts/${post.id}/`, user, {
+        title: post.title,
+        content: post.content,
+        description: post.description,
+        contentType: post.contentType,
+        author: user.id,
+        comments: post.comments,
+        visibility: post.permission,
+        image: post.image,
+        visibleTo: post.user_with_permission
+      })
+      .then((res) => {
+        dispatch({
+          type:types.UPDATE_POST,
+          post: res
+        });
+      });
+    };
+
+    if (post.image) {
+      const FR= new FileReader();
+      FR.addEventListener("load", function(e) {
+        post.content = e.target.result;
+        post.contentType = `${post.image.type};base64`;
+        sendPost(post);
+      });
+      FR.readAsDataURL(post.image);
+    } else {
+      sendPost(post);
+    }
+  };
+}
+
+/*
 * Loads all posts visible to the current user
 */
 export function loadPosts(user) {

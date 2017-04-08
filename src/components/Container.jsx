@@ -22,7 +22,7 @@ class Container extends Component {
       case 'stream':
         return (
           <div>
-            <CreatePost />
+            <CreatePost isEdit={false}/>
             <PostList />
           </div>
         );
