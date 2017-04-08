@@ -14,9 +14,11 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const user = sessionStorage.getItem('user');
+    let user = sessionStorage.getItem('user');
     if (user) {
-      this.props.login(JSON.parse(user));
+      user = JSON.parse(user);
+
+      this.props.attemptLogin(user.username, user.password);
     }
   }
 
@@ -26,8 +28,8 @@ class App extends Component {
 }
 
 App.propTypes = {
-  loggedIn: PropTypes.bool.isRequired,
-  login: PropTypes.func.isRequired
+  attemptLogin: PropTypes.func.isRequired,
+  loggedIn: PropTypes.bool.isRequired
 };
 
 /*
@@ -41,8 +43,8 @@ export default connect(
   },
   function(dispatch) {
     return {
-      login: function(user) {
-        dispatch(actions.login(user));
+      attemptLogin: function(username, password) {
+        dispatch(actions.attempLogin(username, password));
       }
     };
   }
