@@ -34,6 +34,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from pagination import PostsPagination, CommentsPagination
 from requests.auth import HTTPBasicAuth
 from .permissions import IsOwnerOrReadOnly
+from operator import itemgetter
 import re
 import requests
 from django.urls import reverse
@@ -125,7 +126,9 @@ def handle_posts_to_remote_node(queryset, request):
 
     Input: queryset, request
     """
-    queryset = queryset.exclude(visibility='SERVERONLY')
+    # TODO: Add filtering of images and posts here, will need to pass the Node to filter
+    queryset = queryset.exclude(visibility='SERVERONLY').order_by('-published')
+
     node = Node.objects.get(user=request.user)
     if not node.canSeeImages:
         queryset = queryset.exclude(contentType__in=['image/png;base64', 'image/jpeg;base64'])
@@ -137,6 +140,9 @@ def handle_posts_to_remote_node(queryset, request):
     if page is not None:
         serializer = PostSerializer(page, many=True)
         return paginator.get_paginated_response(serializer.data, request)
+
+def sort_by_newest_posts(postList):
+    return sorted(postList, key=itemgetter('published'), reverse=True) 
 
 class PostList(APIView):
     """
@@ -483,8 +489,9 @@ class AllPostsAvailableToCurrentUser(APIView):
                 except Exception as e:
                     print("Exception occurred in author/posts")
                     print(str(e))
-            
-            return Response(serializedPosts)
+                    
+            sortedSerializedPosts = sort_by_newest_posts(serializedPosts)
+            return Response(sortedSerializedPosts)
 
     def get_all_posts(self, currentUser):
         publicPosts = Post.objects.filter(visibility="PUBLIC")
@@ -525,7 +532,8 @@ class PostsByAuthorAvailableToCurrentUser(APIView):
                 is_friend = is_friends(author_id, request.user.author.id)
                 if not (is_friend or author_id == request.user.author.id):
                     posts = posts.exclude(visibility="FRIENDS")
-                return Response(PostSerializer(posts, many=True).data)
+                sortedSerializedPosts = sort_by_newest_posts(PostSerializer(posts, many=True).data)
+                return Response(sortedSerializedPosts)
             # Remote author
             else:
                 print("remote author")
@@ -546,7 +554,8 @@ class PostsByAuthorAvailableToCurrentUser(APIView):
                         elif author.url in post['visibleTo']:
                             serializedPosts.append(post)
 
-                    return Response(serializedPosts)
+                    sortedSerializedPosts = sort_by_newest_posts(serializedPosts)
+                    return Response(sortedSerializedPosts)
                 except Exception as e:
                     print(str(e))
                     return Response({'Error': 'Could not fetch foreign author posts', 'message': str(e), 'success': False}, status=400)
