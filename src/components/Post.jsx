@@ -124,7 +124,7 @@ class Post extends Component {
               <strong>{this.props.title}</strong>
             </div>
             {this.textTypehandler()}
-            <div className='post-body'>
+            <div className='post-body description'>
               {this.props.description}
             </div>
           </div>
@@ -153,7 +153,8 @@ class Post extends Component {
             contentType={this.props.contentType}
             description={this.props.description}
             title={this.props.title}
-            id={this.props.id}/>
+            id={this.props.id}
+            hideModal={this.hideModal}/>
           </Modal>
       </div>
     );

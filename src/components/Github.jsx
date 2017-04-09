@@ -18,7 +18,7 @@ class GithubEventsList extends Component {
          {this.props.github.map(githubEvent => (
             <ListGroupItem key={githubEvent.id} 
             header={githubEvent.created_at.substr(0, 10)}>
-            {githubEvent.actor.login} profroms {githubEvent.type} at {githubEvent.repo.name} 
+            {githubEvent.actor.login} performed {githubEvent.type} at {githubEvent.repo.name} 
             </ListGroupItem>
           ))}
         </ListGroup>

@@ -103,6 +103,7 @@ class CreatePost extends Component {
         image: this.state.image,
         id: this.props.id
       });
+      this.props.hideModal();
       this.setState(this.getInitialState());
     }
   }
@@ -237,6 +238,7 @@ CreatePost.propTypes = {
   content: PropTypes.string,
   contentType: PropTypes.string,
   description: PropTypes.string,
+  hideModal: PropTypes.func,
   id: PropTypes.string,
   isEdit: PropTypes.bool.isRequired,
   permission: PropTypes.string,

@@ -49,7 +49,8 @@ class Container extends Component {
             <Sidebar
                 activeTab={this.props.activeTab}
                 switchTabs={this.props.switchTabs}
-                logout={this.props.logout} />
+                logout={this.props.logout} 
+                user={this.props.user}/>
             </Col>
             <Col md={9}>{pickTab()}</Col>
         </Row>

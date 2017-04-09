@@ -23,7 +23,7 @@ class Sidebar extends Component {
           <NavItem eventKey={'stream'}>Stream</NavItem>
           <NavItem eventKey={'friends'}>Following</NavItem>
           <NavItem eventKey={'profile'}>Profile</NavItem>
-          <NavItem eventKey={'github'}>Github</NavItem>
+          { this.props.user.github ? <NavItem eventKey={'github'}>Github</NavItem> : <noscript/>}
         </Nav>
       </div>
     );
@@ -33,6 +33,7 @@ class Sidebar extends Component {
 Sidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
   switchTabs: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
 export default Sidebar;
