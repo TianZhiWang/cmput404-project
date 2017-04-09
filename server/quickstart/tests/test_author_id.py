@@ -122,7 +122,8 @@ class AuthorIdTest(APITestCase):
         data = {
             "displayName": "chicken",
             "url":"http://127.0.0.1:8000/author/author/",
-            "host":"http://127.0.0.1:8000/"
+            "host":"http://127.0.0.1:8000/",
+            "github":"http://github.com/someuser"
         }
         response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
@@ -134,7 +135,8 @@ class AuthorIdTest(APITestCase):
         data = {
             "displayName": "chicken",
             "url":"http://127.0.0.1:8000/author/author/",
-            "host":"http://127.0.0.1:8000/"
+            "host":"http://127.0.0.1:8000/",
+            "github":"http://github.com/someuser"
         }
         response = self.client.put(url, data, HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))

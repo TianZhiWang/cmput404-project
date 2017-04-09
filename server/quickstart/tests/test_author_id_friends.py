@@ -150,10 +150,11 @@ class AuthorIdFriendsTest(APITestCase):
                 "author": self.author.pk,
                 "authors": [
                     self.stranger_author.host + "author/" + str(self.stranger_author.id) + "/",
-                    self.friend_author.host + "author/" + str(self.friend_author.id)  # the code should be able to handle a missing trailing slash
+                    self.friend_author.host + "author/" + str(self.friend_author.id) + "/"
                 ]
         }
         basicAuth = getBasicAuthHeader(self.NODE_USER_NAME, self.NODE_USER_PASS)
         response = self.client.post(url, obj, format='json', HTTP_AUTHORIZATION=basicAuth)
         self.assertTrue(status.is_success(response.status_code))
+        print response
         self.assertTrue(len(response.data["authors"]) == 1)
