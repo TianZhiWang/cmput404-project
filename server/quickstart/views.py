@@ -310,14 +310,9 @@ class FriendsList(APIView):
     post a list of authors, returns the ones that are friends
     """
     def get(self, request, author_id, format=None):
-        try:
-            author = Author.objects.get(pk=author_id)
-        except Author.DoesNotExist as e:
-            return Response({'Error': 'Author does not exist', 'message': str(e)}, status=404)
-        
         # No circular requests, just send who this author is following
         if is_request_from_remote_node(request):
-            follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('user', flat=True)
+            follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
             authors = Author.objects.filter(id__in=follows)
         else:
             authors = Author.objects.filter(id__in=get_friend_ids_of_author(author_id))
@@ -334,7 +329,7 @@ class FriendsList(APIView):
             })
         
         if is_request_from_remote_node(request):
-            following = FollowingRelationship.objects.filter(user__id=author_id).values_list('id', flat=True)
+            following = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
             following = Author.objects.filter(id__in=following).values_list('url', flat=True)
             urls = list(set(following).intersection(set(authors)))
             return Response({
