@@ -41,11 +41,21 @@ class Post extends Component {
     });
   }
 
+  // http://stackoverflow.com/a/33580254 joemaddalone (http://stackoverflow.com/users/1042510/joemaddalone) MIT
+  // Edited by Tian Zhi Wang
+  renderNewLines(content) {
+    const br = React.createElement('br');
+    const regex = /(<br \/>)/g;
+    return content.replace(/\n/g,"<br />").split(regex).map(function(line, index) {
+      return line.match(regex) ? <br key={`key_${index}`} /> : line;
+    });
+  }
+
   textTypehandler(){
     if (this.props.contentType === "text/plain"){
       return(
         <div className='post-body'>
-          {this.props.content}
+          { this.renderNewLines(this.props.content) }
         </div>
       );
     } else if (this.props.contentType === "text/markdown"){
@@ -72,14 +82,14 @@ class Post extends Component {
   deleteButtonHandler(){
     if (this.props.user.id == this.props.author.id){
       return <Button bsStyle="danger" 
-      onClick = {this.handleDeletePost} >delete </Button>;
+      onClick={this.handleDeletePost} ><i className="fa fa-trash"/></Button>;
     }
   }
 
   editButtonHandler(){
     if (this.props.user.id == this.props.author.id){
       return <Button 
-      onClick = {this.showModal} >edit</Button>;
+      onClick = {this.showModal} ><i className="fa fa-pencil"/></Button>;
     }
   }
 
@@ -99,18 +109,24 @@ class Post extends Component {
     return (
       <div className='post'>
           <div className='post-header'>
-            <h4 onClick={this.showProfile}>
-              {this.props.author.displayName}
-            </h4>
+
+            <div className="post-banner">
+              <h4 onClick={this.showProfile}>
+                <a>{this.props.author.displayName}</a>
+              </h4>
+              <div className="buttons">
+                {this.editButtonHandler()}
+                {this.deleteButtonHandler()}                
+              </div>
+            </div>
+
             <div className='post-body'>
-              {this.props.title}
+              <strong>{this.props.title}</strong>
             </div>
             {this.textTypehandler()}
             <div className='post-body'>
               {this.props.description}
             </div>
-            {this.deleteButtonHandler()}
-            {this.editButtonHandler()}
           </div>
           <div className='post-footer'>
               <CommentList comments={this.props.comments}/>
@@ -118,7 +134,7 @@ class Post extends Component {
                 <FormControl
                   type="text"
                   value={this.state.newCommentText}
-                  placeholder="Add a comment"
+                  placeholder="Write a comment..."
                   onChange={this.handleChangeComment}
                 />
                 <Button

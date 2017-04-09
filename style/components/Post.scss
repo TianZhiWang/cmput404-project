@@ -3,6 +3,14 @@
     border: $border;
     background-color: white;
 
+    .post-banner {
+        display: flex;
+        justify-content: space-between;
+        button {
+            margin-left: 0.5em;
+        }
+    }
+
     .post-header {
         padding: 1em 1em 1em 1em;
     }
@@ -10,6 +18,7 @@
     .post-footer {
         padding: 1em 1em 1em 1em;
         border-top: $border;
+        background-color: #eff3f9;
     }
 
     .add-comment {
@@ -21,5 +30,9 @@
     
     img {
         max-width: 100%;
+    }
+
+    .create-post {
+        margin-top: 0px;
     }
 }

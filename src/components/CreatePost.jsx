@@ -104,10 +104,12 @@ class CreatePost extends Component {
       permission: obj.value
     });
   }
+
   contentText (){
     if (this.state.contentType == "text/plain"){
       return(
           <FormControl
+            componentClass="textarea"
             type='text'
             value={this.state.content}
             placeholder='Whats on your mind?'
@@ -116,6 +118,7 @@ class CreatePost extends Component {
     }else{
       return(
           <FormControl
+            componentClass="textarea"
             value={this.state.content}
             placeholder='Whats on your mind?'
             onChange={this.handleContentChange}
@@ -159,13 +162,13 @@ class CreatePost extends Component {
         <FormControl
           type='text'
           value={this.state.title}
-          placeholder='title'
+          placeholder='Subject'
           onChange={this.handleTitleChange}/>
         {this.contentText()}
         <FormControl
           type='text'
           value={this.state.description}
-          placeholder='description?'
+          placeholder='Description...'
           onChange={this.handleDescriptionChange}/>
         <input
           accept='image/png,image/jpeg'

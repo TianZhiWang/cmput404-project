@@ -65,12 +65,12 @@ class Profile extends Component {
             type="text"
             name="displayname"
             onChange={this.handleDisplayNameChange}
-            placeholder="DisplayName" />
+            placeholder="Display name..." />
           <FormControl
             type="text"
             name="github"
             onChange={this.handleGithubChange}
-            placeholder="GitHubEmail" />
+            placeholder="Github url..." />
           <Button
             onClick={this.handleSubmitProfile}>
             Submit
@@ -81,7 +81,7 @@ class Profile extends Component {
 
     return (
       <div className='profile'>
-        <h1>{this.props.user.displayName}'s Profile</h1>
+        <h2>{this.props.user.displayName}'s Profile</h2>
         <p>Display Name: {this.props.user.displayName}</p>        
         <p>Id: {this.props.user.id}</p>
         {updateForm()}
