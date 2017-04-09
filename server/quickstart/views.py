@@ -296,6 +296,8 @@ class FriendsList(APIView):
     post a list of authors, returns the ones that are friends
     """
     def get(self, request, author_id, format=None):
+        get_object_or_404(Author, pk=author_id)  # i need to make sure that the author_id exists before proceeding
+
         # No circular requests, just send who this author is following
         if is_request_from_remote_node(request):
             follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
@@ -307,13 +309,14 @@ class FriendsList(APIView):
         return Response({ "query": "friends","authors":author_urls})
 
     def post(self, request, author_id, format=None):
-        if not Author.objects.exists(id=author_id):
+        if not Author.objects.filter(pk=author_id).exists():
             return Response({
                 "query": "friends",
                 "author": request.data["author"],
                 "authors": []
             })
-        
+
+        authors = request.data['authors']
         if is_request_from_remote_node(request):
             following = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
             following = Author.objects.filter(id__in=following).values_list('url', flat=True)
@@ -324,7 +327,6 @@ class FriendsList(APIView):
                 "authors": urls
             })
         else:
-            authors = request.data['authors']
             normalizedAuthors = []
             for a in authors:
                 normalizedAuthors.append(append_trailing_slash(a))
