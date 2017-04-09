@@ -68,11 +68,12 @@ class PostSerializer(serializers.ModelSerializer):
     count = serializers.SerializerMethodField()
     size = serializers.SerializerMethodField()
     next = serializers.SerializerMethodField()
+    categories = serializers.SerializerMethodField()
 
     class Meta:
         model = Post
 
-        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published', 'unlisted')
+        fields = ('id', 'title', 'content', 'source', 'origin', 'description', 'contentType', 'author', 'count', 'size' , 'next', 'comments', 'visibility', 'visibleTo', 'published', 'unlisted', 'categories')
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
@@ -108,6 +109,9 @@ class PostSerializer(serializers.ModelSerializer):
     def get_next(self, obj):
         next = obj.origin + "posts/" + str(obj.id) + "/comments/"
         return next
+    
+    def get_categories(self, obj):
+        return []
 
     # http://www.django-rest-framework.org/api-guide/serializers/#saving-instances
     # https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
