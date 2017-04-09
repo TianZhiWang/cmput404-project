@@ -4,13 +4,21 @@
 @import 'variables.scss';
 
 //components
-@import 'components/Post.scss';
+@import 'components/Container.scss';
 @import 'components/Comment.scss';
 @import 'components/CreatePost.scss';
 @import 'components/FriendList.scss';
+@import 'components/Post.scss';
+@import 'components/Profile.scss';
 @import 'components/UserAccout.scss';
 
 //global styles
 body {
     background-color: $primary-color-very-light;
+    padding-bottom: 2em;
+}
+
+input {
+    border-radius: 0px !important; //Rounded corners are soooo 2013
+    margin-top: 3px;
 }

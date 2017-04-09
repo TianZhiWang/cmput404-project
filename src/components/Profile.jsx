@@ -12,9 +12,7 @@ class Profile extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      github:"123"
-    };
+    this.state = {};
 
     this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
     this.handleGithubChange = this.handleGithubChange.bind(this);
@@ -36,7 +34,6 @@ class Profile extends Component {
 
   handleSubmitProfile() {
     const update = Object.assign({},this.props.user);
-
     if(this.state.github) {
       update.github = this.state.github;
     }
@@ -65,26 +62,31 @@ class Profile extends Component {
             type="text"
             name="displayname"
             onChange={this.handleDisplayNameChange}
-            placeholder="DisplayName" />
+            placeholder="Update display Name..." />
           <FormControl
             type="text"
             name="github"
             onChange={this.handleGithubChange}
-            placeholder="GitHubEmail" />
-          <Button
-            onClick={this.handleSubmitProfile}>
-            Submit
-          </Button>
+            placeholder="Update github url..." />
+          <div className="submit">
+            <Button
+              onClick={this.handleSubmitProfile}>
+              Update
+            </Button>
+          </div>
         </div>
       );
     };
 
     return (
       <div className='profile'>
-        <h1>{this.props.user.displayName}'s Profile</h1>
-        <p>Display Name: {this.props.user.displayName}</p>        
-        <p>Id: {this.props.user.id}</p>
-        {updateForm()}
+        <div className='profile-head'>
+          <h2>{this.props.user.displayName}'s Profile</h2>
+          <p><i className="fa fa-id-card"/> {this.props.user.username}</p>        
+          <p><i className="fa fa-link"/> <a href={this.props.user.id}>{this.props.user.id}</a></p>
+          {this.props.user.github ? <p><i className="fa fa-github-alt"/><a href={this.props.user.github}> {this.props.user.github}</a></p> : <noscript/>}
+          {updateForm()}
+        </div>
         <PostList posts={this.filterPosts()}/>
       </div>
     );

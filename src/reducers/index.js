@@ -123,7 +123,8 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
       ...state,
       user: {...state.user,
         ...action.user},
-      viewUser: action.user
+      viewUser: {...state.user,
+        ...action.user}
     };
   /**
      * Switch Tabs, sets the active tab in state [ app : {} ]

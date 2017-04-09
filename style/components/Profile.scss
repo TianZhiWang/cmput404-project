@@ -1,0 +1,16 @@
+.profile {
+    h2 {
+        margin-top: 0px;
+    }
+    .profile-head {
+        background-color: white;
+        border: $border;
+        padding: 1em 1em 1em 1em;
+        margin-top: 1em;
+    }
+    .submit {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 0.5em;
+    }
+}

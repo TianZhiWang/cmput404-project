@@ -7,13 +7,9 @@ import {ListGroup, ListGroupItem, Nav, NavItem, Button} from 'react-bootstrap';
 class Sidebar extends Component {
   constructor(props) {
     super(props);
-    this.logout = this.logout.bind(this);
   }
 
-  logout() {
-    sessionStorage.clear();
-    this.props.logout();
-  }
+
 
   render() {
     return (
@@ -27,9 +23,8 @@ class Sidebar extends Component {
           <NavItem eventKey={'stream'}>Stream</NavItem>
           <NavItem eventKey={'friends'}>Following</NavItem>
           <NavItem eventKey={'profile'}>Profile</NavItem>
-          <NavItem eventKey={'github'}>Github</NavItem>
+          { this.props.user.github ? <NavItem eventKey={'github'}>Github</NavItem> : <noscript/>}
         </Nav>
-        <Button onClick={this.logout}>Logout</Button>
       </div>
     );
   }
@@ -37,8 +32,8 @@ class Sidebar extends Component {
 
 Sidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  logout: PropTypes.func.isRequired,
   switchTabs: PropTypes.func.isRequired,
+  user: PropTypes.object.isRequired,
 };
 
 export default Sidebar;
