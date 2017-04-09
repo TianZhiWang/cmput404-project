@@ -12,21 +12,11 @@ class Profile extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      posts: []
-    };
 
     this.handleDisplayNameChange = this.handleDisplayNameChange.bind(this);
     this.handleGithubChange = this.handleGithubChange.bind(this);
     this.handleSubmitProfile = this.handleSubmitProfile.bind(this);
     this.filterPosts = this.filterPosts.bind(this);
-  }
-
-  componentDidMount() {
-    basicAuthFetch('GET', `/author/${getUUIDFromId(this.props.user.id)}/posts/`, this.props.currentuser)
-    .then(posts => {
-      this.setState({posts});
-    });
   }
 
   handleDisplayNameChange(event) {
@@ -54,7 +44,7 @@ class Profile extends Component {
 
   filterPosts() {
     const user = this.props.user.id;
-    return this.state.posts.filter(function(post) {
+    return this.props.posts.filter(function(post) {
       return post.author.id === user;
     });
   }
@@ -100,12 +90,14 @@ class Profile extends Component {
 Profile.propTypes = {
   attemptUpdateProfile: PropTypes.func.isRequired,
   currentuser: PropTypes.object.isRequired,
+  posts: PropTypes.array.isRequired,
   user: PropTypes.object.isRequired
 };
 
 export default connect(
   function(stateProps, ownProps) {
     return {
+      posts: stateProps.posts,
       currentuser: stateProps.app.user,
       user: stateProps.app.viewUser
     };

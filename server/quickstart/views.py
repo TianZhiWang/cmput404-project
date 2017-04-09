@@ -60,22 +60,26 @@ def get_friends_of_authorPK(authorPK):
     friends = []
     user = Author.objects.get(pk=authorPK)
     for host, follows in nodes.items():
+        print("host", host, "follows", follows)
         try:
-            url = host + 'author/' + author.id + '/friends/'
+            url = host + 'author/' + user.id + '/friends/'
             node = Node.objects.get(url=host)
-            req = requests.post(
-                url,
-                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
-                data=json.dumps({
+            body = json.dumps({
                     'query': 'friends',
                     'author': user.url,
                     'authors': follows
-                    }),
+                    })
+            print("request body", body)
+            req = requests.post(
+                url,
+                auth=requests.auth.HTTPBasicAuth(node.username, node.password),
+                data=body,
                 headers={'Content-Type': 'application/json'}
             )
             req.raise_for_status()
 
             authors = req.json()['authors']
+            print("host", host, "returned", authors)
             if authors:
                 friends += authors
 
@@ -241,7 +245,7 @@ class CommentList(APIView):
             node = get_object_or_404(Node, url=host)
 
             try:
-                url = request.data['post'] + 'comments/'
+                url = request.data['post']
                 req = requests.post(url, auth=requests.auth.HTTPBasicAuth(node.username, node.password), data=json.dumps(request.data), headers={'Content-Type': 'application/json'})
                 req.raise_for_status()
             except Exception as e:
@@ -266,7 +270,6 @@ class AuthorList(APIView):
         return Response(AuthorSerializer(Author.objects.all(), many=True).data, status=200)
 
 class AuthorDetail(APIView):
-
     def put(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
         request_author = get_object_or_404(Author, user=request.user)
@@ -283,7 +286,11 @@ class AuthorDetail(APIView):
     def get(self, request, author_id, format=None):
         author = get_object_or_404(Author, pk=author_id)
 
-        friends = get_friend_ids_of_author(author_id)
+        if is_request_from_remote_node(request):
+            friends = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
+        else:
+            friends = get_friend_ids_of_author(author_id)
+
         users = Author.objects.filter(id__in=friends)
         formatedUsers = AuthorSerializer(users,many=True).data
 
@@ -303,14 +310,9 @@ class FriendsList(APIView):
     post a list of authors, returns the ones that are friends
     """
     def get(self, request, author_id, format=None):
-        try:
-            author = Author.objects.get(pk=author_id)
-        except Author.DoesNotExist as e:
-            return Response({'Error': 'Author does not exist', 'message': str(e)}, status=404)
-        
         # No circular requests, just send who this author is following
         if is_request_from_remote_node(request):
-            follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('user', flat=True)
+            follows = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
             authors = Author.objects.filter(id__in=follows)
         else:
             authors = Author.objects.filter(id__in=get_friend_ids_of_author(author_id))
@@ -319,25 +321,32 @@ class FriendsList(APIView):
         return Response({ "query": "friends","authors":author_urls})
 
     def post(self, request, author_id, format=None):
-        try:
-            author = Author.objects.get(pk=author_id)
-        except Author.DoesNotExist as e:
-            return Response({'Error': 'Author does not exist'}, status=404)
-
-        authors = request.data['authors']
-        normalizedAuthors = []
-        for a in authors:
-            normalizedAuthors.append(append_trailing_slash(a))
-        authors = normalizedAuthors
-        friends_pks = get_friend_ids_of_author(author_id)
+        if not Author.objects.exists(id=author_id):
+            return Response({
+                "query": "friends",
+                "author": request.data["author"],
+                "authors": []
+            })
+        
         if is_request_from_remote_node(request):
-            following = FollowingRelationship.objects.filter(user__id=author_id).values_list('id', flat=True)
-            following = Author.objects.filter(id__in=friends_pks).values_list('url', flat=True)
+            following = FollowingRelationship.objects.filter(user__id=author_id).values_list('follows', flat=True)
+            following = Author.objects.filter(id__in=following).values_list('url', flat=True)
             urls = list(set(following).intersection(set(authors)))
+            return Response({
+                "query": "friends",
+                "author": request.data["author"],
+                "authors": urls
+            })
         else:
+            authors = request.data['authors']
+            normalizedAuthors = []
+            for a in authors:
+                normalizedAuthors.append(append_trailing_slash(a))
+            authors = normalizedAuthors
+            friends_pks = get_friend_ids_of_author(author_id)
             urls = Author.objects.filter(pk__in=friends_pks).values_list('url', flat=True)
-    
-        return Response({ "query":"friends", "author":author_id , "authors":urls})
+        
+            return Response({ "query":"friends", "author":author_id , "authors":urls})
 
 class CheckFriendship(APIView):
     """
