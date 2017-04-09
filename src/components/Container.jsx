@@ -1,5 +1,5 @@
 import React, {Component, PropTypes} from 'react';
-import {Grid, Row, Col} from 'react-bootstrap';
+import {Grid, Row, Col, Button} from 'react-bootstrap';
 import CreatePost from './CreatePost';
 import FriendPage from './FriendPage';
 import PostList from './PostList';
@@ -15,6 +15,12 @@ import * as actions from '../actions';
 class Container extends Component {
   constructor(props) {
     super(props);
+    this.logout = this.logout.bind(this);
+  }
+
+  logout() {
+    sessionStorage.clear();
+    this.props.logout();
   }
 
   render() {
@@ -48,6 +54,8 @@ class Container extends Component {
             <Col md={9}>{pickTab()}</Col>
         </Row>
       </Grid>
+      <Button className="logout" 
+        onClick={this.logout}><i className="fa fa-sign-out"/></Button>        
     </div>
     );
   }

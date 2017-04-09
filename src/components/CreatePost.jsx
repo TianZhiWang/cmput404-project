@@ -24,15 +24,18 @@ class CreatePost extends Component {
     this.contentText = this.contentText.bind(this);
     this.postEditButton = this.postEditButton.bind(this);
     this.handleImageUpload = this.handleImageUpload.bind(this);
+    this.renderImageUpload = this.renderImageUpload.bind(this);
   }
 
   getInitialState() {
+    let contentType = this.props.contentType ? this.props.contentType : 'text/plain';
+    contentType = contentType.startsWith('image') ? 'image' : contentType;
     return {
       permission: this.props.permission ? this.props.permission : 'PUBLIC',
       title: this.props.title ? this.props.title : "",
       description: this.props.description ? this.props.description : "",
       content: this.props.content ? this.props.content : "",
-      contentType: this.props.contentType ? this.props.contentType : 'text/plain' ,
+      contentType: contentType,
       image: null,
       user_with_permission:[],
     };
@@ -63,13 +66,18 @@ class CreatePost extends Component {
   }
 
   handleContentTypeChange(event) {
+    if(this.state.contentType === 'image') { //If image clear content
+      this.setState({
+        content: ''
+      });
+    }
     this.setState({
       contentType: event.target.value
     });
   }
 
   handlePost() {
-    if (this.state.content) {
+    if (this.state.content || this.state.image) {
       this.props.addPost({
         content: this.state.content,
         title: this.state.title,
@@ -106,7 +114,7 @@ class CreatePost extends Component {
   }
 
   contentText (){
-    if (this.state.contentType == "text/plain"){
+    if (this.state.contentType === "text/plain"){
       return(
           <FormControl
             componentClass="textarea"
@@ -115,7 +123,7 @@ class CreatePost extends Component {
             placeholder='Whats on your mind?'
             onChange={this.handleContentChange}/>
       );
-    }else{
+    } else if (this.state.contentType === "text/markdown") {
       return(
           <FormControl
             componentClass="textarea"
@@ -124,6 +132,20 @@ class CreatePost extends Component {
             onChange={this.handleContentChange}
           />
       );
+    } else if (this.props.isEdit) {
+      return(<img src={this.props.content}/>);
+    } else {
+      return(<noscript/>);
+    }
+  }
+
+  renderImageUpload() {
+    if(this.state.contentType === 'image') {
+      return (<input accept='image/png,image/jpeg'
+          type='file'
+          onChange={this.handleImageUpload}/>);
+    } else {
+      return (<noscript/>);
     }
   }
 
@@ -170,11 +192,7 @@ class CreatePost extends Component {
           value={this.state.description}
           placeholder='Description...'
           onChange={this.handleDescriptionChange}/>
-        <input
-          accept='image/png,image/jpeg'
-          type='file'
-          onChange={this.handleImageUpload}
-          />
+        {this.renderImageUpload()}
         <ButtonToolbar className='post-options'>
           <ButtonGroup className='post-formats'>
             <Radio
@@ -190,6 +208,13 @@ class CreatePost extends Component {
               onChange={this.handleContentTypeChange}
               value='text/markdown'>
               Markdown
+            </Radio>
+            <Radio
+              checked={this.state.contentType === "image"}
+              inline={true}
+              onChange={this.handleContentTypeChange}
+              value='image'>
+              Image
             </Radio>
           </ButtonGroup>
           <div className='buttons'>

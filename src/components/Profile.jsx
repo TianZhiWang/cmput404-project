@@ -71,20 +71,24 @@ class Profile extends Component {
             name="github"
             onChange={this.handleGithubChange}
             placeholder="Github url..." />
-          <Button
-            onClick={this.handleSubmitProfile}>
-            Submit
-          </Button>
+          <div className="submit">
+            <Button
+              onClick={this.handleSubmitProfile}>
+              Submit
+            </Button>
+          </div>
         </div>
       );
     };
 
     return (
       <div className='profile'>
-        <h2>{this.props.user.displayName}'s Profile</h2>
-        <p>Display Name: {this.props.user.displayName}</p>        
-        <p>Id: {this.props.user.id}</p>
-        {updateForm()}
+        <div className='profile-head'>
+          <h2>{this.props.user.displayName}'s Profile</h2>
+          <p>Display Name: {this.props.user.displayName}</p>        
+          <p>Id: {this.props.user.id}</p>
+          {updateForm()}
+        </div>
         <PostList posts={this.filterPosts()}/>
       </div>
     );

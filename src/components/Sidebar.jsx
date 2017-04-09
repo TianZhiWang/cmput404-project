@@ -7,13 +7,9 @@ import {ListGroup, ListGroupItem, Nav, NavItem, Button} from 'react-bootstrap';
 class Sidebar extends Component {
   constructor(props) {
     super(props);
-    this.logout = this.logout.bind(this);
   }
 
-  logout() {
-    sessionStorage.clear();
-    this.props.logout();
-  }
+
 
   render() {
     return (
@@ -29,7 +25,6 @@ class Sidebar extends Component {
           <NavItem eventKey={'profile'}>Profile</NavItem>
           <NavItem eventKey={'github'}>Github</NavItem>
         </Nav>
-        <Button onClick={this.logout}>Logout</Button>
       </div>
     );
   }
@@ -37,7 +32,6 @@ class Sidebar extends Component {
 
 Sidebar.propTypes = {
   activeTab: PropTypes.string.isRequired,
-  logout: PropTypes.func.isRequired,
   switchTabs: PropTypes.func.isRequired,
 };
 
