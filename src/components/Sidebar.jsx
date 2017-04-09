@@ -27,6 +27,7 @@ class Sidebar extends Component {
           <NavItem eventKey={'stream'}>Stream</NavItem>
           <NavItem eventKey={'friends'}>Following</NavItem>
           <NavItem eventKey={'profile'}>Profile</NavItem>
+          <NavItem eventKey={'github'}>Github</NavItem>
         </Nav>
         <Button onClick={this.logout}>Logout</Button>
       </div>

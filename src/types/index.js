@@ -9,3 +9,4 @@ export const LOGGED_OUT = 'LOGGED_OUT';
 export const LOGGED_IN_FAILED = 'LOGGED_IN_FAILED';
 export const SWITCH_TABS = 'SWITCH_TABS';
 export const UPDATE_USER = 'UPDATE_USER';
+export const LOAD_GITHUB = 'LOAD_GITHUB';

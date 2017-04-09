@@ -141,7 +141,19 @@ export function app(state={loggedIn: false, activeTab: 'stream'}, action) {
   }
 }
 
+
+export function github(state=[], action) {
+  switch (action.type) {
+
+  case types.LOAD_GITHUB:
+    return action.githubEvents;
+
+  default:
+    return state;
+  }
+}
+
 /**
  * Combine reducers to a a single reducer
  */
-export default combineReducers({posts, app});
+export default combineReducers({posts, app, github});

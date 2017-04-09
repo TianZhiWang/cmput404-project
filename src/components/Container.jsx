@@ -5,6 +5,7 @@ import FriendPage from './FriendPage';
 import PostList from './PostList';
 import Profile from './Profile';
 import Sidebar from './Sidebar';
+import GithubEventsList from './Github';
 import {connect} from 'react-redux';
 import * as actions from '../actions';
 
@@ -30,6 +31,8 @@ class Container extends Component {
         return <FriendPage/>;
       case 'profile':
         return <Profile/>;
+      case 'github':
+        return <GithubEventsList/>;
       }
     };
     return (
