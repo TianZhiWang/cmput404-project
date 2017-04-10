@@ -155,6 +155,7 @@ class PostList(APIView):
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
         host = str(request.scheme) + "://" + str(request.get_host()) + "/"
+        # andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom (CC-BY-SA 3.0)
         serializedPost = PostSerializer(data=request.data, context={'author': author, 'host': host})
         if serializedPost.is_valid():
             serializedPost.save()

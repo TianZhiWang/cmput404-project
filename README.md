@@ -106,11 +106,11 @@ Libraries are listed in package.json and requirements.txt
 - server/settings.py http://www.django-rest-framework.org/api-guide/permissions/#setting-the-permission-policy
 - server/settings.py http://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
 - server/settings.py http://stackoverflow.com/a/22360893 stormlifter (http://stackoverflow.com/users/344156/stormlifter)
-- src/actions/index.js Some code written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539
-- src/actions/index.js https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+- src/actions/index.js and src/actions/utils/index.js Some code written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539
+- src/actions/index.js and src/actions/utils/index.js https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 - Used DRF Docs for documentaions on the Django Rest Framework.  http://drfdocs.com/
 - https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-- server/quickstart/serializers.py http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
+- http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
 - Serializing many to many field http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0)
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
 - http://www.django-rest-framework.org/api-guide/fields/#uuidfield
