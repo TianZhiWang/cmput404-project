@@ -1,7 +1,8 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, andi (http://stackoverflow.com/users/953553/andi),
-# Peter DeGlopper (http://stackoverflow.com/users/2337736/peter-deglopper), Oliver Ford (http://stackoverflow.com/users/1446048/oliver-ford)
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng, andi (http://stackoverflow.com/users/953553/andi),
+# Peter DeGlopper (http://stackoverflow.com/users/2337736/peter-deglopper), Oliver Ford (http://stackoverflow.com/users/1446048/oliver-ford),
+# prawg (http://stackoverflow.com/users/4698253/prawg), Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup)
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -108,7 +109,6 @@ def validate_and_transform_author(author):
     new_author['url'] = append_trailing_slash(new_author['url'])
     new_author['host'] = append_trailing_slash(new_author['host'])
     return new_author
-
 def handle_posts_to_remote_node(queryset, request):
     """
     Takes in the queryset for remote node with any customization
@@ -116,7 +116,6 @@ def handle_posts_to_remote_node(queryset, request):
 
     Input: queryset, request
     """
-    # TODO: Add filtering of images and posts here, will need to pass the Node to filter
     queryset = queryset.exclude(visibility='SERVERONLY').order_by('-published')
 
     node = Node.objects.get(user=request.user)
@@ -125,6 +124,7 @@ def handle_posts_to_remote_node(queryset, request):
     if not node.canSeePosts:
         queryset = queryset.exclude(contentType__in=['text/markdown', 'text/plain'])
 
+    # http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg) (CC-BY-SA 3.0) modified by Tian Zhi Wang and Kyle Carlstrom
     paginator = PostsPagination()
     page = paginator.paginate_queryset(queryset, request)
     if page is not None:
@@ -155,6 +155,7 @@ class PostList(APIView):
     def post(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
         host = str(request.scheme) + "://" + str(request.get_host()) + "/"
+        # andi (http://stackoverflow.com/users/953553/andi) http://stackoverflow.com/a/34084329, modified by Kyle Carlstrom (CC-BY-SA 3.0)
         serializedPost = PostSerializer(data=request.data, context={'author': author, 'host': host})
         if serializedPost.is_valid():
             serializedPost.save()
@@ -367,7 +368,6 @@ class CheckFriendship(APIView):
         
         return Response(status=200)
 
-# TODO: How to add remote authors? Also how to link them?
 class FriendRequestList(APIView):
     def get(self, request, format=None):
         author = get_object_or_404(Author, user=request.user)
@@ -468,7 +468,6 @@ class AllPostsAvailableToCurrentUser(APIView):
     Returns a list of all posts that is visiable to current author
     """
     
-    # http://stackoverflow.com/questions/29071312/pagination-in-django-rest-framework-using-api-view
     def get(self, request, format=None):
         # Request originating from remote node
         if is_request_from_remote_node(request):

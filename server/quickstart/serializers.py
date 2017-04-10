@@ -1,7 +1,6 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup),
-# and darkterror (http://stackoverflow.com/users/3464760/darkterror), Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan)
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal

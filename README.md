@@ -98,16 +98,19 @@ Libraries are listed in package.json and requirements.txt
 - server/quickstart/views.py http://www.django-rest-framework.org/tutorial/4-authentication-and-permissions/#associating-snippets-with-users
 - server/quickstart/views.py http://www.django-rest-framework.org/api-guide/filtering/#filtering-against-the-current-user
 - server/quickstart/serializers.py http://www.django-rest-framework.org/api-guide/serializers/#overriding-serialization-and-deserialization-behavior
-- server/quickstart/serializers.py http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
-- server/quickstarts/serializers.py http://stackoverflow.com/a/38606711 darkterror (http://stackoverflow.com/users/3464760/darkterror) (MIT)
+- server/quickstart/views.py http://stackoverflow.com/a/42411533 Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup) (MIT)
 - server/quickstart/models.py Idea for friendship model http://stackoverflow.com/a/13496120 by user1839132 (http://stackoverflow.com/users/1839132/user1839132), modified by Kyle Carlstrom (CC-BY-SA 3.0)
+- server/quickstart/models.py http://stackoverflow.com/a/2529875 Ludwik Trammer (http://stackoverflow.com/users/262618/ludwik-trammer) (MIT)
+- server/quickstart/pagination.py http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg) (CC-BY-SA 3.0) modified by Tian Zhi Wang and Kyle Carlstrom
+- server/quickstart/views.py http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg) (CC-BY-SA 3.0) modified by Tian Zhi Wang and Kyle Carlstrom
 - server/settings.py http://www.django-rest-framework.org/api-guide/permissions/#setting-the-permission-policy
 - server/settings.py http://www.django-rest-framework.org/api-guide/authentication/#setting-the-authentication-scheme
-- src/actions/index.js Some code written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539
-- src/actions/index.js https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+- server/settings.py http://stackoverflow.com/a/22360893 stormlifter (http://stackoverflow.com/users/344156/stormlifter)
+- src/actions/index.js and src/actions/utils/index.js Some code written by unyo (http://stackoverflow.com/users/2077884/unyo http://stackoverflow.com/a/35780539
+- src/actions/index.js and src/actions/utils/index.js https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
 - Used DRF Docs for documentaions on the Django Rest Framework.  http://drfdocs.com/
 - https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-- server/quickstart/serializers.py http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
+- http://stackoverflow.com/a/36771366 Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan) (MIT)
 - Serializing many to many field http://stackoverflow.com/a/28748704 LiteWait (http://stackoverflow.com/users/446347/litewait) (CC-BY-SA 3.0)
 - https://docs.djangoproject.com/en/1.10/ref/models/fields/#uuidfield
 - http://www.django-rest-framework.org/api-guide/fields/#uuidfield
@@ -118,5 +121,30 @@ Libraries are listed in package.json and requirements.txt
 - image tutorial: https://www.youtube.com/watch?v=HSgyPfibrqQ&t=1s
 - http://stackoverflow.com/a/43025574 BKC (https://stackoverflow.com/users/1932097/bkc) MIT
 - http://stackoverflow.com/a/33580254 joemaddalone (http://stackoverflow.com/users/1042510/joemaddalone) MIT
+- http://stackoverflow.com/a/38606711 darkterror (http://stackoverflow.com/users/3464760/darkterror) (MIT)
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).
+
+# License
+
+MIT License
+
+Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
