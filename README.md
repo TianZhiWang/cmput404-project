@@ -124,3 +124,6 @@ Libraries are listed in package.json and requirements.txt
 - http://stackoverflow.com/a/38606711 darkterror (http://stackoverflow.com/users/3464760/darkterror) (MIT)
 # About this project
 This project is for CMPUT 404, see the [project description here](https://github.com/abramhindle/CMPUT404-project-socialdistribution).
+
+# License
+

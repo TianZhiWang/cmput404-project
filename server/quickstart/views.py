@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, andi (http://stackoverflow.com/users/953553/andi),
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng, andi (http://stackoverflow.com/users/953553/andi),
 # Peter DeGlopper (http://stackoverflow.com/users/2337736/peter-deglopper), Oliver Ford (http://stackoverflow.com/users/1446048/oliver-ford),
 # prawg (http://stackoverflow.com/users/4698253/prawg), Erik Westrup (http://stackoverflow.com/users/265508/erik-westrup)
 

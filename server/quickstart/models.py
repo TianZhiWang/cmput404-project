@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, user1839132 (http://stackoverflow.com/users/1839132/user1839132),
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng, user1839132 (http://stackoverflow.com/users/1839132/user1839132),
 # Ludwik Trammer (http://stackoverflow.com/users/262618/ludwik-trammer)
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy

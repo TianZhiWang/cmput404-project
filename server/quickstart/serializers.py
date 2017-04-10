@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang,
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Josh Deng
 # and Dr Manhattan (http://stackoverflow.com/users/3571614/dr-manhattan)
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
