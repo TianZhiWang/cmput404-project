@@ -1,6 +1,6 @@
 # MIT License
 
-# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, Prawg(http://stackoverflow.com/users/4698253/prawg)
+# Copyright (c) 2017 Conner Dunn, Tian Zhi Wang, Kyle Carlstrom, Xin Yi Wang, prawg (http://stackoverflow.com/users/4698253/prawg)
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -24,6 +24,8 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.settings import api_settings
 
+# Written by http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg) (CC-BY-SA 3.0)
+# modified by Tian Zhi Wang and Kyle Carlstrom
 class PostsPagination(PageNumberPagination):
     page_size_query_param = 'size'
 
@@ -37,7 +39,8 @@ class PostsPagination(PageNumberPagination):
             'previous': self.get_previous_link(),
             'posts': data
         })
-
+# Written by http://stackoverflow.com/a/31401203 prawg (http://stackoverflow.com/users/4698253/prawg) (CC-BY-SA 3.0)
+# modified by Tian Zhi Wang and Kyle Carlstrom
 class CommentsPagination(PageNumberPagination):
     page_size_query_param = 'size'
 
