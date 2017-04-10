@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/TianZhiWang/cmput404-project.svg?branch=master)](https://travis-ci.org/TianZhiWang/cmput404-project)  
 
 #Live Preview
-[https://coolbears.herokuapp.com/](https://coolbears.herokuapp.com/)
+[https://coolbears.herokuapp.com/](https://coolbears.herokuapp.com/)  
+  
+Demo Video [https://www.youtube.com/watch?v=8KM50K98_NE](https://www.youtube.com/watch?v=8KM50K98_NE)
 
 # Installation of Client
 ```
