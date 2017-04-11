@@ -77,7 +77,7 @@ Remember that you should reference issues in your commits when the [commit is cl
 How to [write a good commit message](https://chris.beams.io/posts/git-commit/).  
 
 # Sources
-Libraries are listed in package.json and requirements.txt
+Libraries are listed in package.json and requirements.txt, as well Bootstrap and FontAwesome were used.
   
 - src/index.jx  https://github.com/zalmoxisus/redux-devtools-extension Mihail Diordiev (https://github.com/zalmoxisus) (MIT)
 - Reducer update item in an array: http://redux.js.org/docs/recipes/reducers/ImmutableUpdatePatterns.html#updating-an-item-in-an-array  
